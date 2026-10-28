@@ -192,7 +192,21 @@ kbd{display:inline-block;font:600 11px/1 var(--font-sans);padding:2px 6px;border
 .empty-state{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);overflow:hidden;border:1px solid var(--border-subtle);border-radius:var(--radius-xl);background:var(--surface-glass);-webkit-backdrop-filter:blur(var(--blur-glass));backdrop-filter:blur(var(--blur-glass));box-shadow:var(--shadow-raise)}
 .empty-state .es-main{padding:var(--space-6);display:flex;flex-direction:column;gap:var(--space-4);min-width:0}
 .empty-state h3{font-family:var(--font-display);font-size:26px;line-height:32px;font-weight:600;letter-spacing:-.02em;color:var(--ink)}
-.empty-state .es-media{min-height:320px;padding:var(--space-6);background-color:var(--navy-950);background-image:url(assets/schwerpunktthemen-tempel.jpg),radial-gradient(circle at 60% 45%,var(--navy-700),var(--navy-950) 78%);background-repeat:no-repeat,no-repeat;background-position:center,center;background-size:calc(100% - 64px) auto,cover;background-origin:padding-box,border-box}
+.empty-state{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}
+.es-themes{position:relative;display:flex;flex-direction:column;gap:var(--space-4);padding:var(--space-6);color:var(--header-ink);background:radial-gradient(circle at 70% 20%,var(--navy-700),var(--navy-950) 75%);isolation:isolate;overflow:hidden;min-width:0}
+.es-themes::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);background-size:32px 32px;-webkit-mask-image:linear-gradient(180deg,#000,transparent 85%);mask-image:linear-gradient(180deg,#000,transparent 85%)}
+.es-themes-kicker{font-size:12px;line-height:16px;font-weight:600;color:var(--header-muted)}
+.empty-state .es-themes-title{margin-top:2px;font-family:var(--font-display);font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.01em;color:var(--header-ink)}
+.es-themes-motto{font-size:13px;line-height:18px;font-weight:500;color:var(--header-muted)}
+.es-themes-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-2)}
+.es-theme{display:flex;gap:var(--space-3);padding:var(--space-3);border-radius:var(--radius-md);background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);min-width:0}
+.es-theme-ico{display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:var(--radius-md);background:rgba(255,255,255,.08);color:var(--header-ink)}
+.es-theme-ico svg{width:20px;height:20px}
+.es-theme-text{min-width:0}
+.es-theme-text strong{display:block;font-size:13px;line-height:18px;font-weight:700;color:var(--header-ink)}
+.es-theme-text span{display:block;font-size:12px;line-height:16px;font-weight:500;color:var(--header-muted)}
+.es-themes-base{padding:var(--space-3);border-radius:var(--radius-md);background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);font-size:12px;line-height:18px;font-weight:500;color:var(--header-muted)}
+.es-themes-base strong{display:block;margin-top:2px;color:var(--header-ink);font-weight:700}
 .steps{margin:0;padding:0;list-style:none;display:grid;gap:var(--space-2);counter-reset:s;max-width:62ch}
 .steps li{position:relative;padding-left:36px;counter-increment:s;font-size:14px;line-height:22px;color:var(--ink)}
 .steps li::before{content:counter(s);position:absolute;left:0;top:0;display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--nav-active);color:var(--ink);font-size:12px;font-weight:700;box-shadow:inset 0 0 0 1px var(--border-subtle)}
@@ -439,7 +453,7 @@ dialog.drawer[open]{animation:drawerIn var(--duration-base) var(--ease-smooth)}
 
 /* ---------- Responsiv ---------- */
 @media (max-width:1400px){.kanban{grid-template-columns:repeat(6,minmax(200px,1fr))}}
-@media (max-width:1180px){.grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-main{grid-template-columns:minmax(0,1fr)}.hero-main>.dropzone{grid-column:auto;grid-row:auto}.empty-state{grid-template-columns:minmax(0,1fr)}.empty-state .es-media{min-height:280px}.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:1180px){.grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-main{grid-template-columns:minmax(0,1fr)}.hero-main>.dropzone{grid-column:auto;grid-row:auto}.empty-state{grid-template-columns:minmax(0,1fr)}.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:980px){
   :root{--header-h:auto}
   .layout{grid-template-columns:minmax(0,1fr)}
@@ -467,7 +481,8 @@ dialog.drawer[open]{animation:drawerIn var(--duration-base) var(--ease-smooth)}
   .app-title{white-space:normal;font-size:20px;line-height:26px}
   .view-head h2{font-size:26px;line-height:32px}
   .banner{margin:var(--space-2) var(--space-3) 0}
-  .empty-state .es-media{display:none}
+  .es-themes{padding:var(--space-5)}
+  .es-themes-grid{grid-template-columns:minmax(0,1fr)}
   table.resp thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
   table.resp,table.resp tbody,table.resp tr,table.resp td{display:block;width:100%}
   table.resp tr{border-bottom:1px solid var(--border-subtle);padding:var(--space-2) var(--space-1)}
@@ -488,7 +503,7 @@ dialog.drawer[open]{animation:drawerIn var(--duration-base) var(--ease-smooth)}
   :root,[data-theme]{ --navy-950:#070d1b;--navy-900:#0b1730;--navy-800:#10203f;--navy-700:#1a2f57;--navy-500:#3d5a99;--red-600:#c8102e;--red-400:#ff4d6a;--amber-400:#f2b705;--green-500:#2f9e44;--header-ink:#f2f5ff;--header-muted:#a9b8de;--focus-ring-inverse:#ffd34d;--surface-base:#f3f5f9;--surface-raised:#ffffff;--surface-sunken:#e9edf4;--surface-glass:rgba(255,255,255,0.72);--border-subtle:#d9dfeb;--border-control:#7d8aa6;--ink:#0b1730;--ink-muted:#46557a;--accent:#c8102e;--accent-hover:#a50c26;--on-accent:#ffffff;--accent-text:#c8102e;--strong-bg:#0b1730;--on-strong:#ffffff;--focus-ring:#1a2f57;--brand-deep:#10203f;--nav-active:#e4e9f5;--mark-danger:#c8102e;--mark-warn:#b07800;--mark-ok:#2f9e44;--mark-done:#3d5a99;--status-overdue-bg:#fde8ec;--status-overdue-ink:#a10b24;--status-soon-bg:#fff3cc;--status-soon-ink:#6b4a00;--status-ok-bg:#dff5e4;--status-ok-ink:#14622a;--status-done-bg:#e4e9f5;--status-done-ink:#1a2f57;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;--space-7:48px;--space-8:64px;--radius-sm:6px;--radius-md:10px;--radius-lg:16px;--radius-xl:24px;--radius-pill:999px;--blur-glass:18px;--duration-fast:120ms;--duration-base:220ms;--ease-smooth:cubic-bezier(0.2,0.8,0.2,1);--font-display:"Sora", "Segoe UI", system-ui, sans-serif;--font-sans:"Manrope", "Segoe UI", system-ui, sans-serif; --surface-glass:#ffffff;--surface-base:#ffffff;--shadow-raise:none;--shadow-float:none;--shadow-glow:none}
   html,body{background:#fff !important;color:#0b1730;font-size:10pt;line-height:1.4}
   *{-webkit-backdrop-filter:none !important;backdrop-filter:none !important;text-shadow:none !important}
-  .app-header,.side-nav,.source-bar,.skip-link,#messageArea,.quick-filters,.more-filters,.chip button,.menu,.toolbar-foot .spacer,.header-actions,.toolbar,.toolbar-foot .btn,.btn,.hero-media,.dropzone,.no-print,.drop-overlay,.loading,dialog,.app-footer,.sheet-tabs .sheet-tab:not([aria-pressed="true"]),.cell-actions,.empty-state .es-media,.kpi-ring{display:none !important}
+  .app-header,.side-nav,.source-bar,.skip-link,#messageArea,.quick-filters,.more-filters,.chip button,.menu,.toolbar-foot .spacer,.header-actions,.toolbar,.toolbar-foot .btn,.btn,.hero-media,.dropzone,.no-print,.drop-overlay,.loading,dialog,.app-footer,.sheet-tabs .sheet-tab:not([aria-pressed="true"]),.cell-actions,.es-themes,.kpi-ring{display:none !important}
   .layout{display:block}
   .main{padding:0;background:#fff !important}
   .print-head{display:flex;justify-content:space-between;align-items:center;gap:var(--space-4);border-bottom:2px solid #0b1730;padding-bottom:6px;margin-bottom:10px;font-size:9pt}
@@ -980,6 +995,38 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
   }
   const ICON_INFO = ['M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z', 'M12 11v6M12 7.5v.5'];
   const ICON_UPLOAD = ['M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4', 'M12 4v11M7.5 8.5L12 4l4.5 4.5'];
+
+  /** Strichsymbol aus Grundformen (statische Werte, keine Datenwerte) */
+  function shapeIcon(shapes) {
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    [['viewBox', '0 0 24 24'], ['fill', 'none'], ['stroke', 'currentColor'], ['stroke-width', '1.75'], ['stroke-linecap', 'round'], ['stroke-linejoin', 'round'], ['aria-hidden', 'true'], ['focusable', 'false']]
+      .forEach((a) => svg.setAttribute(a[0], a[1]));
+    shapes.forEach((sh) => {
+      const el = document.createElementNS(ns, sh[0]);
+      Object.keys(sh[1]).forEach((k) => el.setAttribute(k, sh[1][k]));
+      svg.appendChild(el);
+    });
+    return svg;
+  }
+
+  /** Schwerpunktthemen „Gesund nach Hause“ – Inhalte aus der Grafik „Unsere Schwerpunktthemen“ */
+  const FOCUS_THEMES = [
+    { title: 'Arbeitsinhalt', text: 'Arbeitsaufgabe, Handlungsspielraum, Abwechslung, Information, Qualifikation',
+      icon: [['rect', { x: '5', y: '3', width: '14', height: '18', rx: '2' }], ['path', { d: 'M9 3v2h6V3M9 10h6M9 14h6M9 18h3' }]] },
+    { title: 'Arbeitsorganisation', text: 'Zeiteinteilung, Störungen, Austausch, Zuständigkeiten',
+      icon: [['circle', { cx: '6', cy: '6', r: '2.5' }], ['circle', { cx: '18', cy: '6', r: '2.5' }], ['circle', { cx: '12', cy: '18', r: '2.5' }], ['path', { d: 'M8.5 6h7M7.3 8.2l3.4 7.4M16.7 8.2l-3.4 7.4' }]] },
+    { title: 'Arbeitszeit', text: 'Dauer und Lage, Planbarkeit, Pausen und Erholung',
+      icon: [['circle', { cx: '12', cy: '13', r: '8' }], ['path', { d: 'M12 9v4l2.5 2M9 2h6' }]] },
+    { title: 'Soziale Beziehungen', text: 'Betriebsklima, Unterstützung, Rückmeldung, Wertschätzung',
+      icon: [['circle', { cx: '9', cy: '8', r: '3' }], ['path', { d: 'M3 20a6 6 0 0 1 12 0M16 5.2a3 3 0 0 1 0 5.6M18 14.5a6 6 0 0 1 3 5.5' }]] },
+    { title: 'Arbeitsmittel', text: 'Werkzeuge, Maschinen, Anlagen, Software, Schutzausrüstung',
+      icon: [['path', { d: 'M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z' }]] },
+    { title: 'Arbeitsumgebung', text: 'Lärm, Klima, Beleuchtung, Gefahrstoffe, Raumgestaltung',
+      icon: [['path', { d: 'M14 14.8V5a2 2 0 0 0-4 0v9.8a4 4 0 1 0 4 0zM12 17.5V9' }]] }
+  ];
+  const FOCUS_BASE = ['SymSafe', 'Gefährdungsbeurteilungen', 'Schulung & Qualifizierung', 'Arbeitsmedizin & Arbeitssicherheit', 'BGM', 'Lean, TPM & KVP'];
+  const FOCUS_FOUNDATION = 'Führung, Vertrauen, Beteiligung & Offenheit';
 
   /* =====================================================================
    * Datumslogik
@@ -2056,7 +2103,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
               h('button', { type: 'button', class: 'btn btn-navy', text: 'Neue Maßnahme erfassen', onclick: () => Editor.open(null) })
             ])
           ]),
-          h('div', { class: 'es-media', role: 'img', 'aria-label': 'Grafik „Gesund nach Hause – Unsere Schwerpunktthemen“: Tempel mit sechs Säulen – Arbeitsinhalt, Arbeitsorganisation, Arbeitszeit, Soziale Beziehungen, Arbeitsmittel und Arbeitsumgebung. Der Sockel nennt SymSafe, Gefährdungsbeurteilungen, Schulung & Qualifizierung, Arbeitsmedizin & Arbeitssicherheit, BGM, Lean, TPM & KVP sowie Führung, Vertrauen, Beteiligung & Offenheit.' })
+          Render.focusThemes()
         ]));
         return;
       }
@@ -2169,6 +2216,22 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         h('dt', { text: 'Datenstand' }), h('dd', { text: s ? (State.source === 'local' ? 'lokal gespeichert (dieser Browser)' : 'soeben importiert') : (State.manual.length ? 'nur manuelle Erfassung' : '–') })
       ]);
       grid3.appendChild(h('div', { class: 'card' }, [h('div', { class: 'card-head' }, h('h3', { text: 'Datenquelle' })), h('div', { class: 'card-body' }, info)]));
+    },
+
+    /** Schwerpunktthemen als Kacheln (Leerzustand) */
+    focusThemes() {
+      return h('section', { class: 'es-themes', 'aria-labelledby': 'esThemesTitle' }, [
+        h('div', null, [
+          h('p', { class: 'es-themes-kicker', text: 'Unsere Schwerpunktthemen' }),
+          h('h3', { id: 'esThemesTitle', class: 'es-themes-title', text: 'Gesund nach Hause' }),
+          h('p', { class: 'es-themes-motto', text: 'sicher – gesund – wertgeschätzt' })
+        ]),
+        h('ul', { class: 'es-themes-grid' }, FOCUS_THEMES.map((t) => h('li', { class: 'es-theme' }, [
+          h('span', { class: 'es-theme-ico' }, shapeIcon(t.icon)),
+          h('span', { class: 'es-theme-text' }, [h('strong', { text: t.title }), h('span', { text: t.text })])
+        ]))),
+        h('p', { class: 'es-themes-base' }, [FOCUS_BASE.join(' · '), h('strong', { text: FOCUS_FOUNDATION })])
+      ]);
     },
 
     dropzone() {
