@@ -241,7 +241,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .result-count{font-size:13px;color:var(--muted)}
 .result-count strong{color:var(--text)}
 .chip{display:inline-flex;align-items:center;gap:6px;background:var(--st-blue-bg);color:var(--st-blue-tx);border:1px solid #c3d5f4;border-radius:999px;padding:2px 4px 2px 10px;font-size:12px;font-weight:600}
-.chip button{border:none;background:none;cursor:pointer;color:inherit;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:15px;line-height:1}
+.chip button{border:none;background:none;cursor:pointer;color:inherit;width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:15px;line-height:1}
 .chip button:hover{background:rgba(31,98,196,.15)}
 .toolbar-foot .spacer{flex:1}
 
@@ -332,6 +332,87 @@ dialog::backdrop{background:rgba(11,20,36,.55)}
 .app-footer{padding:14px 24px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);background:#fff;display:flex;flex-wrap:wrap;gap:6px 18px}
 .print-head{display:none}
 
+
+/* ---------- Toasts (keine Layoutsprünge) ---------- */
+.toast-region{position:fixed;right:20px;bottom:20px;z-index:500;display:flex;flex-direction:column;gap:10px;width:min(420px,calc(100vw - 32px));pointer-events:none}
+.toast{pointer-events:auto;display:flex;align-items:flex-start;gap:10px;background:#fff;border:1px solid var(--border);border-left:5px solid var(--st-grey);border-radius:10px;padding:12px 10px 12px 14px;box-shadow:0 10px 30px rgba(8,16,30,.18);animation:toastIn .18s ease-out}
+.toast-ok{border-left-color:var(--st-green)}.toast-error{border-left-color:var(--st-red)}.toast-warn{border-left-color:var(--st-orange)}.toast-info{border-left-color:var(--st-blue)}
+.toast-ico{flex:0 0 auto;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#fff;background:var(--st-grey)}
+.toast-ok .toast-ico{background:var(--st-green)}.toast-error .toast-ico{background:var(--st-red)}.toast-warn .toast-ico{background:var(--st-orange)}.toast-info .toast-ico{background:var(--st-blue)}
+.toast-body{flex:1;min-width:0;overflow-wrap:anywhere;padding-top:1px}
+.toast-action{flex:0 0 auto}
+.toast-close{flex:0 0 auto;border:none;background:none;width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:18px;line-height:1;color:var(--muted)}
+.toast-close:hover{background:var(--st-grey-bg)}
+@keyframes toastIn{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+
+/* ---------- Menüs / Popover ---------- */
+.menu-wrap{position:relative;display:inline-flex}
+.menu{position:absolute;top:calc(100% + 6px);left:0;z-index:120;min-width:260px;margin:0;padding:6px;list-style:none;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 32px rgba(8,16,30,.22)}
+.menu-right{left:auto;right:0}
+.menu-item{display:flex;flex-direction:column;align-items:flex-start;gap:1px;width:100%;text-align:left;border:none;background:none;border-radius:7px;padding:9px 12px;cursor:pointer;min-height:44px}
+.menu-item:hover,.menu-item:focus-visible{background:#eef2f8}
+.menu-item:focus-visible{outline-offset:-2px}
+.mi-title{font-weight:600}
+.mi-hint{font-size:12px;color:var(--muted)}
+.caret{font-size:11px;opacity:.8}
+.popover{padding:10px 12px;display:flex;flex-direction:column;gap:4px;min-width:220px}
+.popover .menu-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
+.menu-check{min-height:30px}
+.popover .btn{margin-top:6px;align-self:flex-start}
+
+/* ---------- Schnellfilter ---------- */
+.quick-filters{display:flex;flex-wrap:wrap;gap:8px;padding:14px 16px 0}
+.qf{display:inline-flex;align-items:center;gap:8px;min-height:34px;padding:5px 12px 5px 10px;border-radius:999px;border:1px solid var(--border-strong);background:#fff;cursor:pointer;font-weight:600;font-size:13px;color:var(--text)}
+.qf:hover{border-color:#8f9cae;background:var(--surface-2)}
+.qf-dot{width:10px;height:10px;border-radius:50%;background:var(--qf-c,var(--st-grey));flex:0 0 auto}
+.qf-count{font-variant-numeric:tabular-nums;font-size:12px;font-weight:700;background:var(--st-grey-bg);color:var(--st-grey-tx);border-radius:999px;padding:0 7px;min-width:24px;text-align:center}
+.qf[aria-pressed="true"]{background:var(--navy-800);border-color:var(--navy-800);color:#fff}
+.qf[aria-pressed="true"] .qf-count{background:rgba(255,255,255,.18);color:#fff}
+.qf[aria-pressed="true"] .qf-dot{box-shadow:0 0 0 2px #fff}
+.qf-red{--qf-c:var(--st-red)}.qf-orange{--qf-c:var(--st-orange)}.qf-yellow{--qf-c:var(--st-yellow)}.qf-blue{--qf-c:var(--st-blue)}.qf-green{--qf-c:var(--st-green)}.qf-grey{--qf-c:#8fa0b5}.qf-navy{--qf-c:var(--navy-700)}
+.field-more{justify-content:flex-end}
+.more-count:empty{display:none}
+.more-count{background:var(--red);color:#fff;border-radius:999px;font-size:11px;padding:0 7px;min-width:20px}
+.more-filters{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px 12px;padding:12px;background:var(--surface-2);border:1px solid #e7ebf0;border-radius:8px}
+.active-filters{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+kbd{display:inline-block;font:600 11px/1 var(--font);padding:2px 6px;border:1px solid var(--border-strong);border-bottom-width:2px;border-radius:4px;background:#fff;color:var(--muted);margin-left:4px;vertical-align:1px}
+
+/* ---------- Tabelle: fixierter Kopf, Spaltenwahl, Dichte, Zeilenauswahl ---------- */
+#actionsCard .table-wrap{max-height:calc(100vh - 230px);overflow:auto;overscroll-behavior:contain}
+#actionsTable tbody tr{cursor:pointer}
+#actionsTable tbody tr:focus-within td{background:#f6f9ff}
+#actionsTable tbody tr.is-selected td{background:#eaf1fd}
+#actionsTable tbody tr.is-selected td:first-child{box-shadow:inset 4px 0 0 var(--st-blue)}
+table.data.dense td{padding:5px 8px}
+table.data.dense th{padding:6px 8px}
+table.data.dense .clamp{-webkit-line-clamp:1}
+table.data.dense .badge-stack{flex-direction:row;flex-wrap:wrap}
+.hide-herkunft .c-herkunft,.hide-thema .c-thema,.hide-zust .c-zust,.hide-vom .c-vom,.hide-ziel .c-ziel,.hide-tage .c-tage,.hide-umg .c-umg,.hide-status .c-status,.hide-kommentar .c-kommentar{display:none}
+.rel{font-size:12px;font-weight:600;white-space:nowrap}
+.rel.neg{color:var(--st-red-tx)}.rel.soon{color:var(--st-orange-tx)}.rel.mid{color:var(--st-yellow-tx)}.rel.calm{color:var(--muted)}.rel.done{color:var(--st-green-tx)}
+
+/* ---------- Drawer (Seitenpanel) ---------- */
+dialog.drawer{position:fixed;inset:0 0 0 auto;margin:0;height:100vh;height:100dvh;max-height:none;width:min(540px,100vw);max-width:100vw;border-radius:14px 0 0 14px;box-shadow:-16px 0 48px rgba(8,16,30,.28);z-index:150}
+dialog.drawer .dlg{height:100%;max-height:none}
+dialog.drawer .dlg-body{flex:1 1 auto;min-height:0}
+dialog.drawer::backdrop{background:rgba(11,20,36,.38)}
+dialog.drawer[open]{animation:drawerIn .2s ease-out}
+@keyframes drawerIn{from{transform:translateX(32px);opacity:.4}to{transform:none;opacity:1}}
+.dlg-head-text{flex:1;min-width:0}
+.dlg-kicker{font-size:11.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--red);font-weight:700;margin-bottom:3px}
+.dlg-head h2:focus{outline:none}
+.dlg-head h2:focus-visible{outline:3px solid var(--focus)}
+.detail-hero{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:16px}
+.detail-hero div{background:var(--surface-2);border:1px solid #e7ebf0;border-radius:8px;padding:8px 10px;min-width:0}
+.detail-hero span{display:block;font-size:11.5px;color:var(--muted);font-weight:600}
+.detail-hero b{display:block;font-size:14px;overflow-wrap:anywhere}
+.date-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.date-row .input{width:auto;min-width:170px;flex:0 0 auto}
+.quick-dates{display:flex;flex-wrap:wrap;gap:6px}
+.btn-xs{min-height:30px;padding:3px 10px;font-size:12.5px;font-weight:600}
+.btn-link{min-height:24px}
+@media (prefers-reduced-motion:reduce){.toast,dialog.drawer[open]{animation:none}}
+
 /* ---------- Responsive ---------- */
 @media (max-width:1400px){.kpi-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media (max-width:1180px){.grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{grid-template-columns:minmax(0,1fr) 220px}}
@@ -355,6 +436,10 @@ dialog::backdrop{background:rgba(11,20,36,.55)}
   .source-today{margin-left:0}
 }
 @media (max-width:760px){
+  dialog.drawer{border-radius:0;width:100vw}
+  .detail-hero{grid-template-columns:minmax(0,1fr)}
+  #actionsCard .table-wrap{max-height:none}
+  .toast-region{right:16px;left:16px;bottom:16px;width:auto}
   .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .field-search{grid-column:auto}
   .form-grid{grid-template-columns:minmax(0,1fr)}
@@ -374,7 +459,7 @@ dialog::backdrop{background:rgba(11,20,36,.55)}
 @media print{
   @page{size:A4 landscape;margin:11mm}
   body{background:#fff;font-size:10pt;color:#000}
-  .app-header,.side-nav,.source-bar,.skip-link,#messageArea,.toolbar-foot .spacer,.header-actions,.toolbar,.toolbar-foot .btn,.toolbar-foot .chip button,.btn,.hero-media,.dropzone,.no-print,.drop-overlay,.loading,dialog,.app-footer,.sheet-tabs .sheet-tab:not([aria-pressed="true"]),.cell-actions{display:none !important}
+  .app-header,.side-nav,.source-bar,.skip-link,#messageArea,.quick-filters,.more-filters,.chip button,.menu,.toolbar-foot .spacer,.header-actions,.toolbar,.toolbar-foot .btn,.toolbar-foot .chip button,.btn,.hero-media,.dropzone,.no-print,.drop-overlay,.loading,dialog,.app-footer,.sheet-tabs .sheet-tab:not([aria-pressed="true"]),.cell-actions{display:none !important}
   .layout{display:block}
   .main{padding:0}
   .print-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:10px;font-size:9pt}
@@ -394,7 +479,8 @@ dialog::backdrop{background:rgba(11,20,36,.55)}
   .kpi-sub{display:none}
   .hero{display:block;min-height:0}
   .grid-2,.grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .table-wrap{overflow:visible}
+  .table-wrap,#actionsCard .table-wrap{overflow:visible;max-height:none}
+  #actionsTable tbody tr.is-selected td{background:none;box-shadow:none}
   table.data{font-size:8.5pt}
   table.data th{position:static;background:#eee !important}
   thead{display:table-header-group}
@@ -453,13 +539,18 @@ dialog::backdrop{background:rgba(11,20,36,.55)}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
       Neue Maßnahme
     </button>
-    <button type="button" class="btn btn-dark" id="btnPrint">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M7 14h10v7H7z"/></svg>
-      Drucken / PDF
-    </button>
-    <button type="button" class="btn btn-dark" id="btnExportFiltered" title="CSV-Export der aktuell gefilterten Maßnahmen">CSV gefiltert</button>
-    <button type="button" class="btn btn-dark" id="btnExportAll" title="CSV-Export aller Maßnahmen">CSV alle</button>
-    <button type="button" class="btn btn-dark" id="btnExportXlsx" title="Alle Maßnahmen inkl. manueller Einträge als Excel-Datei exportieren">Excel-Export</button>
+    <div class="menu-wrap">
+      <button type="button" class="btn btn-dark" id="btnExportMenu" aria-haspopup="menu" aria-expanded="false" aria-controls="exportMenu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5"/><path d="M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/></svg>
+        Export &amp; Druck <span class="caret" aria-hidden="true">▾</span>
+      </button>
+      <ul class="menu menu-right" id="exportMenu" role="menu" aria-labelledby="btnExportMenu" hidden>
+        <li role="none"><button type="button" role="menuitem" class="menu-item" id="btnPrint"><span class="mi-title">Drucken / PDF</span><span class="mi-hint">Optimierte Druckansicht der aktuellen Seite</span></button></li>
+        <li role="none"><button type="button" role="menuitem" class="menu-item" id="btnExportFiltered"><span class="mi-title">CSV – gefilterte Maßnahmen</span><span class="mi-hint">Nur die aktuell angezeigten Einträge</span></button></li>
+        <li role="none"><button type="button" role="menuitem" class="menu-item" id="btnExportAll"><span class="mi-title">CSV – alle Maßnahmen</span><span class="mi-hint">Für Excel, Semikolon-getrennt</span></button></li>
+        <li role="none"><button type="button" role="menuitem" class="menu-item" id="btnExportXlsx"><span class="mi-title">Excel-Datei – alle Maßnahmen</span><span class="mi-hint">Inkl. manuell erfasster Einträge</span></button></li>
+      </ul>
+    </div>
   </div>
   <input type="file" id="fileInput" accept=".xlsx,.xls,.xlsm,.xlsb,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,application/vnd.ms-excel.sheet.macroEnabled.12,application/vnd.ms-excel.sheet.binary.macroEnabled.12" hidden>
 </header>
@@ -473,7 +564,7 @@ dialog::backdrop{background:rgba(11,20,36,.55)}
 </div>
 
 <div id="selfTestBanner" class="banner banner-error" role="alert" hidden></div>
-<div id="messageArea" aria-live="polite"></div>
+<div id="messageArea" class="toast-region" aria-live="polite"></div>
 
 <div class="layout">
   <nav class="side-nav" id="sideNav" aria-label="Hauptnavigation">
@@ -533,36 +624,49 @@ dialog::backdrop{background:rgba(11,20,36,.55)}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Neue Maßnahme</button>
       </div>
       <div class="card" id="actionsCard">
+        <div class="quick-filters" id="quickFilters" role="group" aria-label="Schnellfilter nach Friststatus"></div>
         <form class="toolbar" id="filterForm" role="search" aria-label="Maßnahmen filtern" novalidate>
-          <div class="field field-search"><label for="fSearch">Volltextsuche</label><input class="input" type="search" id="fSearch" placeholder="Aktion, Thema, Person, Kommentar …" autocomplete="off"></div>
-          <div class="field"><label for="fFrist">Friststatus</label><select class="select" id="fFrist"></select></div>
-          <div class="field"><label for="fStatus">Bestehender Status</label><select class="select" id="fStatus"></select></div>
+          <div class="field field-search"><label for="fSearch">Volltextsuche <kbd title="Tastenkürzel">/</kbd></label><input class="input" type="search" id="fSearch" placeholder="z. B. Feuerlöscher, Müller, Brandschutz" autocomplete="off"></div>
           <div class="field"><label for="fZust">Zuständigkeit</label><select class="select" id="fZust"></select></div>
-          <div class="field"><label for="fHerkunft">Herkunft</label><select class="select" id="fHerkunft"></select></div>
           <div class="field"><label for="fThema">Thema / Bereich</label><select class="select" id="fThema"></select></div>
-          <div class="field"><label for="fQuelle">Erfassung</label><select class="select" id="fQuelle">
-            <option value="">Alle</option><option value="excel">Aus Excel</option><option value="manual">Manuell erfasst</option></select></div>
           <div class="field"><label for="fSort">Sortierung</label><select class="select" id="fSort">
             <option value="urgency">Dringlichkeit</option><option value="ziel">Zieldatum</option><option value="zust">Zuständigkeit</option></select></div>
-          <div class="field"><span class="lbl" id="lblOptions">Optionen</span>
-            <div class="checks" role="group" aria-labelledby="lblOptions">
-              <label class="check"><input type="checkbox" id="fOnlyOpen"> nur offene</label>
-              <label class="check"><input type="checkbox" id="fOnlyNoDate"> nur ohne Zieldatum</label>
-            </div></div>
+          <div class="field field-more"><button type="button" class="btn" id="btnMoreFilters" aria-expanded="false" aria-controls="moreFilters">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+            Weitere Filter <span class="more-count" id="moreFiltersCount"></span></button></div>
+          <div class="more-filters" id="moreFilters" hidden>
+            <div class="field"><label for="fFrist">Friststatus</label><select class="select" id="fFrist"></select></div>
+            <div class="field"><label for="fStatus">Bestehender Status</label><select class="select" id="fStatus"></select></div>
+            <div class="field"><label for="fHerkunft">Herkunft</label><select class="select" id="fHerkunft"></select></div>
+            <div class="field"><label for="fQuelle">Erfassung</label><select class="select" id="fQuelle">
+              <option value="">Alle</option><option value="excel">Aus Excel</option><option value="manual">Manuell erfasst</option></select></div>
+            <div class="field"><span class="lbl" id="lblOptions">Optionen</span>
+              <div class="checks" role="group" aria-labelledby="lblOptions">
+                <label class="check"><input type="checkbox" id="fOnlyOpen"> nur offene</label>
+                <label class="check"><input type="checkbox" id="fOnlyNoDate"> nur ohne Zieldatum</label>
+              </div></div>
+          </div>
         </form>
         <div class="toolbar-foot">
           <p class="result-count" id="resultCount" aria-live="polite"></p>
-          <span id="dqChip"></span>
+          <div class="active-filters" id="activeFilters" role="group" aria-label="Aktive Filter"></div>
           <span class="spacer"></span>
-          <button type="button" class="btn btn-sm" id="btnResetFilters">Filter zurücksetzen</button>
+          <div class="menu-wrap no-print">
+            <button type="button" class="btn btn-sm" id="btnColumns" aria-expanded="false" aria-controls="columnsMenu">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1.5"/><path d="M9 4v16M15 4v16"/></svg>
+              <span id="btnColumnsLabel">Spalten</span></button>
+            <div class="menu menu-right popover" id="columnsMenu" role="group" aria-label="Sichtbare Spalten" hidden></div>
+          </div>
+          <label class="check no-print"><input type="checkbox" id="fDense"> Kompakt</label>
+          <button type="button" class="btn btn-sm" id="btnResetFilters">Alle Filter zurücksetzen</button>
         </div>
         <div class="table-wrap">
           <table class="data resp" id="actionsTable">
             <caption class="visually-hidden">Maßnahmenliste</caption>
             <thead><tr>
-              <th scope="col">Friststatus</th><th scope="col">Herkunft</th><th scope="col">Thema</th><th scope="col">Aktion</th>
-              <th scope="col">Zuständigkeit</th><th scope="col">vom</th><th scope="col">Zieldatum</th><th scope="col">Tage bis Frist</th>
-              <th scope="col">umgesetzt am</th><th scope="col">Status</th><th scope="col">Kommentar</th><th scope="col"><span class="visually-hidden">Aktionen</span></th>
+              <th scope="col" class="c-frist">Friststatus</th><th scope="col" class="c-herkunft">Herkunft</th><th scope="col" class="c-thema">Thema</th><th scope="col" class="c-aktion">Aktion</th>
+              <th scope="col" class="c-zust">Zuständigkeit</th><th scope="col" class="c-vom">vom</th><th scope="col" class="c-ziel">Zieldatum</th><th scope="col" class="c-tage">Tage bis Frist</th>
+              <th scope="col" class="c-umg">umgesetzt am</th><th scope="col" class="c-status">Status</th><th scope="col" class="c-kommentar">Kommentar</th><th scope="col" class="c-act"><span class="visually-hidden">Aktionen</span></th>
             </tr></thead>
             <tbody id="actionsBody"></tbody>
           </table>
@@ -622,15 +726,15 @@ dialog::backdrop{background:rgba(11,20,36,.55)}
 <div class="drop-overlay" id="dropOverlay" hidden><div class="drop-overlay-inner">Excel-Datei hier ablegen</div></div>
 <div class="loading" id="loadingOverlay" hidden><div class="loading-box" role="status" aria-live="assertive"><span class="spinner" aria-hidden="true"></span><span id="loadingText">Excel-Datei wird verarbeitet …</span></div></div>
 
-<dialog id="detailDialog" aria-labelledby="detailTitle">
+<dialog id="detailDialog" class="drawer drawer-nonmodal" aria-labelledby="detailTitle">
   <div class="dlg">
-    <div class="dlg-head"><h2 id="detailTitle">Maßnahme</h2><button type="button" class="dlg-close" data-close aria-label="Dialog schließen">×</button></div>
+    <div class="dlg-head"><div class="dlg-head-text"><p class="dlg-kicker" id="detailKicker">Maßnahme</p><h2 id="detailTitle" tabindex="-1">Maßnahme</h2></div><button type="button" class="dlg-close" data-close aria-label="Detailansicht schließen (Esc)">×</button></div>
     <div class="dlg-body" id="detailBody"></div>
     <div class="dlg-foot" id="detailFoot"></div>
   </div>
 </dialog>
 
-<dialog id="editDialog" aria-labelledby="editTitle">
+<dialog id="editDialog" class="drawer" aria-labelledby="editTitle">
   <form class="dlg" id="editForm" novalidate>
     <div class="dlg-head"><h2 id="editTitle">Neue Maßnahme</h2><button type="button" class="dlg-close" data-close aria-label="Dialog schließen">×</button></div>
     <div class="dlg-body">
@@ -638,13 +742,18 @@ dialog::backdrop{background:rgba(11,20,36,.55)}
       <div class="form-grid">
         <div class="field full"><label for="eAktion">Aktion / Maßnahme <span class="req" aria-hidden="true">*</span></label>
           <textarea class="textarea" id="eAktion" required aria-required="true" aria-describedby="eAktionErr" maxlength="4000"></textarea>
-          <span class="field-err" id="eAktionErr" hidden>Bitte eine Aktion bzw. Maßnahmenbeschreibung eingeben.</span></div>
+          <span class="field-err" id="eAktionErr" hidden>⚠ Bitte eine Aktion bzw. Maßnahmenbeschreibung eingeben.</span></div>
         <div class="field"><label for="eThema">Thema / Bereich</label><input class="input" id="eThema" list="dlThema" maxlength="300" autocomplete="off"></div>
         <div class="field"><label for="eZust">Zuständigkeit / Verantwortlich</label><input class="input" id="eZust" list="dlZust" maxlength="300" autocomplete="off"></div>
         <div class="field"><label for="eHerkunft">Herkunft / Quelle</label><input class="input" id="eHerkunft" list="dlHerkunft" maxlength="300" autocomplete="off"></div>
         <div class="field"><label for="eStatus">Status</label><input class="input" id="eStatus" list="dlStatus" maxlength="120" autocomplete="off" aria-describedby="eStatusHint"><span class="field-hint" id="eStatusHint">z. B. Offen, In Bearbeitung, Erledigt</span></div>
         <div class="field"><label for="eVom">vom (erfasst am)</label><input class="input" type="date" id="eVom" min="1990-01-01" max="2100-12-31"></div>
-        <div class="field"><label for="eZiel">Zieldatum / Frist</label><input class="input" type="date" id="eZiel" min="1990-01-01" max="2100-12-31" aria-describedby="eZielErr"><span class="field-err" id="eZielErr" hidden></span></div>
+        <div class="field full"><label for="eZiel">Zieldatum / Frist</label>
+          <div class="date-row"><input class="input" type="date" id="eZiel" min="1990-01-01" max="2100-12-31" aria-describedby="eZielHint eZielErr">
+            <div class="quick-dates" role="group" aria-label="Frist schnell setzen">
+              <button type="button" class="btn btn-xs" data-days="7">+1 Woche</button><button type="button" class="btn btn-xs" data-days="14">+2 Wochen</button><button type="button" class="btn btn-xs" data-days="30">+30 Tage</button><button type="button" class="btn btn-xs" data-days="90">+3 Monate</button><button type="button" class="btn btn-xs" data-days="clear">Leeren</button>
+            </div></div>
+          <span class="field-hint" id="eZielHint"></span><span class="field-err" id="eZielErr" hidden></span></div>
         <div class="field"><label for="eUmgesetzt">umgesetzt am</label><input class="input" type="date" id="eUmgesetzt" min="1990-01-01" max="2100-12-31" aria-describedby="eUmgErr"><span class="field-err" id="eUmgErr" hidden></span></div>
         <div class="field full"><label for="eKommentar">Kommentar</label><textarea class="textarea" id="eKommentar" maxlength="8000"></textarea></div>
       </div>
@@ -712,7 +821,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 (function () {
   'use strict';
 
-  const APP_VERSION = '1.0.0';
+  const APP_VERSION = '1.1.0';
 
   /* =====================================================================
    * Konfiguration
@@ -1531,8 +1640,33 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     generic: {},
     selfTest: null,
     storageOk: true,
-    lastFocus: null
+    lastFocus: null,
+    hiddenCols: new Set(),
+    dense: false,
+    selectedId: null
   };
+
+  /** Ein-/ausblendbare Spalten der Maßnahmentabelle (Friststatus und Aktion bleiben immer sichtbar) */
+  const TABLE_COLS = [
+    { key: 'herkunft', label: 'Herkunft' }, { key: 'thema', label: 'Thema' }, { key: 'zust', label: 'Zuständigkeit' },
+    { key: 'vom', label: 'vom' }, { key: 'ziel', label: 'Zieldatum' }, { key: 'tage', label: 'Tage bis Frist' },
+    { key: 'umg', label: 'umgesetzt am' }, { key: 'status', label: 'Status' }, { key: 'kommentar', label: 'Kommentar' }
+  ];
+
+  /** Relative, gut lesbare Fristangabe */
+  function relText(days) {
+    if (days === null || days === undefined) return 'ohne Zieldatum';
+    if (days < 0) { const a = Math.abs(days); return 'seit ' + a + ' ' + (a === 1 ? 'Tag' : 'Tagen') + ' überfällig'; }
+    if (days === 0) return 'heute fällig';
+    if (days === 1) return 'morgen fällig';
+    return 'fällig in ' + days + ' Tagen';
+  }
+  function relNode(it) {
+    if (it.done) return h('span', { class: 'rel done', text: 'erledigt' });
+    let cls = 'rel calm';
+    if (it.days !== null) { if (it.days < 0) cls = 'rel neg'; else if (it.days <= 7) cls = 'rel soon'; else if (it.days <= 30) cls = 'rel mid'; }
+    return h('span', { class: cls, text: relText(it.days) });
+  }
 
   /** Erzeugt die abgeleitete Liste (Status, Tage, Dubletten, Suchtext) zum Stichtag. */
   function deriveItems() {
@@ -1668,20 +1802,84 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     ]);
   }
 
-  function showMessage(kind, text, timeout) {
+  /**
+   * Nicht-blockierende Meldung (Toast) unten rechts – verschiebt das Layout nicht.
+   * action: optional { label, run } z. B. für „Rückgängig“.
+   */
+  function showMessage(kind, text, timeout, action) {
     const area = $('messageArea');
-    clear(area);
-    const box = h('div', { class: 'banner banner-' + kind, role: kind === 'error' ? 'alert' : 'status' }, [h('div', { class: 'banner-body', text: text }), h('button', { type: 'button', class: 'dlg-close', 'aria-label': 'Meldung schließen', text: '×', onclick: () => clear(area) })]);
-    area.appendChild(box);
-    if (timeout) setTimeout(() => { if (box.parentNode === area) clear(area); }, timeout);
+    const icons = { ok: '✓', error: '!', warn: '!', info: 'i' };
+    let timer = 0;
+    const remove = () => { clearTimeout(timer); if (toast.parentNode) toast.parentNode.removeChild(toast); };
+    const toast = h('div', { class: 'toast toast-' + kind, role: kind === 'error' ? 'alert' : 'status' }, [
+      h('span', { class: 'toast-ico', 'aria-hidden': 'true', text: icons[kind] || 'i' }),
+      h('div', { class: 'toast-body', text: text }),
+      action ? h('button', { type: 'button', class: 'btn btn-sm toast-action', text: action.label, onclick: () => { remove(); action.run(); } }) : null,
+      h('button', { type: 'button', class: 'toast-close', 'aria-label': 'Meldung schließen', text: '×', onclick: remove })
+    ]);
+    area.appendChild(toast);
+    while (area.children.length > 3) area.removeChild(area.firstChild);
+    const ms = timeout === undefined ? (kind === 'error' ? 0 : 7000) : timeout;
+    if (ms) {
+      timer = setTimeout(remove, ms);
+      // Beim Überfahren/Fokussieren nicht automatisch schließen
+      toast.addEventListener('mouseenter', () => clearTimeout(timer));
+      toast.addEventListener('focusin', () => clearTimeout(timer));
+      toast.addEventListener('mouseleave', () => { clearTimeout(timer); timer = setTimeout(remove, 3000); });
+    }
   }
+
+  /* ---------- Menüs und Popover (Tastatur: Pfeile, Pos1/Ende, Esc) ---------- */
+  const Popover = {
+    current: null,
+    bind(btn, panel, isMenu) {
+      btn.addEventListener('click', () => { if (panel.hidden) Popover.show(btn, panel, isMenu); else Popover.hide(true); });
+      btn.addEventListener('keydown', (ev) => { if (isMenu && (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') && panel.hidden) { ev.preventDefault(); Popover.show(btn, panel, isMenu); } });
+      panel.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); Popover.hide(true); return; }
+        if (ev.key === 'Tab') { Popover.hide(false); return; }
+        if (!isMenu) return;
+        const items = Array.from(panel.querySelectorAll('[role="menuitem"]'));
+        const i = items.indexOf(document.activeElement);
+        let next = -1;
+        if (ev.key === 'ArrowDown') next = (i + 1) % items.length;
+        else if (ev.key === 'ArrowUp') next = (i - 1 + items.length) % items.length;
+        else if (ev.key === 'Home') next = 0;
+        else if (ev.key === 'End') next = items.length - 1;
+        if (next >= 0) { ev.preventDefault(); items[next].focus(); }
+      });
+      if (isMenu) panel.addEventListener('click', (ev) => { if (ev.target instanceof Element && ev.target.closest('[role="menuitem"]')) Popover.hide(false); });
+    },
+    show(btn, panel, isMenu) {
+      Popover.hide(false);
+      panel.hidden = false;
+      btn.setAttribute('aria-expanded', 'true');
+      Popover.current = { btn: btn, panel: panel };
+      const first = panel.querySelector(isMenu ? '[role="menuitem"]' : 'input, button');
+      if (first) first.focus();
+    },
+    hide(returnFocus) {
+      const o = Popover.current;
+      if (!o) return;
+      o.panel.hidden = true;
+      o.btn.setAttribute('aria-expanded', 'false');
+      Popover.current = null;
+      if (returnFocus) o.btn.focus();
+    }
+  };
 
   /* ---------- Dialog-Verwaltung ---------- */
   const Dialogs = {
-    open(dlg) {
-      State.lastFocus = document.activeElement;
-      try { if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', ''); } catch (e) { dlg.setAttribute('open', ''); }
+    open(dlg, nonModal) {
+      const active = document.activeElement;
+      if (active && !dlg.contains(active)) State.lastFocus = active;
+      try {
+        if (nonModal) { if (!dlg.open) { if (typeof dlg.show === 'function') dlg.show(); else dlg.setAttribute('open', ''); } }
+        else if (typeof dlg.showModal === 'function') dlg.showModal();
+        else dlg.setAttribute('open', '');
+      } catch (e) { dlg.setAttribute('open', ''); }
     },
+    anyModalOpen() { return ['editDialog', 'confirmDialog', 'importDialog'].some((id) => $(id).open); },
     close(dlg) {
       try { if (typeof dlg.close === 'function') dlg.close(); else dlg.removeAttribute('open'); } catch (e) { dlg.removeAttribute('open'); }
     },
@@ -2053,7 +2251,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       return h('button', { type: 'button', class: 'urgent-item', onclick: () => Detail.open(it) }, [
         rank ? h('span', { class: 'rank', 'aria-hidden': 'true', text: String(rank) }) : catBadgeMini(it),
         h('span', { class: 'ui-main' }, [h('span', { class: 'ui-title', text: r.aktion || '(ohne Aktion)' }), h('span', { class: 'ui-meta', text: meta })]),
-        h('span', { class: 'ui-right' }, [catBadge(it.cat, it.days), h('br'), right + (it.days !== null ? ' · ' : ''), it.days !== null ? daysNode(it) : null])
+        h('span', { class: 'ui-right' }, [catBadge(it.cat, it.days), h('br'), it.done ? null : relNode(it), it.days !== null ? h('span', { text: ' · ' + right }) : null])
       ]);
     },
 
@@ -2066,11 +2264,9 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       const rc = $('resultCount');
       clear(rc);
       rc.append(h('strong', { text: Util.num(list.length) }), ' von ' + Util.num(total) + ' Maßnahmen angezeigt');
-      const chip = $('dqChip');
-      clear(chip);
-      if (State.filters.dq && DQ_FILTERS[State.filters.dq]) {
-        chip.appendChild(h('span', { class: 'chip' }, ['Datenqualität: ' + DQ_FILTERS[State.filters.dq].label, h('button', { type: 'button', 'aria-label': 'Datenqualitätsfilter entfernen', text: '×', onclick: () => { State.filters.dq = ''; onFiltersChanged(); } })]));
-      }
+      Render.quickFilters();
+      Render.activeFilters();
+      applyTableSettings();
       if (!total) {
         body.appendChild(h('tr', null, h('td', { colspan: '12', class: 'empty-note' }, [
           'Noch keine Maßnahmen vorhanden. ',
@@ -2093,6 +2289,56 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       $('btnMoreActions').textContent = 'Weitere ' + Math.min(CONFIG.pageSize, list.length - State.pageLimit) + ' von ' + (list.length - State.pageLimit) + ' verbleibenden anzeigen';
     },
 
+    quickFilters() {
+      const root = $('quickFilters');
+      clear(root);
+      const c = counts();
+      const f = State.filters;
+      [['alleoffen', 'Alle offenen', c.open, 'grey'], ['ueberfaellig', 'Überfällig', c.ueberfaellig, 'red'], ['f7', 'Fällig ≤ 7 Tage', c.f7, 'orange'], ['f30', 'Fällig ≤ 30 Tage', c.f30, 'yellow'],
+        ['ohnedatum', 'Ohne Zieldatum', c.ohnedatum, 'grey'], ['inbearbeitung', 'In Bearbeitung', c.inbearbeitung, 'blue'], ['erledigt', 'Erledigt', c.erledigt, 'green'], ['', 'Alle', c.total, 'navy']]
+        .forEach((d) => {
+          const key = d[0] || 'alle';
+          root.appendChild(h('button', { type: 'button', class: 'qf qf-' + d[3], 'aria-pressed': f.frist === d[0] ? 'true' : 'false', dataset: { k: key }, onclick: () => {
+            State.filters.frist = d[0];
+            $('fFrist').value = d[0];
+            onFiltersChanged();
+            const again = root.querySelector('[data-k="' + key + '"]');
+            if (again) again.focus();
+          } }, [h('span', { class: 'qf-dot', 'aria-hidden': 'true' }), d[1], h('span', { class: 'qf-count', text: Util.num(d[2]) })]));
+        });
+    },
+
+    activeFilters() {
+      const root = $('activeFilters');
+      clear(root);
+      const f = State.filters;
+      const val = (v) => (v === '__leer__' ? '(ohne Angabe)' : v);
+      const fristLabel = { alleoffen: 'Alle offenen', inbearbeitung: 'In Bearbeitung' };
+      const chips = [];
+      if (f.q) chips.push(['q', 'Suche: „' + f.q + '“']);
+      if (f.frist) chips.push(['frist', 'Friststatus: ' + (fristLabel[f.frist] || (CATS[f.frist] ? CATS[f.frist].label : f.frist))]);
+      if (f.zust) chips.push(['zust', 'Zuständigkeit: ' + val(f.zust)]);
+      if (f.thema) chips.push(['thema', 'Thema: ' + val(f.thema)]);
+      if (f.herkunft) chips.push(['herkunft', 'Herkunft: ' + val(f.herkunft)]);
+      if (f.status) chips.push(['status', 'Status: ' + val(f.status)]);
+      if (f.quelle) chips.push(['quelle', 'Erfassung: ' + (f.quelle === 'manual' ? 'manuell' : 'Excel')]);
+      if (f.onlyOpen) chips.push(['onlyOpen', 'nur offene']);
+      if (f.onlyNoDate) chips.push(['onlyNoDate', 'nur ohne Zieldatum']);
+      if (f.dq && DQ_FILTERS[f.dq]) chips.push(['dq', 'Datenqualität: ' + DQ_FILTERS[f.dq].label]);
+      chips.forEach((cdef) => {
+        root.appendChild(h('span', { class: 'chip' }, [cdef[1], h('button', { type: 'button', 'aria-label': 'Filter entfernen: ' + cdef[1], text: '×', onclick: () => {
+          State.filters[cdef[0]] = DEFAULT_FILTERS[cdef[0]];
+          Render.filterOptions();
+          onFiltersChanged();
+          const nextBtn = $('activeFilters').querySelector('button');
+          (nextBtn || $('fSearch')).focus();
+        } })]));
+      });
+      $('btnResetFilters').disabled = chips.length === 0;
+      const adv = ['status', 'herkunft', 'quelle', 'onlyOpen', 'onlyNoDate'].filter((k) => !!f[k]).length;
+      $('moreFiltersCount').textContent = adv ? String(adv) : '';
+    },
+
     actionRow(it) {
       const r = it.rec;
       const statusCell = h('div', { class: 'badge-stack' }, [catBadge(it.cat, it.days), it.inProgress ? progressBadge() : null]);
@@ -2108,20 +2354,28 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         r.src === 'manual' ? h('button', { type: 'button', class: 'btn btn-sm', 'aria-label': 'Bearbeiten: ' + (r.aktion || 'Maßnahme').slice(0, 80), text: 'Bearbeiten', onclick: () => Editor.open(r) }) : null
       ]);
       const td = (label, child, cls) => h('td', { 'data-label': label, class: cls || null }, child);
-      return h('tr', { class: it.done ? 'is-done' : null }, [
-        td('Friststatus', statusCell),
-        td('Herkunft', r.herkunft || h('span', { class: 'muted', text: '–' })),
-        td('Thema', r.thema || h('span', { class: 'muted', text: '–' })),
-        td('Aktion', aktion, 'col-action'),
-        td('Zuständigkeit', r.zust || h('span', { class: 'muted', text: '–' })),
-        td('vom', dateCell(r.vom), 'nowrap'),
-        td('Zieldatum', dateCell(r.ziel), 'nowrap'),
-        td('Tage bis Frist', daysNode(it)),
-        td('umgesetzt am', dateCell(r.umgesetzt), 'nowrap'),
-        td('Status', r.status || h('span', { class: 'muted', text: '–' })),
-        td('Kommentar', comment, 'col-comment'),
-        td('Aktionen', btns)
+      const tr = h('tr', { class: [it.done ? 'is-done' : '', State.selectedId === r.id ? 'is-selected' : ''].join(' ').trim() || null, dataset: { id: r.id } }, [
+        td('Friststatus', statusCell, 'c-frist'),
+        td('Herkunft', r.herkunft || h('span', { class: 'muted', text: '–' }), 'c-herkunft'),
+        td('Thema', r.thema || h('span', { class: 'muted', text: '–' }), 'c-thema'),
+        td('Aktion', aktion, 'c-aktion col-action'),
+        td('Zuständigkeit', r.zust || h('span', { class: 'muted', text: '–' }), 'c-zust'),
+        td('vom', dateCell(r.vom), 'c-vom nowrap'),
+        td('Zieldatum', dateCell(r.ziel), 'c-ziel nowrap'),
+        td('Tage bis Frist', daysNode(it), 'c-tage'),
+        td('umgesetzt am', dateCell(r.umgesetzt), 'c-umg nowrap'),
+        td('Status', r.status || h('span', { class: 'muted', text: '–' }), 'c-status'),
+        td('Kommentar', comment, 'c-kommentar col-comment'),
+        td('Aktionen', btns, 'c-act')
       ]);
+      // Ganze Zeile per Maus anklickbar (Tastatur nutzt die Schaltfläche „Details“)
+      tr.addEventListener('click', (ev) => {
+        const t = ev.target;
+        if (t instanceof Element && t.closest('button, a, input, select, textarea')) return;
+        if (window.getSelection && String(window.getSelection()).length > 0) return; // Text markieren erlauben
+        Detail.open(it);
+      });
+      return tr;
     },
 
     /* ---------- Kanban ---------- */
@@ -2159,7 +2413,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           list.appendChild(h('li', null, h('button', { type: 'button', class: 'kb-card ' + c.kpi, onclick: () => Detail.open(it) }, [
             h('span', { class: 'kb-title', text: r.aktion || '(ohne Aktion)' }),
             h('span', { class: 'kb-meta' }, [r.thema ? h('span', { text: 'Thema: ' + r.thema }) : null, h('span', { text: 'Zuständig: ' + (r.zust || '–') }), r.herkunft ? h('span', { text: 'Herkunft: ' + r.herkunft }) : null]),
-            h('span', { class: 'kb-foot' }, [h('span', { text: 'Ziel: ' + (DateUtil.display(r.ziel) || '–') }), daysNode(it)]),
+            h('span', { class: 'kb-foot' }, [h('span', { text: 'Ziel: ' + (DateUtil.display(r.ziel) || '–') }), relNode(it)]),
             it.inProgress && c.key !== 'inbearbeitung' ? h('span', null, progressBadge()) : null
           ])));
         });
@@ -2264,7 +2518,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (!tables.length) {
         root.appendChild(sectionEmpty('Keine Daten für „' + label + '“ vorhanden', State.snapshot
           ? 'Die Arbeitsmappe „' + State.snapshot.fileName + '“ enthält kein erkennbares Blatt für ' + what + '. Der Bereich wird automatisch befüllt, sobald ein passendes Blatt (z. B. „' + label + '“) vorhanden ist.'
-          : 'Dieser Bereich wird aus einem passenden Blatt der Excel-Arbeitsmappe befüllt. Derzeit ist keine Excel-Datei geladen.'));
+          : 'Dieser Bereich wird aus einem passenden Blatt der Excel-Arbeitsmappe befüllt. Derzeit ist keine Excel-Datei geladen.',
+          [h('button', { type: 'button', class: 'btn btn-primary', text: 'Excel aktualisieren', onclick: openFilePicker })]));
         return;
       }
       root.appendChild(Render.genericTables(key, tables));
@@ -2491,9 +2746,15 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       Detail.current = it;
       const r = it.rec;
       $('detailTitle').textContent = r.aktion ? (r.aktion.length > 160 ? r.aktion.slice(0, 157) + '…' : r.aktion) : 'Maßnahme ohne Aktion';
+      $('detailKicker').textContent = (r.thema || 'Maßnahme') + (r.src === 'excel' ? ' · Excel-Zeile ' + r.row : ' · manuell erfasst');
       const body = $('detailBody');
       clear(body);
       body.appendChild(h('div', { class: 'detail-badges' }, [catBadge(it.cat, it.days), it.inProgress ? progressBadge() : null, r.src === 'manual' ? h('span', { class: 'badge b-purple', text: 'manuell erfasst' }) : h('span', { class: 'badge b-grey', text: 'Excel · Zeile ' + r.row }), it.dup ? h('span', { class: 'badge b-orange', text: 'mögliche Dublette' }) : null]));
+      body.appendChild(h('div', { class: 'detail-hero' }, [
+        h('div', null, [h('span', { text: 'Zieldatum' }), h('b', { text: DateUtil.display(r.ziel) || '–' })]),
+        h('div', null, [h('span', { text: 'Frist' }), h('b', null, relNode(it))]),
+        h('div', null, [h('span', { text: 'Zuständig' }), h('b', { text: r.zust || '–' })])
+      ]));
       const dl = h('dl', { class: 'detail-grid' });
       const row = (k, v) => { dl.appendChild(h('dt', { text: k })); dl.appendChild(h('dd', null, v === '' || v === null || v === undefined ? h('span', { class: 'muted', text: '–' }) : v)); };
       row('Aktion', r.aktion);
@@ -2502,7 +2763,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       row('Zuständigkeit', r.zust);
       row('vom', DateUtil.display(r.vom));
       row('Zieldatum', r.ziel && r.ziel.s === 'invalid' ? '⚠ nicht lesbar: ' + r.ziel.raw : DateUtil.display(r.ziel));
-      row('Tage bis Frist', it.days === null ? '' : (it.days < 0 ? it.days + ' (' + Math.abs(it.days) + ' Tage überschritten)' : it.days === 0 ? '0 (heute fällig)' : '+' + it.days));
+      row('Tage bis Frist', it.days === null ? '' : (it.days > 0 ? '+' : '') + it.days + (it.done ? '' : ' (' + relText(it.days) + ')'));
       row('umgesetzt am', DateUtil.display(r.umgesetzt));
       row('Bestehender Status', r.status);
       row('Kommentar', r.kommentar);
@@ -2529,9 +2790,18 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         foot.appendChild(h('button', { type: 'button', class: 'btn btn-navy', text: 'Bearbeiten', onclick: () => { Dialogs.close($('detailDialog')); Editor.open(r); } }));
       }
       foot.appendChild(h('button', { type: 'button', class: 'btn', 'data-close': '', text: 'Schließen' }));
-      Dialogs.open($('detailDialog'));
+      Dialogs.open($('detailDialog'), true);
+      markSelected(r.id);
+      try { $('detailTitle').focus({ preventScroll: true }); } catch (e) { /* ignorieren */ }
     }
   };
+
+  function markSelected(id) {
+    State.selectedId = id;
+    document.querySelectorAll('#actionsBody tr.is-selected').forEach((tr) => tr.classList.remove('is-selected'));
+    if (!id) return;
+    document.querySelectorAll('#actionsBody tr').forEach((tr) => { if (tr.dataset.id === id) tr.classList.add('is-selected'); });
+  }
 
   /* =====================================================================
    * Manuelle Erfassung
@@ -2552,8 +2822,39 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       $('eKommentar').value = rec ? rec.kommentar : '';
       $('btnEditDelete').hidden = !rec;
       Editor.clearErrors();
+      Editor.updateHint();
       Dialogs.open($('editDialog'));
       $('eAktion').focus();
+    },
+    updateHint() {
+      const z = DateUtil.fromInput($('eZiel').value);
+      const hint = $('eZielHint');
+      if (z.s !== 'ok') { hint.textContent = 'Ohne Zieldatum wird die Maßnahme als „Offen – ohne Datum“ geführt.'; return; }
+      const n = DateUtil.num(z);
+      hint.textContent = 'Frist: ' + DateUtil.weekday(n) + ', ' + DateUtil.display(z) + ' – ' + relText(n - State.today);
+    },
+    /** Prüft das Formular; liefert das erste fehlerhafte Feld oder null. */
+    validate(includeRequired) {
+      Editor.clearErrors();
+      let firstErr = null;
+      const err = (inputId, errId, msg) => { $(inputId).setAttribute('aria-invalid', 'true'); const e = $(errId); e.textContent = '⚠ ' + msg; e.hidden = false; if (!firstErr) firstErr = $(inputId); };
+      const bad = (id) => { const inp = $(id); return !!(inp.validity && inp.validity.badInput); };
+      const vom = DateUtil.fromInput($('eVom').value);
+      const ziel = DateUtil.fromInput($('eZiel').value);
+      const umg = DateUtil.fromInput($('eUmgesetzt').value);
+      if (includeRequired && !Util.clean($('eAktion').value)) err('eAktion', 'eAktionErr', 'Bitte eine Aktion bzw. Maßnahmenbeschreibung eingeben.');
+      if (bad('eZiel') || ($('eZiel').value && ziel.s !== 'ok')) err('eZiel', 'eZielErr', 'Bitte ein vollständiges Datum zwischen 1990 und 2100 eingeben (TT.MM.JJJJ).');
+      else if (ziel.s === 'ok' && vom.s === 'ok' && DateUtil.num(ziel) < DateUtil.num(vom)) err('eZiel', 'eZielErr', 'Das Zieldatum liegt vor dem Erfassungsdatum („vom“). Bitte ein späteres Datum wählen.');
+      if (bad('eUmgesetzt') || ($('eUmgesetzt').value && umg.s !== 'ok')) err('eUmgesetzt', 'eUmgErr', 'Bitte ein vollständiges Datum eingeben (TT.MM.JJJJ).');
+      else if (umg.s === 'ok' && DateUtil.num(umg) > State.today) err('eUmgesetzt', 'eUmgErr', '„umgesetzt am“ darf nicht in der Zukunft liegen. Bitte heute oder ein früheres Datum wählen.');
+      return firstErr;
+    },
+    setQuickDate(days) {
+      if (days === 'clear') $('eZiel').value = '';
+      else { const p = DateUtil.fromDayNumber(State.today + parseInt(days, 10)); $('eZiel').value = DateUtil.iso(p.y, p.m, p.d); }
+      Editor.validate(false);
+      Editor.updateHint();
+      $('eZiel').focus();
     },
     clearErrors() {
       ['eAktion', 'eZiel', 'eUmgesetzt'].forEach((id) => $(id).removeAttribute('aria-invalid'));
@@ -2561,19 +2862,12 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     },
     async save(ev) {
       ev.preventDefault();
-      Editor.clearErrors();
+      const firstErr = Editor.validate(true);
+      if (firstErr) { firstErr.focus(); return; }
       const aktion = Util.clean($('eAktion').value);
       const vom = DateUtil.fromInput($('eVom').value);
       const ziel = DateUtil.fromInput($('eZiel').value);
       const umg = DateUtil.fromInput($('eUmgesetzt').value);
-      let firstErr = null;
-      const err = (inputId, errId, msg) => { $(inputId).setAttribute('aria-invalid', 'true'); const e = $(errId); e.textContent = msg; e.hidden = false; if (!firstErr) firstErr = $(inputId); };
-      if (!aktion) err('eAktion', 'eAktionErr', 'Bitte eine Aktion bzw. Maßnahmenbeschreibung eingeben.');
-      if ($('eZiel').value && ziel.s !== 'ok') err('eZiel', 'eZielErr', 'Bitte ein gültiges Datum zwischen 1990 und 2100 eingeben.');
-      else if (ziel.s === 'ok' && vom.s === 'ok' && DateUtil.num(ziel) < DateUtil.num(vom)) err('eZiel', 'eZielErr', 'Das Zieldatum liegt vor dem Erfassungsdatum.');
-      if ($('eUmgesetzt').value && umg.s !== 'ok') err('eUmgesetzt', 'eUmgErr', 'Bitte ein gültiges Datum eingeben.');
-      else if (umg.s === 'ok' && DateUtil.num(umg) > State.today) err('eUmgesetzt', 'eUmgErr', '„umgesetzt am“ darf nicht in der Zukunft liegen.');
-      if (firstErr) { firstErr.focus(); return; }
       let status = Util.clean($('eStatus').value);
       if (umg.s === 'ok' && Status.isStatusOpen(status)) status = 'Erledigt';
       const nowIso = new Date().toISOString();
@@ -2594,25 +2888,33 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (!ok && Store.available) { State.manual = prevManual; showMessage('error', 'Die Maßnahme konnte nicht lokal gespeichert werden. Bitte erneut versuchen.'); return; }
       Dialogs.close($('editDialog'));
       refresh();
-      showMessage('ok', Editor.editing ? 'Maßnahme wurde aktualisiert.' : 'Maßnahme wurde angelegt.' + (Store.available ? '' : ' Hinweis: Lokale Speicherung ist nicht verfügbar – bitte per Excel-Export sichern.'), 6000);
+      showMessage('ok', (Editor.editing ? 'Maßnahme wurde aktualisiert.' : 'Maßnahme „' + aktion.slice(0, 60) + (aktion.length > 60 ? '…' : '') + '“ wurde angelegt.') + (Store.available ? '' : ' Hinweis: Lokale Speicherung ist nicht verfügbar – bitte per Excel-Export sichern.'), 6000);
     },
+    /** Löschen ohne Rückfrage, dafür mit „Rückgängig“ (Fehlerkorrektur statt Bestätigungsdialog) */
     async remove(rec) {
-      const okc = await confirmAction('Maßnahme löschen', 'Soll die manuell erfasste Maßnahme „' + (rec.aktion || '').slice(0, 120) + '“ endgültig gelöscht werden?', 'Löschen');
-      if (!okc) return;
+      const prev = State.manual.slice();
       State.manual = State.manual.filter((m) => m.id !== rec.id);
       await persistManual();
       Dialogs.close($('editDialog'));
+      Dialogs.close($('detailDialog'));
       refresh();
-      showMessage('ok', 'Maßnahme wurde gelöscht.', 5000);
+      showMessage('ok', 'Maßnahme „' + (rec.aktion || '').slice(0, 60) + '“ wurde gelöscht.', 12000, { label: 'Rückgängig', run: () => Editor.restore(prev, 'Löschen wurde rückgängig gemacht.') });
+    },
+    async restore(prev, msg) {
+      State.manual = prev;
+      await persistManual();
+      refresh();
+      showMessage('ok', msg, 4000);
     },
     async markDone(rec) {
       const idx = State.manual.findIndex((m) => m.id === rec.id);
       if (idx < 0) return;
+      const prev = State.manual.slice();
       const p = DateUtil.fromDayNumber(State.today);
       State.manual[idx] = Object.assign({}, State.manual[idx], { umgesetzt: DateUtil.make(p.y, p.m, p.d, 0, 0, ''), status: 'Erledigt', updated: new Date().toISOString() });
       await persistManual();
       refresh();
-      showMessage('ok', 'Maßnahme wurde als erledigt markiert (umgesetzt am ' + DateUtil.fmtNum(State.today) + ').', 5000);
+      showMessage('ok', 'Als erledigt markiert (umgesetzt am ' + DateUtil.fmtNum(State.today) + ').', 10000, { label: 'Rückgängig', run: () => Editor.restore(prev, 'Markierung wurde zurückgenommen.') });
     }
   };
 
@@ -2825,7 +3127,28 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     onFiltersChanged();
     $('fSearch').focus();
   }
-  function savePrefs() { Prefs.save({ view: State.view, filters: State.filters }); }
+  function savePrefs() { Prefs.save({ view: State.view, filters: State.filters, hiddenCols: Array.from(State.hiddenCols), dense: State.dense }); }
+
+  function buildColumnsMenu() {
+    const m = $('columnsMenu');
+    clear(m);
+    m.appendChild(h('p', { class: 'menu-title', text: 'Sichtbare Spalten' }));
+    TABLE_COLS.forEach((c) => {
+      const cb = h('input', { type: 'checkbox', id: 'col-' + c.key });
+      cb.checked = !State.hiddenCols.has(c.key);
+      cb.addEventListener('change', () => { if (cb.checked) State.hiddenCols.delete(c.key); else State.hiddenCols.add(c.key); applyTableSettings(); savePrefs(); });
+      m.appendChild(h('label', { class: 'check menu-check' }, [cb, c.label]));
+    });
+    m.appendChild(h('button', { type: 'button', class: 'btn btn-sm', text: 'Alle anzeigen', onclick: () => { State.hiddenCols.clear(); buildColumnsMenu(); applyTableSettings(); savePrefs(); const f = $('columnsMenu').querySelector('input'); if (f) f.focus(); } }));
+  }
+  function applyTableSettings() {
+    const t = $('actionsTable');
+    TABLE_COLS.forEach((c) => t.classList.toggle('hide-' + c.key, State.hiddenCols.has(c.key)));
+    t.classList.toggle('dense', State.dense);
+    $('fDense').checked = State.dense;
+    const visible = TABLE_COLS.length - State.hiddenCols.size;
+    $('btnColumnsLabel').textContent = State.hiddenCols.size ? 'Spalten (' + visible + '/' + TABLE_COLS.length + ')' : 'Spalten';
+  }
 
   function refresh() {
     State.today = DateUtil.todayNumber();
@@ -2934,7 +3257,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         h('p', { class: 'field-hint', style: 'margin-top:6px', text: 'Tipp: Vorher über „Excel-Export“ sichern. Die Original-Excel-Datei bleibt in jedem Fall unverändert.' })
       ]);
       if (!State.manual.length) cb.disabled = true;
-      const ok = await confirmAction('Lokale Daten zurücksetzen', 'Der lokal gespeicherte Excel-Datenstand sowie gespeicherte Filtereinstellungen werden aus diesem Browser gelöscht.', 'Zurücksetzen', extra);
+      const ok = await confirmAction('Lokale Daten zurücksetzen?', 'Der lokal gespeicherte Excel-Datenstand' + (State.snapshot ? ' („' + State.snapshot.fileName + '“, ' + State.snapshot.actions.length + ' Maßnahmen)' : '') + ' sowie gespeicherte Filter- und Ansichtseinstellungen werden aus diesem Browser gelöscht. Dies kann nicht rückgängig gemacht werden.', 'Lokale Daten löschen', extra);
       if (!ok) return;
       const delManual = cb.checked;
       try { await Store.del('snapshot'); if (delManual) await Store.del('manual'); } catch (e) { /* Speicher nicht verfügbar */ }
@@ -2954,6 +3277,38 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     ['fFrist', 'fStatus', 'fZust', 'fHerkunft', 'fThema', 'fQuelle', 'fSort', 'fOnlyOpen', 'fOnlyNoDate'].forEach((id) => $(id).addEventListener('change', () => { readFilterForm(); onFiltersChanged(); }));
     $('filterForm').addEventListener('submit', (ev) => ev.preventDefault());
     $('btnResetFilters').addEventListener('click', resetFilters);
+    $('btnMoreFilters').addEventListener('click', () => {
+      const panel = $('moreFilters');
+      panel.hidden = !panel.hidden;
+      $('btnMoreFilters').setAttribute('aria-expanded', panel.hidden ? 'false' : 'true');
+      if (!panel.hidden) $('fFrist').focus();
+    });
+    $('fDense').addEventListener('change', () => { State.dense = $('fDense').checked; applyTableSettings(); savePrefs(); });
+    Popover.bind($('btnExportMenu'), $('exportMenu'), true);
+    Popover.bind($('btnColumns'), $('columnsMenu'), false);
+    document.addEventListener('click', (ev) => {
+      const o = Popover.current;
+      if (o && ev.target instanceof Node && !o.panel.contains(ev.target) && !o.btn.contains(ev.target)) Popover.hide(false);
+    });
+    document.querySelectorAll('.quick-dates [data-days]').forEach((b) => b.addEventListener('click', () => Editor.setQuickDate(b.dataset.days)));
+    ['eZiel', 'eVom', 'eUmgesetzt'].forEach((id) => $(id).addEventListener('change', () => { Editor.validate(false); Editor.updateHint(); }));
+    $('eZiel').addEventListener('input', Editor.updateHint);
+    $('detailDialog').addEventListener('close', () => markSelected(null));
+
+    // Tastenkürzel: „/“ Suche, „N“ neue Maßnahme, Esc schließt das Detailpanel
+    document.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Escape') {
+        const d = $('detailDialog');
+        if (d.open && !Popover.current && !Dialogs.anyModalOpen()) { ev.preventDefault(); Dialogs.close(d); }
+        return;
+      }
+      if (ev.ctrlKey || ev.metaKey || ev.altKey || ev.defaultPrevented) return;
+      const t = ev.target;
+      if (t instanceof Element && t.closest('input, textarea, select, [contenteditable="true"]')) return;
+      if (Dialogs.anyModalOpen()) return;
+      if (ev.key === '/') { ev.preventDefault(); showView('massnahmen', false); $('fSearch').focus(); $('fSearch').select(); }
+      else if (ev.key === 'n' || ev.key === 'N') { ev.preventDefault(); Editor.open(null); }
+    });
     $('btnMoreActions').addEventListener('click', () => { State.pageLimit += CONFIG.pageSize; Render.actions(); });
     $('kbSearch').addEventListener('input', Util.debounce(() => { State.kb.q = $('kbSearch').value; Render.kanban(); }, 200));
     $('kbZust').addEventListener('change', () => { State.kb.zust = $('kbZust').value; Render.kanban(); });
@@ -3007,6 +3362,10 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       Object.keys(DEFAULT_FILTERS).forEach((k) => { if (typeof prefs.filters[k] === typeof DEFAULT_FILTERS[k]) State.filters[k] = prefs.filters[k]; });
     }
     if (prefs && VIEW_LABELS[prefs.view]) State.view = prefs.view;
+    if (prefs && Array.isArray(prefs.hiddenCols)) prefs.hiddenCols.forEach((k) => { if (TABLE_COLS.some((c) => c.key === k)) State.hiddenCols.add(k); });
+    if (prefs && typeof prefs.dense === 'boolean') State.dense = prefs.dense;
+    buildColumnsMenu();
+    if (['status', 'herkunft', 'quelle', 'onlyOpen', 'onlyNoDate'].some((k) => !!State.filters[k])) { $('moreFilters').hidden = false; $('btnMoreFilters').setAttribute('aria-expanded', 'true'); }
 
     // Lokale Daten laden
     try {
