@@ -288,6 +288,14 @@ kbd{display:inline-block;font:600 11px/1 var(--font-sans);padding:2px 6px;border
 .caret{font-size:11px;opacity:.85}
 
 /* ---------- Zeile unter der Kopfzeile ---------- */
+.zust-dialog{width:min(760px,calc(100vw - 32px))}
+.zust-wrap{max-height:min(56vh,520px);overflow:auto;margin:var(--space-3) 0;border:1px solid var(--border-subtle);border-radius:var(--radius-md)}
+.zust-table{width:100%}
+.zust-table th[scope="row"]{font-weight:600;text-align:left}
+.zust-table td:last-child{display:flex;align-items:center;gap:var(--space-2)}
+.zust-table .select{min-width:200px}
+.zust-tag{white-space:nowrap}
+#zustDialog .sx-dialog__foot{flex-wrap:wrap}
 .view-banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-2) var(--space-4);padding:var(--space-2) var(--space-5);background:var(--navy-800);color:#fff;font-size:14px;line-height:20px}
 .view-banner[hidden]{display:none}
 .view-banner__text strong{margin-right:var(--space-2)}
@@ -1069,9 +1077,21 @@ dialog.drawer[open]{animation:drawerIn var(--duration-base) var(--ease-smooth)}
   <ul class="sx-rename-list" id="areaList"></ul>
   <div class="sx-dialog__foot">
     <button class="sx-btn sx-btn--ghost" type="button" id="btnAreaAdd"><svg class="sx-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Bereich hinzufügen</button>
+    <button class="sx-btn sx-btn--ghost" type="button" id="btnZustOpen">Excel-Maßnahmen zuordnen …</button>
     <button class="sx-btn sx-btn--strong" type="button" data-close>Fertig</button>
   </div>
   <p class="sx-dialog__hint" id="areaHint">Sie können bis zu 8 Bereiche anlegen.</p>
+</dialog>
+
+<dialog class="sx-dialog zust-dialog" id="zustDialog" aria-labelledby="zustDialogTitle">
+  <h3 id="zustDialogTitle">Excel-Maßnahmen nach Zuständigkeit zuordnen</h3>
+  <p>Legen Sie fest, in welchen Bereich die Excel-Maßnahmen einer Zuständigkeit gehören. Die Zuordnung wird im Dashboard gespeichert und gilt auch nach „Excel aktualisieren“ und für neue Maßnahmen. Vorrang haben einzeln zugeordnete Maßnahmen und eine Excel-Spalte „Bereich“.</p>
+  <div class="zust-wrap"><table class="data zust-table"><caption class="visually-hidden">Zuordnung je Zuständigkeit</caption><thead><tr><th scope="col">Zuständigkeit (Excel)</th><th scope="col">Maßnahmen</th><th scope="col">Bereich</th></tr></thead><tbody id="zustBody"></tbody></table></div>
+  <p class="sx-dialog__hint" id="zustHint"></p>
+  <div class="sx-dialog__foot">
+    <button class="sx-btn sx-btn--ghost" type="button" data-close>Abbrechen</button>
+    <button class="sx-btn sx-btn--strong" type="button" id="btnZustSave">Übernehmen</button>
+  </div>
 </dialog>
 
 <dialog class="sx-lightbox themes-dialog" id="themesDialog" aria-labelledby="esThemesTitle">
@@ -1145,7 +1165,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 (function () {
   'use strict';
 
-  const APP_VERSION = '1.4.0';
+  const APP_VERSION = '1.5.0';
 
   /* =====================================================================
    * Konfiguration
@@ -2043,6 +2063,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     mode: 'edit',      // 'edit' = Pflege, 'view' = Ansichtsmodus (veröffentlichter Stand)
     stand: null,       // Kopfdaten des geladenen Stands im Ansichtsmodus
     dense: false,
+    sonarHidden: false, // Sonar in der Gesamtübersicht ausgeblendet (Einstellung je Browser)
     selectedId: null
   };
 
@@ -2093,6 +2114,42 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
   };
 
   /* =====================================================================
+   * Zuordnung der Excel-Maßnahmen zu Bereichen – im Dashboard gepflegt, bleibt über Neuimporte erhalten.
+   * Reihenfolge: einzeln zugeordnet › Excel-Spalte „Bereich“ › Regel je Zuständigkeit.
+   * Einzelzuordnung über einen Inhaltsschlüssel (Aktion, Herkunft, Thema, Zuständigkeit, „vom“), da sich Zeilennummern in Excel verschieben.
+   * ===================================================================== */
+  const Assign = {
+    state: { v: 1, byKey: {}, byZust: {} },
+    empty() { return { v: 1, byKey: {}, byZust: {} }; },
+    isValid(st) { return !!st && st.v === 1 && !!st.byKey && typeof st.byKey === 'object' && !!st.byZust && typeof st.byZust === 'object'; },
+    key(r) { return [Util.norm(r.aktion).slice(0, 300), Util.norm(r.herkunft), Util.norm(r.thema), Util.norm(r.zust), r.vom && r.vom.s === 'ok' ? DateUtil.num(r.vom) : ''].join('|'); },
+    zustKey(z) { return Util.norm(z); },
+    resolve(r, byName) {
+      const own = Assign.state.byKey[Assign.key(r)];
+      if (own === '-') return { id: '', via: 'einzeln' };
+      if (own && Areas.isDep(own)) return { id: own, via: 'einzeln' };
+      const nm = r.bereichName ? r.bereichName.trim().toLocaleLowerCase('de') : '';
+      if (nm && byName.get(nm)) return { id: byName.get(nm), via: 'excel' };
+      const z = r.zust ? Assign.state.byZust[Assign.zustKey(r.zust)] : '';
+      if (z && Areas.isDep(z)) return { id: z, via: 'zust' };
+      return { id: '', via: '' };
+    },
+    /** Vorschlag: Bereichsname gleich der Zuständigkeit oder Vorname des Bereichs gleich der Zuständigkeit (nur eindeutig) */
+    suggest(zust) {
+      const n = Util.norm(zust);
+      if (!n) return '';
+      const exact = Areas.deps().filter((a) => Util.norm(a.name) === n);
+      if (exact.length === 1) return exact[0].id;
+      const first = Areas.deps().filter((a) => Util.norm(a.name.trim().split(/\s+/)[0]) === n);
+      return first.length === 1 ? first[0].id : '';
+    },
+    async save() {
+      if (State.mode === 'view') return false;
+      try { await Store.put('excelAssign', Assign.state); return true; } catch (e) { State.storageOk = false; return false; }
+    }
+  };
+
+  /* =====================================================================
    * Veröffentlichter Stand (eine pflegende Person, alle anderen sehen den Stand)
    * Datei: Excel-Arbeitsmappe mit lesbaren Blättern und einem ausgeblendeten Datenblatt.
    * Das Dashboard liest ausschließlich das Datenblatt; Änderungen in Excel werden nicht übernommen.
@@ -2105,12 +2162,13 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       return {
         format: 'ASI-Stand', version: 1, appVersion: APP_VERSION,
         publishedAt: new Date().toISOString(), publishedBy: publishedBy || '',
-        snapshot: State.snapshot, manual: State.manual, areas: Areas.state
+        snapshot: State.snapshot, manual: State.manual, areas: Areas.state, excelAssign: Assign.state
       };
     },
     isValid(d) {
       return !!d && d.format === 'ASI-Stand' && d.version === 1 && typeof d.publishedAt === 'string' && Array.isArray(d.manual) &&
-        Areas.isValid(d.areas) && (d.snapshot === null || (typeof d.snapshot === 'object' && Array.isArray(d.snapshot.actions)));
+        Areas.isValid(d.areas) && (d.snapshot === null || (typeof d.snapshot === 'object' && Array.isArray(d.snapshot.actions))) &&
+        (d.excelAssign === undefined || Assign.isValid(d.excelAssign));
     },
     buildWorkbook(d) {
       const wb = XLSX.utils.book_new();
@@ -2202,6 +2260,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       State.snapshot = d.snapshot;
       State.manual = d.manual.filter((m) => m && m.src === 'manual' && m.id);
       Areas.state = d.areas;
+      Assign.state = d.excelAssign || Assign.empty();
       State.source = 'stand';
       State.today = DateUtil.todayNumber();
       State.generic = {};
@@ -2225,6 +2284,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     State.manual = [];
     State.source = 'none';
     Areas.state = null;
+    Assign.state = Assign.empty();
     try {
       const snap = await Store.get('snapshot');
       if (snap && snap.schema === 2 && Array.isArray(snap.actions)) { State.snapshot = snap; State.source = 'local'; }
@@ -2232,6 +2292,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (Areas.isValid(areas)) Areas.state = areas;
       const manual = await Store.get('manual');
       if (Array.isArray(manual)) State.manual = manual.filter((m) => m && m.src === 'manual' && m.id);
+      const asg = await Store.get('excelAssign');
+      if (Assign.isValid(asg)) Assign.state = asg;
       State.storageOk = true;
     } catch (e) {
       State.storageOk = false;
@@ -2270,9 +2332,10 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     const excel = State.snapshot ? State.snapshot.actions : [];
     const byName = new Map(Areas.deps().map((a) => [a.name.trim().toLocaleLowerCase('de'), a.id]));
     excel.forEach((r) => {
-      // Excel-Maßnahmen: Bereich über den Namen in der Spalte „Bereich“ (Groß/Klein egal); unbekannte Namen bleiben ohne Bereich
-      const nm = r.bereichName ? r.bereichName.trim().toLocaleLowerCase('de') : '';
-      r.bereichId = (nm && byName.get(nm)) || '';
+      // Excel-Maßnahmen: Bereich aus Einzelzuordnung, Excel-Spalte „Bereich“ oder Regel je Zuständigkeit
+      const res = Assign.resolve(r, byName);
+      r.bereichId = res.id;
+      r.bereichVia = res.via;
       all.push(r);
     });
     State.manual.forEach((r) => all.push(r));
@@ -2331,7 +2394,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     dup: { label: 'mögliche Dubletten', test: (it) => it.dup },
     zielVorVom: { label: 'Zieldatum vor Erfassungsdatum', test: (it) => it.zielBeforeVom },
     noArea: { label: 'ohne Bereich', test: (it) => !Areas.isDep(it.rec.bereichId) },
-    unknownArea: { label: 'unbekannter Bereich in Excel', test: (it) => it.rec.src === 'excel' && !!it.rec.bereichName && !Areas.isDep(it.rec.bereichId) }
+    unknownArea: { label: 'unbekannter Bereich in Excel', test: (it) => it.rec.src === 'excel' && !!it.rec.bereichName && !Areas.isDep(it.rec.bereichId) && it.rec.bereichVia !== 'einzeln' }
   };
 
   function applyFilters() {
@@ -2488,12 +2551,12 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         else dlg.setAttribute('open', '');
       } catch (e) { dlg.setAttribute('open', ''); }
     },
-    anyModalOpen() { return ['editDialog', 'confirmDialog', 'importDialog', 'areaDialog', 'themesDialog', 'publishDialog'].some((id) => $(id).open); },
+    anyModalOpen() { return ['editDialog', 'confirmDialog', 'importDialog', 'areaDialog', 'themesDialog', 'publishDialog', 'zustDialog'].some((id) => $(id).open); },
     close(dlg) {
       try { if (typeof dlg.close === 'function') dlg.close(); else dlg.removeAttribute('open'); } catch (e) { dlg.removeAttribute('open'); }
     },
     init() {
-      ['detailDialog', 'editDialog', 'confirmDialog', 'importDialog', 'areaDialog', 'themesDialog', 'publishDialog'].forEach((id) => {
+      ['detailDialog', 'editDialog', 'confirmDialog', 'importDialog', 'areaDialog', 'themesDialog', 'publishDialog', 'zustDialog'].forEach((id) => {
         const dlg = $(id);
         dlg.addEventListener('click', (ev) => {
           const t = ev.target;
@@ -2764,7 +2827,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           Render.dsDropzone(),
           h('div', { class: 'sx-hero__actions' }, [
             State.mode === 'edit' ? h('button', { type: 'button', class: 'sx-btn sx-btn--strong', onclick: () => Editor.open(null) }, [shapeIcon([['path', { d: 'M12 5v14M5 12h14' }]], 'sx-i'), 'Neue Maßnahme erfassen']) : null,
-            h('button', { type: 'button', class: 'sx-btn sx-btn--ghost', text: 'Schwerpunktthemen ansehen', onclick: openThemes })
+            h('button', { type: 'button', class: 'sx-btn sx-btn--ghost', text: 'Schwerpunktthemen ansehen', onclick: openThemes }),
+            Render.sonarToggle()
           ])
         ]));
       } else {
@@ -2774,10 +2838,15 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           h('p', { text: Util.num(c.open) + ' offene ' + Util.plural(c.open, 'Maßnahme', 'Maßnahmen') + ', davon ' + Util.num(c.ueberfaellig) + ' überfällig. ' + Util.num(c.total) + ' Maßnahmen insgesamt (' + Util.num(State.items.filter((i) => i.rec.src === 'excel').length) + ' aus Excel, ' + Util.num(State.items.filter((i) => i.rec.src === 'manual').length) + ' manuell erfasst).' }),
           h('section', { class: 'sx-block' }, [h('h4', { text: 'Alle Maßnahmen nach Status' }), Render.statusOverview(c)]),
           h('section', { class: 'sx-block' }, [h('h4', { text: 'Offene Maßnahmen je Bereich' }), Render.areaRanking()]),
-          h('div', { class: 'sx-hero__actions no-print' }, [h('button', { type: 'button', class: 'sx-btn sx-btn--ghost', text: 'Schwerpunktthemen ansehen', onclick: openThemes })])
+          h('div', { class: 'sx-hero__actions no-print' }, [h('button', { type: 'button', class: 'sx-btn sx-btn--ghost', text: 'Schwerpunktthemen ansehen', onclick: openThemes }), Render.sonarToggle()])
         ]));
       }
+      if (State.sonarHidden) return h('section', { class: 'sx-hero sx-hero--single', 'aria-labelledby': 'heroTitle' }, body);
       return h('section', { class: 'sx-hero', 'aria-labelledby': 'heroTitle' }, [body, h('div', { class: 'sx-hero__visual' }, Render.sonar())]);
+    },
+    sonarToggle() {
+      return h('button', { type: 'button', class: 'sx-btn sx-btn--ghost', id: 'btnSonar', 'aria-pressed': State.sonarHidden ? 'true' : 'false', text: State.sonarHidden ? 'Sonar einblenden' : 'Sonar ausblenden',
+        onclick: () => { State.sonarHidden = !State.sonarHidden; savePrefs(); Render.dashboard(); const b = document.getElementById('btnSonar'); if (b) b.focus(); } });
     },
 
     /** Hero eines Bereichs: Leerzustand oder Statusübersicht des Bereichs */
@@ -2940,7 +3009,13 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         ]));
         body.appendChild(h('p', { class: 'field-err', id: 'unassignedErr', hidden: true }));
       }
-      if (excel) body.appendChild(h('p', { class: 'card-note', text: Util.num(excel) + ' ' + Util.plural(excel, 'Maßnahme', 'Maßnahmen') + ' aus der Excel-Datei ' + Util.plural(excel, 'hat', 'haben') + ' noch keinen Bereich und ' + Util.plural(excel, 'erscheint', 'erscheinen') + ' nur in der Gesamtübersicht. ' + (hasAreaColumn(State.snapshot) ? 'Bitte in der Excel-Spalte „Bereich“ den Namen des Bereichs genau wie in der Bereichsleiste eintragen und „Excel aktualisieren“ wählen.' : 'Für die Zuordnung in der Excel-Tabelle eine Spalte „Bereich“ ergänzen und dort den Namen des Bereichs genau wie in der Bereichsleiste eintragen.') }));
+      if (excel) {
+        body.appendChild(h('p', null, [h('strong', { text: Util.num(excel) + ' ' + Util.plural(excel, 'Maßnahme', 'Maßnahmen') + ' aus der Excel-Datei ' + Util.plural(excel, 'hat', 'haben') + ' noch keinen Bereich' }), ' und ' + Util.plural(excel, 'erscheint', 'erscheinen') + ' nur in der Gesamtübersicht. Ordnen Sie sie nach Zuständigkeit zu oder einzeln in den Details.']));
+        body.appendChild(h('div', { class: 'unassigned-row no-print' }, [
+          h('button', { type: 'button', class: 'btn btn-navy', text: 'Nach Zuständigkeit zuordnen …', onclick: () => ZustAssign.open() }),
+          h('button', { type: 'button', class: 'btn btn-link', text: 'Einzeln ansehen', onclick: () => gotoActions({ dq: 'noArea', quelle: 'excel' }) })
+        ]));
+      }
       return h('section', { class: 'card unassigned-card', 'aria-label': 'Maßnahmen ohne Bereich' }, [h('div', { class: 'card-head' }, h('h3', { text: 'Maßnahmen ohne Bereich' })), body]);
     },
 
@@ -3604,6 +3679,38 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
    * ===================================================================== */
   const Detail = {
     current: null,
+    /** Auswahl „Bereich“ für eine Excel-Maßnahme */
+    assignBox(it) {
+      const r = it.rec;
+      const key = Assign.key(r);
+      const own = Assign.state.byKey[key] || '';
+      const same = State.allItems.filter((x) => x.rec.src === 'excel' && Assign.key(x.rec) === key).length;
+      const saveOwn = Assign.state.byKey[key];
+      Assign.state.byKey[key] = undefined; delete Assign.state.byKey[key];
+      const auto = Assign.resolve(r, new Map(Areas.deps().map((a) => [a.name.trim().toLocaleLowerCase('de'), a.id])));
+      if (saveOwn !== undefined) Assign.state.byKey[key] = saveOwn;
+      const autoText = auto.id ? Areas.name(auto.id) + (auto.via === 'zust' ? ' (über Zuständigkeit)' : ' (über Excel-Spalte „Bereich“)') : 'ohne Bereich';
+      const sel = h('select', { class: 'select', id: 'dBereich' });
+      sel.appendChild(h('option', { value: '' }, 'Automatisch: ' + autoText));
+      Areas.deps().forEach((a) => sel.appendChild(h('option', { value: a.id }, a.name)));
+      sel.appendChild(h('option', { value: '-' }, 'Keinem Bereich zuordnen'));
+      sel.value = Areas.isDep(own) || own === '-' ? own : '';
+      sel.addEventListener('change', async () => {
+        const prev = JSON.parse(JSON.stringify(Assign.state));
+        if (sel.value) Assign.state.byKey[key] = sel.value; else delete Assign.state.byKey[key];
+        await Assign.save();
+        refresh();
+        const fresh = State.allItems.find((x) => x.rec === r);
+        if (fresh) Detail.open(fresh);
+        try { $('dBereich').focus(); } catch (e) { /* ignorieren */ }
+        showMessage('ok', 'Bereich: ' + (Areas.name(r.bereichId) || 'ohne Bereich') + '.', 8000, { label: 'Rückgängig', run: async () => { Assign.state = prev; await Assign.save(); refresh(); showMessage('info', 'Zuordnung wurde rückgängig gemacht.', 5000); } });
+      });
+      return h('div', { class: 'detail-sec no-print' }, [
+        h('h3', { text: 'Bereich zuordnen' }),
+        h('div', { class: 'field' }, [h('label', { for: 'dBereich', text: 'Bereich dieser Excel-Maßnahme' }), sel]),
+        h('p', { class: 'field-hint', text: 'Die Zuordnung wird im Dashboard gespeichert und bleibt bei „Excel aktualisieren“ erhalten, solange Aktion, Herkunft, Thema, Zuständigkeit und „vom“ in Excel gleich bleiben.' + (same > 1 ? ' Gilt für alle ' + same + ' gleichlautenden Einträge.' : '') })
+      ]);
+    },
     open(it) {
       Detail.current = it;
       const r = it.rec;
@@ -3642,6 +3749,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         r.extra.forEach((e) => { dl2.appendChild(h('dt', { text: e[0] })); dl2.appendChild(h('dd', { text: e[1] })); });
         body.appendChild(h('div', { class: 'detail-sec' }, [h('h3', { text: 'Weitere Spalten aus Excel' }), dl2]));
       }
+      if (r.src === 'excel' && State.mode === 'edit') body.appendChild(Detail.assignBox(it));
       if (r.src === 'manual' && r.created) body.appendChild(h('p', { class: 'card-note', style: 'margin-top:14px', text: 'Erfasst: ' + Util.formatDateTime(r.created) + (r.updated ? ' · Zuletzt geändert: ' + Util.formatDateTime(r.updated) : '') }));
       if (State.mode === 'view') body.appendChild(h('p', { class: 'card-note', style: 'margin-top:14px', text: 'Ansichtsmodus: Diese Maßnahme stammt aus dem veröffentlichten Stand. Änderungen nimmt die pflegende Person vor.' }));
       else if (r.src === 'excel') body.appendChild(h('p', { class: 'card-note', style: 'margin-top:14px', text: 'Diese Maßnahme stammt aus der Excel-Datei. Änderungen bitte in der Arbeitsmappe vornehmen und anschließend „Excel aktualisieren“ wählen.' }));
@@ -4026,7 +4134,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     onFiltersChanged();
     $('fSearch').focus();
   }
-  function savePrefs() { const old = Prefs.load(); Prefs.save({ view: State.view, filters: State.filters, hiddenCols: Array.from(State.hiddenCols), dense: State.dense, area: State.area, mode: State.mode, publisher: old.publisher || '' }); }
+  function savePrefs() { const old = Prefs.load(); Prefs.save({ view: State.view, filters: State.filters, hiddenCols: Array.from(State.hiddenCols), dense: State.dense, area: State.area, mode: State.mode, publisher: old.publisher || '', sonarHidden: State.sonarHidden }); }
 
   /** Bereich wechseln */
   function selectArea(id, focusTab) {
@@ -4056,6 +4164,57 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     refresh();
     showMessage('ok', Util.num(n) + ' ' + Util.plural(n, 'Maßnahme wurde', 'Maßnahmen wurden') + ' „' + Areas.name(target) + '“ zugeordnet.', 12000, { label: 'Rückgängig', run: () => Editor.restore(prev, 'Zuordnung wurde rückgängig gemacht.') });
   }
+
+  /** Dialog „Excel-Maßnahmen nach Zuständigkeit zuordnen“ */
+  const ZustAssign = {
+    open() {
+      if (State.mode === 'view') return;
+      const groups = new Map();
+      State.allItems.forEach((it) => {
+        if (it.rec.src !== 'excel') return;
+        const k = Assign.zustKey(it.rec.zust);
+        if (!groups.has(k)) groups.set(k, { label: it.rec.zust, n: 0, open: 0 });
+        const g = groups.get(k);
+        g.n++;
+        if (!it.done && !isPaused(it)) g.open++;
+      });
+      const body = $('zustBody');
+      clear(body);
+      let suggested = 0;
+      const rows = Array.from(groups.entries()).filter(([k]) => k).sort((a, b) => b[1].n - a[1].n || a[1].label.localeCompare(b[1].label, 'de'));
+      rows.forEach(([k, g], i) => {
+        const sel = h('select', { class: 'select', id: 'zs-' + i, dataset: { key: k }, 'aria-label': 'Bereich für Zuständigkeit ' + g.label });
+        sel.appendChild(h('option', { value: '' }, '– kein Bereich –'));
+        Areas.deps().forEach((a) => sel.appendChild(h('option', { value: a.id }, a.name)));
+        const rule = Assign.state.byZust[k];
+        let mark = null;
+        if (rule && Areas.isDep(rule)) sel.value = rule;
+        else { const sg = Assign.suggest(g.label); if (sg) { sel.value = sg; suggested++; mark = h('span', { class: 'tag zust-tag', text: 'Vorschlag' }); } }
+        body.appendChild(h('tr', null, [
+          h('th', { scope: 'row', 'data-label': 'Zuständigkeit' }, h('label', { for: 'zs-' + i, text: g.label })),
+          h('td', { 'data-label': 'Maßnahmen', text: Util.num(g.n) + ' (' + Util.num(g.open) + ' offen)' }),
+          h('td', { 'data-label': 'Bereich' }, [sel, mark])
+        ]));
+      });
+      const none = groups.get('');
+      $('zustHint').textContent = (rows.length ? '' : 'Es gibt keine Excel-Maßnahmen mit Zuständigkeit. ') + (suggested ? Util.num(suggested) + ' ' + Util.plural(suggested, 'Vorschlag', 'Vorschläge') + ' aus den Bereichsnamen vorausgewählt – bitte prüfen. ' : '') + (none ? Util.num(none.n) + ' Excel-Maßnahmen ohne Zuständigkeit lassen sich nur einzeln (in den Details) zuordnen.' : '');
+      Dialogs.open($('zustDialog'));
+      const first = body.querySelector('select');
+      if (first) first.focus();
+    },
+    async save() {
+      const prev = JSON.parse(JSON.stringify(Assign.state));
+      const before = State.allItems.filter((it) => it.rec.src === 'excel' && Areas.isDep(it.rec.bereichId)).length;
+      const byZust = {};
+      $('zustBody').querySelectorAll('select').forEach((sel) => { if (Areas.isDep(sel.value)) byZust[sel.dataset.key] = sel.value; });
+      Assign.state.byZust = byZust;
+      await Assign.save();
+      Dialogs.close($('zustDialog'));
+      refresh();
+      const after = State.allItems.filter((it) => it.rec.src === 'excel' && Areas.isDep(it.rec.bereichId)).length;
+      showMessage('ok', 'Zuordnung gespeichert: ' + Util.num(after) + ' Excel-Maßnahmen haben einen Bereich (vorher ' + Util.num(before) + ').', 12000, { label: 'Rückgängig', run: async () => { Assign.state = prev; await Assign.save(); refresh(); showMessage('info', 'Zuordnung wurde rückgängig gemacht.', 5000); } });
+    }
+  };
 
   /** Dialog „Bereiche umbenennen“ */
   const AreaManage = {
@@ -4198,6 +4357,23 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         const thema = snap.actionSheet.mapping.find((x) => x.field === 'thema'), ber = snap.actionSheet.mapping.find((x) => x.field === 'bereich');
         return { ok: snap.actions.length === 2 && snap.stats.legendRows.join() === '3,4' && m.rows.length === 1 && m.legendRows.join() === '3' && thema.col === 'B' && ber.col === 'G' && snap.actions[0].bereichName === 'bereich 2' && HeaderMapper.mapHeaders(['Thema / Bereich', 'Aktion']).thema && !HeaderMapper.mapHeaders(['Thema / Bereich', 'Aktion']).bereich, detail: snap.actions.length + '/' + snap.stats.legendRows.join() };
       });
+      t('Zuordnung Excel-Maßnahmen: Reihenfolge und Vorschläge', () => {
+        const keepA = Areas.state, keepS = Assign.state;
+        try {
+          Areas.state = { v: 1, next: 4, areas: [{ id: 'gesamt', name: 'Gesamtübersicht' }, { id: 'b1', name: 'Maik Hohmann' }, { id: 'b2', name: 'Jörn Duee' }, { id: 'b3', name: 'Lager' }] };
+          Assign.state = { v: 1, byKey: {}, byZust: { maik: 'b1' } };
+          const byName = new Map(Areas.deps().map((a) => [a.name.toLocaleLowerCase('de'), a.id]));
+          const r = { aktion: 'Gitterrost sichern', herkunft: 'Begehung', thema: 'Verkehrswege', zust: 'Maik', bereichName: '' };
+          const a1 = Assign.resolve(r, byName).id;
+          const a2 = Assign.resolve(Object.assign({}, r, { bereichName: 'lager' }), byName).id;
+          Assign.state.byKey[Assign.key(r)] = 'b2';
+          const a3 = Assign.resolve(Object.assign({}, r, { bereichName: 'lager' }), byName).id;
+          Assign.state.byKey[Assign.key(r)] = '-';
+          const a4 = Assign.resolve(r, byName).id;
+          const sg = [Assign.suggest('Maik'), Assign.suggest('jörn'), Assign.suggest('Maik Hohmann'), Assign.suggest('Oliver')].join();
+          return { ok: a1 === 'b1' && a2 === 'b3' && a3 === 'b2' && a4 === '' && sg === 'b1,b2,b1,', detail: [a1, a2, a3, a4, sg].join('/') };
+        } finally { Areas.state = keepA; Assign.state = keepS; }
+      });
       t('Stand veröffentlichen und wieder laden (Excel-Datei)', () => {
         const d = { format: 'ASI-Stand', version: 1, appVersion: APP_VERSION, publishedAt: '2026-10-29T10:00:00.000Z', publishedBy: 'Test', snapshot: null,
           manual: Array.from({ length: 12 }, (_, i) => ({ id: 'm-' + i, src: 'manual', row: null, bereichId: 'b1', herkunft: '', thema: 'Brandschutz', aktion: 'Löscher <prüfen> & „ok“ ' + 'x'.repeat(3900), zust: 'A', kommentar: '', status: 'offen', vom: { s: 'empty' }, ziel: DateUtil.make(2026, 11, 3, 0, 0, ''), umgesetzt: { s: 'empty' }, extra: [] })),
@@ -4336,6 +4512,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       Stand.publish(name);
     });
     $('btnViewReload').addEventListener('click', openFilePicker);
+    $('btnZustSave').addEventListener('click', () => ZustAssign.save());
+    $('btnZustOpen').addEventListener('click', () => { Dialogs.close($('areaDialog')); ZustAssign.open(); });
     $('btnViewExit').addEventListener('click', async () => {
       const ok = await confirmAction('Ansichtsmodus beenden?', 'Der geladene Stand wird aus diesem Browser entfernt. Angezeigt werden danach Ihre eigenen Daten (leer, wenn Sie selbst nichts pflegen). Den Stand können Sie jederzeit wieder über „Stand laden“ öffnen.', 'Ansichtsmodus beenden');
       if (ok) Stand.exitView();
@@ -4427,6 +4605,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     if (prefs && VIEW_LABELS[prefs.view]) State.view = prefs.view;
     if (prefs && Array.isArray(prefs.hiddenCols)) prefs.hiddenCols.forEach((k) => { if (TABLE_COLS.some((c) => c.key === k)) State.hiddenCols.add(k); });
     if (prefs && typeof prefs.dense === 'boolean') State.dense = prefs.dense;
+    if (prefs && typeof prefs.sonarHidden === 'boolean') State.sonarHidden = prefs.sonarHidden;
     if (prefs && typeof prefs.area === 'string') State.area = prefs.area;
     buildColumnsMenu();
     if (['status', 'herkunft', 'quelle', 'onlyOpen', 'onlyNoDate'].some((k) => !!State.filters[k])) { $('moreFilters').hidden = false; $('btnMoreFilters').setAttribute('aria-expanded', 'true'); }
