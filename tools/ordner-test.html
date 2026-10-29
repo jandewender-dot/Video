@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ordner-Test – ASI Dashboard</title>
+<style>
+:root{--ink:#0b1730;--muted:#46557a;--bg:#f3f5f9;--card:#fff;--line:#d9dfeb;--ok:#14622a;--okbg:#dff5e4;--bad:#a10b24;--badbg:#fde8ec;--navy:#0b1730;--focus:#1a2f57}
+*{box-sizing:border-box}
+body{margin:0;font:15px/24px "Segoe UI",system-ui,sans-serif;color:var(--ink);background:var(--bg)}
+main{max-width:760px;margin:0 auto;padding:32px 24px}
+h1{font-size:26px;line-height:32px;margin:0 0 8px}
+p{margin:0 0 12px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 24px;margin:16px 0}
+ol{margin:0;padding-left:20px}
+button{font:600 14px/20px inherit;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid #7d8aa6;background:#fff;color:var(--ink);cursor:pointer;margin:4px 8px 4px 0}
+button.primary{background:var(--navy);color:#fff;border-color:transparent}
+button:disabled{opacity:.45;cursor:not-allowed}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+ul.res{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+ul.res li{padding:8px 12px;border-radius:10px;background:#eceef3}
+ul.res li.ok{background:var(--okbg);color:var(--ok)}
+ul.res li.bad{background:var(--badbg);color:var(--bad)}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#e9edf4;border-radius:10px;padding:12px;font-size:12px;line-height:18px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Ordner-Test für das gemeinsame ASI-Dashboard</h1>
+  <p>Diese Seite prüft, ob Edge aus einer lokal geöffneten HTML-Datei in einen mit OneDrive synchronisierten SharePoint-Ordner schreiben und daraus lesen darf. Es wird nur eine kleine Testdatei angelegt, die Sie am Ende wieder löschen können. Es werden keine Daten übertragen.</p>
+  <div class="card">
+    <strong>So gehen Sie vor</strong>
+    <ol>
+      <li>Diese Datei in den synchronisierten SharePoint-Ordner legen und dort per Doppelklick in Edge öffnen.</li>
+      <li>„Ordner wählen und testen“ klicken und denselben Ordner auswählen. Die Frage nach Bearbeitungsrechten mit „Dateien bearbeiten“ bzw. „Zulassen“ bestätigen.</li>
+      <li>Die Seite neu laden (F5) und „Gemerkten Ordner erneut verbinden“ klicken.</li>
+      <li>Das Ergebnis unten kopieren und mir schicken.</li>
+    </ol>
+  </div>
+  <div class="card">
+    <button type="button" class="primary" id="btnPick">Ordner wählen und testen</button>
+    <button type="button" id="btnReconnect">Gemerkten Ordner erneut verbinden</button>
+    <button type="button" id="btnClean" disabled>Testdatei löschen</button>
+    <button type="button" id="btnCopy">Ergebnis kopieren</button>
+  </div>
+  <div class="card" aria-live="polite">
+    <strong>Ergebnis</strong>
+    <ul class="res" id="res"></ul>
+    <pre id="raw"></pre>
+  </div>
+</main>
+<script>
+(function () {
+  'use strict';
+  const DB = 'asi-ordner-test';
+  const lines = [];
+  let dirHandle = null;
+  let testName = '';
+
+  function log(ok, text) {
+    lines.push((ok === true ? '✓ ' : ok === false ? '✗ ' : '• ') + text);
+    const li = document.createElement('li');
+    if (ok === true) li.className = 'ok';
+    if (ok === false) li.className = 'bad';
+    li.textContent = (ok === true ? '✓ ' : ok === false ? '✗ ' : '• ') + text;
+    document.getElementById('res').appendChild(li);
+    document.getElementById('raw').textContent = lines.join('\n');
+  }
+
+  function idb(mode, fn) {
+    return new Promise((resolve, reject) => {
+      const open = indexedDB.open(DB, 1);
+      open.onupgradeneeded = () => open.result.createObjectStore('h');
+      open.onerror = () => reject(open.error);
+      open.onsuccess = () => {
+        const tx = open.result.transaction('h', mode);
+        const req = fn(tx.objectStore('h'));
+        tx.oncomplete = () => resolve(req ? req.result : undefined);
+        tx.onerror = () => reject(tx.error);
+      };
+    });
+  }
+
+  function basics() {
+    const brands = navigator.userAgentData ? navigator.userAgentData.brands.map((b) => b.brand + ' ' + b.version).join(', ') : navigator.userAgent;
+    log(null, 'Browser: ' + brands);
+    log(null, 'Seite geöffnet über: ' + location.protocol);
+    log(window.isSecureContext, 'Sicherer Kontext: ' + (window.isSecureContext ? 'ja' : 'nein'));
+    log(typeof window.showDirectoryPicker === 'function', 'Ordnerauswahl (showDirectoryPicker) vorhanden: ' + (typeof window.showDirectoryPicker === 'function' ? 'ja' : 'nein'));
+  }
+
+  async function runTests(handle) {
+    dirHandle = handle;
+    log(true, 'Ordner verbunden: „' + handle.name + '“');
+    // Schreiben
+    testName = '_ordnertest_' + Date.now() + '.json';
+    const payload = JSON.stringify({ test: true, zeit: new Date().toISOString() });
+    try {
+      const fh = await handle.getFileHandle(testName, { create: true });
+      const w = await fh.createWritable();
+      await w.write(payload);
+      await w.close();
+      log(true, 'Testdatei geschrieben: ' + testName);
+      const back = await (await fh.getFile()).text();
+      log(back === payload, 'Testdatei wieder gelesen: ' + (back === payload ? 'Inhalt stimmt' : 'Inhalt weicht ab'));
+      document.getElementById('btnClean').disabled = false;
+    } catch (e) {
+      log(false, 'Schreiben fehlgeschlagen: ' + e.name + ' – ' + e.message);
+    }
+    // Lesen des Ordners
+    try {
+      let n = 0;
+      let xlsx = 0;
+      for await (const entry of handle.values()) {
+        n++;
+        if (entry.kind === 'file' && /\.(xlsx|xlsm|xls|xlsb)$/i.test(entry.name)) xlsx++;
+      }
+      log(true, 'Ordnerinhalt gelesen: ' + n + ' Einträge, davon ' + xlsx + ' Excel-Dateien');
+    } catch (e) {
+      log(false, 'Ordner lesen fehlgeschlagen: ' + e.name + ' – ' + e.message);
+    }
+    // Merken
+    try {
+      await idb('readwrite', (st) => st.put(handle, 'dir'));
+      log(true, 'Ordner für den nächsten Start gemerkt');
+    } catch (e) {
+      log(false, 'Ordner merken fehlgeschlagen: ' + e.name + ' – ' + e.message);
+    }
+  }
+
+  document.getElementById('btnPick').addEventListener('click', async () => {
+    if (typeof window.showDirectoryPicker !== 'function') { log(false, 'Ordnerauswahl in diesem Browser nicht verfügbar.'); return; }
+    try {
+      const handle = await window.showDirectoryPicker({ id: 'asi-dashboard', mode: 'readwrite' });
+      await runTests(handle);
+    } catch (e) {
+      log(false, 'Ordnerauswahl: ' + e.name + ' – ' + e.message);
+    }
+  });
+
+  document.getElementById('btnReconnect').addEventListener('click', async () => {
+    try {
+      const handle = await idb('readonly', (st) => st.get('dir'));
+      if (!handle) { log(false, 'Kein gemerkter Ordner gefunden. Bitte zuerst „Ordner wählen und testen“.'); return; }
+      const before = await handle.queryPermission({ mode: 'readwrite' });
+      log(null, 'Berechtigung nach dem Neuladen: ' + before);
+      const after = before === 'granted' ? before : await handle.requestPermission({ mode: 'readwrite' });
+      log(after === 'granted', 'Berechtigung nach Rückfrage: ' + after);
+      if (after === 'granted') await runTests(handle);
+    } catch (e) {
+      log(false, 'Erneut verbinden: ' + e.name + ' – ' + e.message);
+    }
+  });
+
+  document.getElementById('btnClean').addEventListener('click', async () => {
+    if (!dirHandle || !testName) return;
+    try {
+      await dirHandle.removeEntry(testName);
+      log(true, 'Testdatei gelöscht');
+      document.getElementById('btnClean').disabled = true;
+    } catch (e) {
+      log(false, 'Löschen fehlgeschlagen: ' + e.name + ' – ' + e.message);
+    }
+  });
+
+  document.getElementById('btnCopy').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(lines.join('\n')); log(null, 'Ergebnis in die Zwischenablage kopiert'); }
+    catch (e) { log(null, 'Kopieren nicht möglich – bitte den Text im grauen Kasten markieren und kopieren.'); }
+  });
+
+  basics();
+})();
+</script>
+</body>
+</html>
