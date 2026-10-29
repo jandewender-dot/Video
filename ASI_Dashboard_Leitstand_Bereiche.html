@@ -288,6 +288,15 @@ kbd{display:inline-block;font:600 11px/1 var(--font-sans);padding:2px 6px;border
 .caret{font-size:11px;opacity:.85}
 
 /* ---------- Zeile unter der Kopfzeile ---------- */
+.view-banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-2) var(--space-4);padding:var(--space-2) var(--space-5);background:var(--navy-800);color:#fff;font-size:14px;line-height:20px}
+.view-banner[hidden]{display:none}
+.view-banner__text strong{margin-right:var(--space-2)}
+.view-banner__actions{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+.view-banner .btn{background:transparent;color:#fff;border-color:rgba(255,255,255,.55)}
+.view-banner .btn:hover{background:rgba(255,255,255,.12)}
+.view-banner .btn:focus-visible{outline-color:#fff}
+body.is-view .edit-only{display:none!important}
+#publishDialog .field{margin-top:var(--space-3)}
 .source-bar{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-1) var(--space-4);min-height:52px;padding:var(--space-2) var(--space-5);background:var(--surface-raised);border-bottom:1px solid var(--border-subtle);font-size:13px;line-height:18px;color:var(--ink-muted)}
 .source-bar strong{color:var(--ink);font-weight:700}
 .source-item{display:inline-flex;align-items:center;gap:6px;min-width:0;max-width:100%}
@@ -740,6 +749,8 @@ dialog.drawer[open]{animation:drawerIn var(--duration-base) var(--ease-smooth)}
   @page{size:A4 landscape;margin:11mm}
   :root,[data-theme]{ --navy-950:#070d1b;--navy-900:#0b1730;--navy-800:#10203f;--navy-700:#1a2f57;--navy-500:#3d5a99;--red-600:#c8102e;--red-400:#ff4d6a;--amber-400:#f2b705;--green-500:#2f9e44;--header-ink:#f2f5ff;--header-muted:#a9b8de;--focus-ring-inverse:#ffd34d;--surface-base:#f3f5f9;--surface-raised:#ffffff;--surface-sunken:#e9edf4;--surface-glass:rgba(255,255,255,0.72);--border-subtle:#d9dfeb;--border-control:#7d8aa6;--ink:#0b1730;--ink-muted:#46557a;--accent:#c8102e;--accent-hover:#a50c26;--on-accent:#ffffff;--accent-text:#c8102e;--strong-bg:#0b1730;--on-strong:#ffffff;--focus-ring:#1a2f57;--brand-deep:#10203f;--nav-active:#e4e9f5;--mark-danger:#c8102e;--mark-warn:#b07800;--mark-ok:#2f9e44;--mark-done:#3d5a99;--status-overdue-bg:#fde8ec;--status-overdue-ink:#a10b24;--status-soon-bg:#fff3cc;--status-soon-ink:#6b4a00;--status-ok-bg:#dff5e4;--status-ok-ink:#14622a;--status-done-bg:#e4e9f5;--status-done-ink:#1a2f57;--area-1:#c8102e;--area-2:#9a6400;--area-3:#1e8035;--area-4:#1f6fd1;--area-5:#c2188a;--area-6:#0c7a76;--area-7:#b84708;--area-8:#5b6b8c;--header-start:#ffffff;--header-title:#0b1730;--header-title-muted:#46557a;--mark-rejected:#6b7085;--mark-postponed:#6f55a8;--status-rejected-bg:#eceef3;--status-rejected-ink:#3b4157;--status-postponed-bg:#ece7f8;--status-postponed-ink:#4a3680;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;--space-7:48px;--space-8:64px;--radius-sm:6px;--radius-md:10px;--radius-lg:16px;--radius-xl:24px;--radius-pill:999px;--blur-glass:18px;--duration-fast:120ms;--duration-base:220ms;--ease-smooth:cubic-bezier(0.2,0.8,0.2,1);--duration-sweep:8000ms;--font-display:"Sora", "Segoe UI", system-ui, sans-serif;--font-sans:"Manrope", "Segoe UI", system-ui, sans-serif; --surface-glass:#ffffff;--surface-base:#ffffff;--shadow-raise:none;--shadow-float:none;--shadow-glow:none}
   html,body{background:#fff !important;color:#0b1730;font-size:10pt;line-height:1.4}
+  .view-banner{background:#fff !important;color:#0b1730 !important;border:1px solid #0b1730;padding:4px 8px}
+  .view-banner__actions{display:none !important}
   *{-webkit-backdrop-filter:none !important;backdrop-filter:none !important;text-shadow:none !important}
   .app-header,.side-nav,.source-bar,.skip-link,#messageArea,.quick-filters,.more-filters,.chip button,.menu,.toolbar-foot .spacer,.header-actions,.toolbar,.toolbar-foot .btn,.btn,.hero-media,.dropzone,.no-print,.drop-overlay,.loading,dialog,.app-footer,.sheet-tabs .sheet-tab:not([aria-pressed="true"]),.cell-actions,.es-themes,.kpi-ring,.sx-areas,.sx-hero__visual,.sx-sonar,.unassigned-row,.sx-drop,.sx-hero__actions{display:none !important}
   *,*::before,*::after{animation:none !important;transition:none !important}
@@ -803,9 +814,9 @@ dialog.drawer[open]{animation:drawerIn var(--duration-base) var(--ease-smooth)}
   <div class="header-actions">
     <button type="button" class="btn btn-primary" id="btnImport">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h10l6 6v10H4z"/><path d="M14 4v6h6"/><path d="M8 14l2.5 3L8 20M13 14l-2.5 3 2.5 3" transform="translate(0,-1)"/></svg>
-      Excel aktualisieren
+      <span id="btnImportLabel">Excel aktualisieren</span>
     </button>
-    <button type="button" class="btn btn-dark" id="btnNewAction">
+    <button type="button" class="btn btn-dark edit-only" id="btnNewAction">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
       Neue Maßnahme
     </button>
@@ -815,11 +826,12 @@ dialog.drawer[open]{animation:drawerIn var(--duration-base) var(--ease-smooth)}
         Export &amp; Druck <span class="caret" aria-hidden="true">▾</span>
       </button>
       <ul class="menu menu-right" id="exportMenu" role="menu" aria-labelledby="btnExportMenu" hidden>
-        <li role="none" class="menu-narrow"><button type="button" role="menuitem" class="menu-item" id="btnNewActionMenu"><span class="mi-title">Neue Maßnahme</span><span class="mi-hint">Maßnahme manuell erfassen</span></button></li>
+        <li role="none" class="menu-narrow edit-only"><button type="button" role="menuitem" class="menu-item" id="btnNewActionMenu"><span class="mi-title">Neue Maßnahme</span><span class="mi-hint">Maßnahme manuell erfassen</span></button></li>
         <li role="none"><button type="button" role="menuitem" class="menu-item" id="btnPrint"><span class="mi-title">Drucken / PDF</span><span class="mi-hint">Optimierte Druckansicht der aktuellen Seite</span></button></li>
         <li role="none"><button type="button" role="menuitem" class="menu-item" id="btnExportFiltered"><span class="mi-title">CSV – gefilterte Maßnahmen</span><span class="mi-hint">Nur die aktuell angezeigten Einträge</span></button></li>
         <li role="none"><button type="button" role="menuitem" class="menu-item" id="btnExportAll"><span class="mi-title">CSV – alle Maßnahmen</span><span class="mi-hint">Für Excel, Semikolon-getrennt</span></button></li>
         <li role="none"><button type="button" role="menuitem" class="menu-item" id="btnExportXlsx"><span class="mi-title">Excel-Datei – alle Maßnahmen</span><span class="mi-hint">Inkl. manuell erfasster Einträge</span></button></li>
+        <li role="none" class="edit-only menu-sep"><button type="button" role="menuitem" class="menu-item" id="btnPublish"><span class="mi-title">Stand veröffentlichen</span><span class="mi-hint">„ASI_Stand.xlsx“ für den SharePoint-Ordner speichern</span></button></li>
       </ul>
     </div>
   </div>
@@ -827,6 +839,14 @@ dialog.drawer[open]{animation:drawerIn var(--duration-base) var(--ease-smooth)}
 </header>
 
 <nav class="sx-areas" id="areas" aria-label="Bereichsleiste"></nav>
+
+<div class="view-banner" id="viewBanner" role="status" hidden>
+  <div class="view-banner__text"><strong>Ansichtsmodus</strong> <span id="viewBannerText"></span></div>
+  <div class="view-banner__actions">
+    <button type="button" class="btn btn-sm" id="btnViewReload">Neuen Stand laden</button>
+    <button type="button" class="btn btn-sm" id="btnViewExit">Ansichtsmodus beenden</button>
+  </div>
+</div>
 
 <div class="source-bar" id="sourceBar" aria-label="Datenquelle">
   <span class="source-item"><span>Datei:</span> <strong id="srcFile">–</strong></span>
@@ -1069,6 +1089,18 @@ dialog.drawer[open]{animation:drawerIn var(--duration-base) var(--ease-smooth)}
   </div>
 </dialog>
 
+<dialog id="publishDialog" aria-labelledby="publishTitle" aria-describedby="publishText">
+  <div class="dlg">
+    <div class="dlg-head"><h2 id="publishTitle">Stand veröffentlichen</h2><button type="button" class="dlg-close" data-close aria-label="Dialog schließen">×</button></div>
+    <div class="dlg-body">
+      <p id="publishText">Es wird die Datei „ASI_Stand.xlsx“ mit allen Maßnahmen, Bereichen und dem heutigen Datum erzeugt. Speichern Sie sie im gemeinsamen SharePoint-Ordner und ersetzen Sie die vorhandene Datei. Alle anderen öffnen sie im Dashboard über „Excel aktualisieren“ bzw. „Stand laden“ und sehen den Stand nur lesend.</p>
+      <div class="field"><label for="pubName">Gepflegt von (optional, erscheint im Ansichtsmodus)</label>
+        <input type="text" id="pubName" class="input" maxlength="80" autocomplete="name"></div>
+    </div>
+    <div class="dlg-foot"><button type="button" class="btn" data-close>Abbrechen</button><button type="button" class="btn btn-navy" id="btnPublishSave">Speichern …</button></div>
+  </div>
+</dialog>
+
 <dialog id="importDialog" aria-labelledby="importTitle">
   <div class="dlg">
     <div class="dlg-head"><h2 id="importTitle">Import</h2><button type="button" class="dlg-close" data-close aria-label="Dialog schließen">×</button></div>
@@ -1113,7 +1145,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 (function () {
   'use strict';
 
-  const APP_VERSION = '1.2.0';
+  const APP_VERSION = '1.3.0';
 
   /* =====================================================================
    * Konfiguration
@@ -1987,6 +2019,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     hiddenCols: new Set(),
     area: 'gesamt',
     allItems: [],
+    mode: 'edit',      // 'edit' = Pflege, 'view' = Ansichtsmodus (veröffentlichter Stand)
+    stand: null,       // Kopfdaten des geladenen Stands im Ansichtsmodus
     dense: false,
     selectedId: null
   };
@@ -2021,6 +2055,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       return '';
     },
     async save() {
+      if (State.mode === 'view') return false; // Ansichtsmodus schreibt nie in die eigenen Daten
       try { await Store.put('areas', Areas.state); return true; } catch (e) { return false; }
     },
     add() {
@@ -2035,6 +2070,154 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       return id;
     }
   };
+
+  /* =====================================================================
+   * Veröffentlichter Stand (eine pflegende Person, alle anderen sehen den Stand)
+   * Datei: Excel-Arbeitsmappe mit lesbaren Blättern und einem ausgeblendeten Datenblatt.
+   * Das Dashboard liest ausschließlich das Datenblatt; Änderungen in Excel werden nicht übernommen.
+   * ===================================================================== */
+  const STAND_MARK = 'ASI-STAND-JSON v1';
+  const STAND_SHEET = '_ASI_Daten';
+  const STAND_FILE = 'ASI_Stand.xlsx';
+  const Stand = {
+    collect(publishedBy) {
+      return {
+        format: 'ASI-Stand', version: 1, appVersion: APP_VERSION,
+        publishedAt: new Date().toISOString(), publishedBy: publishedBy || '',
+        snapshot: State.snapshot, manual: State.manual, areas: Areas.state
+      };
+    },
+    isValid(d) {
+      return !!d && d.format === 'ASI-Stand' && d.version === 1 && typeof d.publishedAt === 'string' && Array.isArray(d.manual) &&
+        Areas.isValid(d.areas) && (d.snapshot === null || (typeof d.snapshot === 'object' && Array.isArray(d.snapshot.actions)));
+    },
+    buildWorkbook(d) {
+      const wb = XLSX.utils.book_new();
+      const excelEpoch = DateUtil.dayNumber(1899, 12, 30);
+      const dateVal = (dt) => (dt && dt.s === 'ok' ? DateUtil.num(dt) - excelEpoch : (dt && dt.s === 'invalid' ? dt.raw : ''));
+      const recs = (d.snapshot ? d.snapshot.actions : []).concat(d.manual);
+      const areaName = (id) => { const a = d.areas.areas.find((x) => x.id === id); return a && id !== 'gesamt' ? a.name : ''; };
+      const info = [
+        ['ASI-Stand – veröffentlichter Stand des Maßnahmen- und Fristendashboards'], [],
+        ['Veröffentlicht am', Util.formatDateTime(d.publishedAt)],
+        ['Gepflegt von', d.publishedBy || '–'],
+        ['Excel-Grundlage', d.snapshot ? d.snapshot.fileName : 'keine'],
+        ['Maßnahmen gesamt', recs.length],
+        ['davon manuell erfasst', d.manual.length], [],
+        ['Hinweis', 'Diese Datei im Dashboard über „Stand laden“ bzw. „Excel aktualisieren“ öffnen. Änderungen hier in Excel werden vom Dashboard nicht übernommen.']
+      ];
+      const wsInfo = XLSX.utils.aoa_to_sheet(info);
+      wsInfo['!cols'] = [{ wch: 24 }, { wch: 90 }];
+      XLSX.utils.book_append_sheet(wb, wsInfo, 'Info');
+      const head = ['Bereich', 'Aktion', 'Thema', 'Herkunft', 'Zuständigkeit', 'vom', 'Zieldatum', 'umgesetzt am', 'Status', 'Kommentar', 'Erfassung'];
+      const cut = (v) => (typeof v === 'string' && v.length > 32000 ? v.slice(0, 32000) + ' …' : v);
+      const rows = recs.map((r) => [areaName(r.bereichId), r.aktion, r.thema, r.herkunft, r.zust, dateVal(r.vom), dateVal(r.ziel), dateVal(r.umgesetzt), r.status, r.kommentar, r.src === 'manual' ? 'manuell' : 'Excel'].map(cut));
+      const wsM = XLSX.utils.aoa_to_sheet([head].concat(rows));
+      for (let i = 1; i <= rows.length; i++) [5, 6, 7].forEach((c) => { const cell = wsM[XLSX.utils.encode_cell({ r: i, c: c })]; if (cell && cell.t === 'n') cell.z = 'dd.mm.yyyy'; });
+      wsM['!cols'] = [18, 60, 18, 16, 22, 11, 11, 12, 16, 50, 10].map((w) => ({ wch: w }));
+      XLSX.utils.book_append_sheet(wb, wsM, 'Maßnahmen');
+      const wsB = XLSX.utils.aoa_to_sheet([['Position', 'Name', 'Kennung']].concat(d.areas.areas.map((a, i) => [i, a.name, a.id])));
+      XLSX.utils.book_append_sheet(wb, wsB, 'Bereiche');
+      const json = JSON.stringify(d);
+      const chunks = [[STAND_MARK]];
+      for (let i = 0; i < json.length; i += 30000) chunks.push([json.slice(i, i + 30000)]);
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(chunks), STAND_SHEET);
+      wb.Workbook = { Sheets: [{ Hidden: 0 }, { Hidden: 0 }, { Hidden: 0 }, { Hidden: 1 }] };
+      return wb;
+    },
+    /** Erkennt eine Stand-Datei; liefert die Daten oder null. Wirft ImportError bei beschädigtem Stand. */
+    detect(wb) {
+      const ws = wb.Sheets[STAND_SHEET];
+      if (!ws || !ws.A1 || ws.A1.v !== STAND_MARK) return null;
+      let json = '';
+      for (let r = 2; r < 100000; r++) { const c = ws['A' + r]; if (!c || c.v === undefined || c.v === '') break; json += String(c.v); }
+      let d = null;
+      try { d = JSON.parse(json); } catch (e) { d = null; }
+      if (!Stand.isValid(d)) throw new ImportError('Stand-Datei ist beschädigt', 'Die Datei ist als veröffentlichter Stand gekennzeichnet, ihr Datenblatt ist aber unvollständig oder verändert.', ['Bitte die pflegende Person bitten, den Stand erneut zu veröffentlichen.']);
+      return d;
+    },
+    async publish(name) {
+      if (!State.allItems.length) { showMessage('warn', 'Es gibt noch keine Maßnahmen zum Veröffentlichen.', 6000); return; }
+      // Speichern-Dialog sofort aus dem Klick heraus öffnen (Edge/Chrome), sonst Download
+      let handle = null;
+      if (typeof window.showSaveFilePicker === 'function') {
+        try {
+          handle = await window.showSaveFilePicker({ suggestedName: STAND_FILE, id: 'asi-stand', types: [{ description: 'Excel-Arbeitsmappe', accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] } }] });
+        } catch (e) {
+          if (e && e.name === 'AbortError') return;
+          handle = null;
+        }
+      }
+      const data = Stand.collect(name);
+      const out = XLSX.write(Stand.buildWorkbook(data), { bookType: 'xlsx', type: 'array', compression: true });
+      const blob = new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      if (handle) {
+        try {
+          const w = await handle.createWritable();
+          await w.write(blob);
+          await w.close();
+          showMessage('ok', 'Stand vom ' + Util.formatDateTime(data.publishedAt) + ' wurde als „' + handle.name + '“ gespeichert. Liegt die Datei im gemeinsamen SharePoint-Ordner, sehen alle den neuen Stand nach „Stand laden“.', 10000);
+          return;
+        } catch (e) { /* weiter mit Download */ }
+      }
+      Exporter.download(blob, STAND_FILE);
+      showMessage('info', '„' + STAND_FILE + '“ wurde heruntergeladen. Bitte in den gemeinsamen SharePoint-Ordner verschieben und die vorhandene Datei ersetzen.', 12000);
+    },
+    async enterView(d, fileName) {
+      if (State.mode === 'edit') {
+        const ok = await confirmAction('In den Ansichtsmodus wechseln?', '„' + fileName + '“ ist ein veröffentlichter Stand vom ' + Util.formatDateTime(d.publishedAt) + (d.publishedBy ? ' (gepflegt von ' + d.publishedBy + ')' : '') + '. Im Ansichtsmodus sehen Sie diesen Stand, können aber nichts ändern. Ihre eigenen Daten in diesem Browser bleiben gespeichert und sind nach „Ansichtsmodus beenden“ wieder da.', 'Stand anzeigen');
+        if (!ok) return false;
+      }
+      Stand.apply(d);
+      try { await Store.put('stand', d); } catch (e) { State.storageOk = false; }
+      savePrefs();
+      refresh();
+      showMessage('ok', 'Stand vom ' + Util.formatDateTime(d.publishedAt) + ' geladen' + (d.publishedBy ? ' (gepflegt von ' + d.publishedBy + ')' : '') + '.', 8000);
+      return true;
+    },
+    apply(d) {
+      State.mode = 'view';
+      State.stand = { publishedAt: d.publishedAt, publishedBy: d.publishedBy || '', appVersion: d.appVersion || '' };
+      State.snapshot = d.snapshot;
+      State.manual = d.manual.filter((m) => m && m.src === 'manual' && m.id);
+      Areas.state = d.areas;
+      State.source = 'stand';
+      State.today = DateUtil.todayNumber();
+      State.generic = {};
+      State.pageLimit = CONFIG.pageSize;
+      if (!Areas.find(State.area)) State.area = 'gesamt';
+    },
+    async exitView() {
+      State.mode = 'edit';
+      State.stand = null;
+      try { await Store.del('stand'); } catch (e) { /* ignorieren */ }
+      await loadOwnData();
+      savePrefs();
+      refresh();
+      showMessage('ok', 'Ansichtsmodus beendet. Es werden wieder Ihre eigenen Daten angezeigt.', 6000);
+    }
+  };
+
+  /** Eigene (Pflege-)Daten aus IndexedDB laden */
+  async function loadOwnData() {
+    State.snapshot = null;
+    State.manual = [];
+    State.source = 'none';
+    Areas.state = null;
+    try {
+      const snap = await Store.get('snapshot');
+      if (snap && snap.schema === 2 && Array.isArray(snap.actions)) { State.snapshot = snap; State.source = 'local'; }
+      const areas = await Store.get('areas');
+      if (Areas.isValid(areas)) Areas.state = areas;
+      const manual = await Store.get('manual');
+      if (Array.isArray(manual)) State.manual = manual.filter((m) => m && m.src === 'manual' && m.id);
+      State.storageOk = true;
+    } catch (e) {
+      State.storageOk = false;
+    }
+    if (!Areas.state) { Areas.state = Areas.defaults(); Areas.save(); }
+    if (!Areas.find(State.area)) State.area = 'gesamt';
+  }
 
   /** Ein-/ausblendbare Spalten der Maßnahmentabelle (Friststatus und Aktion bleiben immer sichtbar) */
   const TABLE_COLS = [
@@ -2277,12 +2460,12 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         else dlg.setAttribute('open', '');
       } catch (e) { dlg.setAttribute('open', ''); }
     },
-    anyModalOpen() { return ['editDialog', 'confirmDialog', 'importDialog', 'areaDialog', 'themesDialog'].some((id) => $(id).open); },
+    anyModalOpen() { return ['editDialog', 'confirmDialog', 'importDialog', 'areaDialog', 'themesDialog', 'publishDialog'].some((id) => $(id).open); },
     close(dlg) {
       try { if (typeof dlg.close === 'function') dlg.close(); else dlg.removeAttribute('open'); } catch (e) { dlg.removeAttribute('open'); }
     },
     init() {
-      ['detailDialog', 'editDialog', 'confirmDialog', 'importDialog', 'areaDialog', 'themesDialog'].forEach((id) => {
+      ['detailDialog', 'editDialog', 'confirmDialog', 'importDialog', 'areaDialog', 'themesDialog', 'publishDialog'].forEach((id) => {
         const dlg = $(id);
         dlg.addEventListener('click', (ev) => {
           const t = ev.target;
@@ -2347,6 +2530,14 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (s && State.source === 'local') badge.appendChild(h('span', { class: 'pill pill-local', title: 'Diese Daten stammen aus dem lokalen Browserspeicher' }, 'Lokal gespeicherte Daten'));
       else if (s && State.source === 'import') badge.appendChild(h('span', { class: 'pill pill-fresh' }, 'Soeben importiert'));
       else badge.appendChild(h('span', { class: 'pill pill-none' }, 'Kein Excel-Datenstand'));
+      if (State.mode === 'view') { clear(badge); badge.appendChild(h('span', { class: 'pill pill-local' }, 'Veröffentlichter Stand')); }
+      document.body.classList.toggle('is-view', State.mode === 'view');
+      const vb = $('viewBanner');
+      vb.hidden = State.mode !== 'view';
+      if (State.mode === 'view' && State.stand) {
+        $('viewBannerText').textContent = 'Stand vom ' + Util.formatDateTime(State.stand.publishedAt) + (State.stand.publishedBy ? ' · gepflegt von ' + State.stand.publishedBy : '') + '. Fristen werden zum heutigen Datum berechnet.';
+      }
+      $('btnImportLabel').textContent = State.mode === 'view' ? 'Stand laden' : 'Excel aktualisieren';
       const man = $('srcManual');
       clear(man);
       if (State.manual.length) man.appendChild(h('span', { class: 'pill pill-manual' }, State.manual.length + ' manuell erfasst'));
@@ -2431,7 +2622,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       $('h-dashboard').textContent = Areas.name(State.area) || 'Dashboard';
       $('dashSub').textContent = home ? 'Management-Übersicht zu Maßnahmen und Fristen im Arbeitsschutz' : 'Alle Maßnahmen und Fristen dieses Bereichs';
       root.appendChild(home ? Render.homeHero(c) : Render.areaHero(c));
-      if (home) { const un = Render.unassignedCard(); if (un) root.appendChild(un); }
+      if (home && State.mode === 'edit') { const un = Render.unassignedCard(); if (un) root.appendChild(un); }
       root.appendChild(Render.kpis(c));
       if (!State.items.length) return;
 
@@ -2544,7 +2735,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           ]),
           Render.dsDropzone(),
           h('div', { class: 'sx-hero__actions' }, [
-            h('button', { type: 'button', class: 'sx-btn sx-btn--strong', onclick: () => Editor.open(null) }, [shapeIcon([['path', { d: 'M12 5v14M5 12h14' }]], 'sx-i'), 'Neue Maßnahme erfassen']),
+            State.mode === 'edit' ? h('button', { type: 'button', class: 'sx-btn sx-btn--strong', onclick: () => Editor.open(null) }, [shapeIcon([['path', { d: 'M12 5v14M5 12h14' }]], 'sx-i'), 'Neue Maßnahme erfassen']) : null,
             h('button', { type: 'button', class: 'sx-btn sx-btn--ghost', text: 'Schwerpunktthemen ansehen', onclick: openThemes })
           ])
         ]));
@@ -2564,15 +2755,15 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     /** Hero eines Bereichs: Leerzustand oder Statusübersicht des Bereichs */
     areaHero(c) {
       const name = Areas.name(State.area);
-      const actions = h('div', { class: 'sx-hero__actions' }, [
+      const actions = State.mode === 'edit' ? h('div', { class: 'sx-hero__actions' }, [
         h('button', { type: 'button', class: 'sx-btn sx-btn--strong', onclick: () => Editor.open(null) }, [shapeIcon([['path', { d: 'M12 5v14M5 12h14' }]], 'sx-i'), 'Neue Maßnahme erfassen']),
         h('button', { type: 'button', class: 'sx-btn sx-btn--ghost', text: 'Bereich umbenennen', onclick: () => AreaManage.open(State.area) })
-      ]);
+      ]) : null;
       const stack = State.items.length
         ? h('div', { class: 'sx-hero__stack' }, [h('h3', { id: 'heroTitle', text: 'Maßnahmen in ' + name }), h('section', { class: 'sx-block' }, [h('h4', { text: 'Maßnahmen nach Status' }), Render.statusOverview(c)]), actions])
         : h('div', { class: 'sx-hero__stack' }, [
           h('h3', { id: 'heroTitle', text: 'Noch keine Maßnahmen in ' + name }),
-          h('p', { text: 'Erfassen Sie hier die Maßnahmen dieses Bereichs. Die Gesamtübersicht übernimmt sie automatisch. Maßnahmen aus der Excel-Datei erscheinen vorerst nur in der Gesamtübersicht.' }),
+          h('p', { text: State.mode === 'view' ? 'Im veröffentlichten Stand gibt es für diesen Bereich noch keine Maßnahmen.' : 'Erfassen Sie hier die Maßnahmen dieses Bereichs. Die Gesamtübersicht übernimmt sie automatisch. Maßnahmen aus der Excel-Datei erscheinen vorerst nur in der Gesamtübersicht.' }),
           actions
         ]);
       return h('section', { class: 'sx-hero sx-hero--single', 'aria-labelledby': 'heroTitle' }, h('div', { class: 'sx-hero__body' }, stack));
@@ -2733,7 +2924,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       // Vorhandene Tabs an Ort und Stelle aktualisieren (Doppelklick und Fokus bleiben erhalten)
       const existing = Array.from(root.querySelectorAll('.sx-tab'));
       const full = Areas.deps().length >= AREA_MAX;
-      if (existing.length === Areas.state.areas.length && existing.every((el, i) => el.dataset.id === Areas.state.areas[i].id)) {
+      if (root.dataset.mode === State.mode && existing.length === Areas.state.areas.length && existing.every((el, i) => el.dataset.id === Areas.state.areas[i].id)) {
         existing.forEach((el, i) => {
           const a = Areas.state.areas[i];
           const sel = a.id === State.area;
@@ -2746,12 +2937,15 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           cnt.textContent = Util.num(n);
           cnt.setAttribute('aria-label', n + ' offene');
         });
-        const addBtn = $('btnAreaAddTab');
-        addBtn.disabled = full;
-        addBtn.title = full ? 'Es sind höchstens ' + AREA_MAX + ' Bereiche möglich.' : 'Bereich hinzufügen';
+        const addBtn = document.getElementById('btnAreaAddTab');
+        if (addBtn) {
+          addBtn.disabled = full;
+          addBtn.title = full ? 'Es sind höchstens ' + AREA_MAX + ' Bereiche möglich.' : 'Bereich hinzufügen';
+        }
         return;
       }
       clear(root);
+      root.dataset.mode = State.mode;
       const list = h('div', { class: 'sx-areas__list', role: 'tablist', 'aria-label': 'Bereiche' });
       Areas.state.areas.forEach((a, i) => {
         const sel = a.id === State.area;
@@ -2762,7 +2956,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         ]));
       });
       root.appendChild(list);
-      root.appendChild(h('div', { class: 'sx-areas__tools' }, [
+      if (State.mode === 'edit') root.appendChild(h('div', { class: 'sx-areas__tools' }, [
         h('button', { type: 'button', class: 'sx-btn sx-btn--ghost sx-btn--icon', id: 'btnAreaAddTab', title: full ? 'Es sind höchstens ' + AREA_MAX + ' Bereiche möglich.' : 'Bereich hinzufügen', 'aria-label': full ? 'Bereich hinzufügen – höchstens ' + AREA_MAX + ' Bereiche möglich' : 'Bereich hinzufügen', disabled: full ? true : null }, shapeIcon([['path', { d: 'M12 5v14M5 12h14' }]], 'sx-i')),
         h('button', { type: 'button', class: 'sx-btn sx-btn--ghost sx-btn--icon', id: 'btnAreaManage', title: 'Bereiche umbenennen', 'aria-label': 'Bereiche umbenennen' }, shapeIcon([['path', { d: 'M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z' }], ['path', { d: 'm14 8 3 3' }]], 'sx-i'))
       ]));
@@ -2985,7 +3179,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       const comment = r.kommentar ? h('div', { class: 'clamp clamp-2', text: r.kommentar }) : h('span', { class: 'muted', text: '–' });
       const btns = h('div', { class: 'cell-actions' }, [
         h('button', { type: 'button', class: 'btn btn-sm', 'aria-label': 'Details anzeigen: ' + (r.aktion || 'Maßnahme').slice(0, 80), text: 'Details', onclick: () => Detail.open(it) }),
-        r.src === 'manual' ? h('button', { type: 'button', class: 'btn btn-sm', 'aria-label': 'Bearbeiten: ' + (r.aktion || 'Maßnahme').slice(0, 80), text: 'Bearbeiten', onclick: () => Editor.open(r) }) : null
+        r.src === 'manual' && State.mode === 'edit' ? h('button', { type: 'button', class: 'btn btn-sm', 'aria-label': 'Bearbeiten: ' + (r.aktion || 'Maßnahme').slice(0, 80), text: 'Bearbeiten', onclick: () => Editor.open(r) }) : null
       ]);
       const td = (label, child, cls) => h('td', { 'data-label': label, class: cls || null }, child);
       const tr = h('tr', { class: [it.done ? 'is-done' : '', State.selectedId === r.id ? 'is-selected' : ''].join(' ').trim() || null, dataset: { id: r.id } }, [
@@ -3419,10 +3613,11 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         body.appendChild(h('div', { class: 'detail-sec' }, [h('h3', { text: 'Weitere Spalten aus Excel' }), dl2]));
       }
       if (r.src === 'manual' && r.created) body.appendChild(h('p', { class: 'card-note', style: 'margin-top:14px', text: 'Erfasst: ' + Util.formatDateTime(r.created) + (r.updated ? ' · Zuletzt geändert: ' + Util.formatDateTime(r.updated) : '') }));
-      if (r.src === 'excel') body.appendChild(h('p', { class: 'card-note', style: 'margin-top:14px', text: 'Diese Maßnahme stammt aus der Excel-Datei. Änderungen bitte in der Arbeitsmappe vornehmen und anschließend „Excel aktualisieren“ wählen.' }));
+      if (State.mode === 'view') body.appendChild(h('p', { class: 'card-note', style: 'margin-top:14px', text: 'Ansichtsmodus: Diese Maßnahme stammt aus dem veröffentlichten Stand. Änderungen nimmt die pflegende Person vor.' }));
+      else if (r.src === 'excel') body.appendChild(h('p', { class: 'card-note', style: 'margin-top:14px', text: 'Diese Maßnahme stammt aus der Excel-Datei. Änderungen bitte in der Arbeitsmappe vornehmen und anschließend „Excel aktualisieren“ wählen.' }));
       const foot = $('detailFoot');
       clear(foot);
-      if (r.src === 'manual') {
+      if (r.src === 'manual' && State.mode === 'edit') {
         foot.appendChild(h('button', { type: 'button', class: 'btn btn-danger', text: 'Löschen', onclick: () => { Dialogs.close($('detailDialog')); Editor.remove(r); } }));
         foot.appendChild(h('span', { class: 'spacer' }));
         if (!it.done) foot.appendChild(h('button', { type: 'button', class: 'btn', text: 'Als erledigt markieren', onclick: () => { Dialogs.close($('detailDialog')); Editor.markDone(r); } }));
@@ -3448,6 +3643,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
   const Editor = {
     editing: null,
     open(rec) {
+      if (State.mode === 'view') { showMessage('info', 'Im Ansichtsmodus lassen sich keine Maßnahmen erfassen oder ändern.', 5000); return; }
       Editor.editing = rec;
       $('editTitle').textContent = rec ? 'Maßnahme bearbeiten' : 'Neue Maßnahme';
       const selA = $('eBereich');
@@ -3565,6 +3761,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
   };
 
   async function persistManual() {
+    if (State.mode === 'view') return false;
     try { await Store.put('manual', State.manual); State.storageOk = true; return true; } catch (e) { State.storageOk = false; return false; }
   }
 
@@ -3663,6 +3860,15 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       setLoading(true, 'Arbeitsmappe wird analysiert …');
       await new Promise((r) => setTimeout(r, 30)); // UI aktualisieren lassen
       const wb = Importer.parseWorkbook(buf, ext, file.name);
+      const standData = Stand.detect(wb);
+      if (standData) {
+        setLoading(false);
+        await Stand.enterView(standData, file.name);
+        return;
+      }
+      if (State.mode === 'view') {
+        throw new ImportError('Keine Stand-Datei', '„' + file.name + '“ ist kein veröffentlichter Stand. Im Ansichtsmodus lassen sich nur veröffentlichte Stände laden (in der Regel „' + STAND_FILE + '“ aus dem gemeinsamen SharePoint-Ordner).', ['Die aktuelle Datei „' + STAND_FILE + '“ auswählen.', 'Wer selbst Maßnahmen pflegt: zuerst „Ansichtsmodus beenden“, dann die Excel-Datei einlesen.']);
+      }
       const snap = Importer.analyze(wb, { fileName: file.name, fileSize: file.size });
       // Erst nach erfolgreicher Prüfung übernehmen
       State.snapshot = snap;
@@ -3773,7 +3979,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     onFiltersChanged();
     $('fSearch').focus();
   }
-  function savePrefs() { Prefs.save({ view: State.view, filters: State.filters, hiddenCols: Array.from(State.hiddenCols), dense: State.dense, area: State.area }); }
+  function savePrefs() { const old = Prefs.load(); Prefs.save({ view: State.view, filters: State.filters, hiddenCols: Array.from(State.hiddenCols), dense: State.dense, area: State.area, mode: State.mode, publisher: old.publisher || '' }); }
 
   /** Bereich wechseln */
   function selectArea(id, focusTab) {
@@ -3807,6 +4013,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
   /** Dialog „Bereiche umbenennen“ */
   const AreaManage = {
     open(focusId) {
+      if (State.mode === 'view') return;
       AreaManage.renderList();
       Dialogs.open($('areaDialog'));
       const inp = document.getElementById('nm-' + (focusId || State.area));
@@ -3934,6 +4141,16 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         Areas.state = saved;
         return ok;
       });
+      t('Stand veröffentlichen und wieder laden (Excel-Datei)', () => {
+        const d = { format: 'ASI-Stand', version: 1, appVersion: APP_VERSION, publishedAt: '2026-10-29T10:00:00.000Z', publishedBy: 'Test', snapshot: null,
+          manual: Array.from({ length: 12 }, (_, i) => ({ id: 'm-' + i, src: 'manual', row: null, bereichId: 'b1', herkunft: '', thema: 'Brandschutz', aktion: 'Löscher <prüfen> & „ok“ ' + 'x'.repeat(3900), zust: 'A', kommentar: '', status: 'offen', vom: { s: 'empty' }, ziel: DateUtil.make(2026, 11, 3, 0, 0, ''), umgesetzt: { s: 'empty' }, extra: [] })),
+          areas: Areas.defaults() };
+        const buf = XLSX.write(Stand.buildWorkbook(d), { bookType: 'xlsx', type: 'array' });
+        const wb = XLSX.read(new Uint8Array(buf), { type: 'array' });
+        const back = Stand.detect(wb);
+        const plain = XLSX.utils.sheet_to_json(wb.Sheets['Maßnahmen'], { header: 1 });
+        return { ok: !!back && JSON.stringify(back) === JSON.stringify(d) && plain.length === 13 && plain[1][0] === 'Bereich 1' && wb.SheetNames[0] === 'Info' && wb.Sheets[STAND_SHEET].A3, detail: wb.SheetNames.join(', ') };
+      });
       t('In Bearbeitung: sichtbar, Frist bleibt maßgeblich', () => { const e = Status.evaluate(mk(-2, { status: 'In Bearbeitung' }), today); return e.inProgress && e.cat === 'ueberfaellig'; });
       t('HTML-Escaping', () => Util.escapeHtml('<img src=x onerror="a">&\'') === '&lt;img src=x onerror=&quot;a&quot;&gt;&amp;&#39;');
       t('DOM-Ausgabe maskiert Zellinhalte', () => { const payload = '<img src=x onerror=alert(1)><b>x</b>'; const n = h('div', { text: payload }); return n.children.length === 0 && n.textContent === payload; });
@@ -3992,6 +4209,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     $('btnExportAll').addEventListener('click', () => Exporter.csv(State.allItems.slice().sort(urgencyCompare), 'ASI_Massnahmen_alle_' + Exporter.stamp() + '.csv'));
     $('btnExportXlsx').addEventListener('click', Exporter.xlsx);
     $('btnResetLocal').addEventListener('click', async () => {
+      if (State.mode === 'view') { $('btnViewExit').click(); return; }
       const cb = h('input', { type: 'checkbox', id: 'cbDelManual' });
       const extra = h('div', { style: 'margin-top:12px' }, [
         h('label', { class: 'check' }, [cb, 'Auch die ' + State.manual.length + ' manuell erfassten Maßnahmen löschen']),
@@ -4048,6 +4266,23 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     $('areaList').addEventListener('input', AreaManage.onInput);
     $('btnAreaAdd').addEventListener('click', AreaManage.addFromDialog);
     $('btnNewActionMenu').addEventListener('click', () => Editor.open(null));
+    $('btnPublish').addEventListener('click', () => {
+      if (!State.allItems.length) { showMessage('warn', 'Es gibt noch keine Maßnahmen zum Veröffentlichen.', 6000); return; }
+      $('pubName').value = Prefs.load().publisher || '';
+      Dialogs.open($('publishDialog'));
+      $('pubName').focus();
+    });
+    $('btnPublishSave').addEventListener('click', () => {
+      const name = Util.clean($('pubName').value).slice(0, 80);
+      const pr = Prefs.load(); pr.publisher = name; Prefs.save(pr);
+      Dialogs.close($('publishDialog'));
+      Stand.publish(name);
+    });
+    $('btnViewReload').addEventListener('click', openFilePicker);
+    $('btnViewExit').addEventListener('click', async () => {
+      const ok = await confirmAction('Ansichtsmodus beenden?', 'Der geladene Stand wird aus diesem Browser entfernt. Angezeigt werden danach Ihre eigenen Daten (leer, wenn Sie selbst nichts pflegen). Den Stand können Sie jederzeit wieder über „Stand laden“ öffnen.', 'Ansichtsmodus beenden');
+      if (ok) Stand.exitView();
+    });
     $('btnMoreFilters').addEventListener('click', () => {
       const panel = $('moreFilters');
       panel.hidden = !panel.hidden;
@@ -4078,7 +4313,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (t instanceof Element && t.closest('input, textarea, select, [contenteditable="true"]')) return;
       if (Dialogs.anyModalOpen()) return;
       if (ev.key === '/') { ev.preventDefault(); showView('massnahmen', false); $('fSearch').focus(); $('fSearch').select(); }
-      else if (ev.key === 'n' || ev.key === 'N') { ev.preventDefault(); Editor.open(null); }
+      else if ((ev.key === 'n' || ev.key === 'N') && State.mode === 'edit') { ev.preventDefault(); Editor.open(null); }
     });
     $('btnMoreActions').addEventListener('click', () => { State.pageLimit += CONFIG.pageSize; Render.actions(); });
     $('kbSearch').addEventListener('input', Util.debounce(() => { State.kb.q = $('kbSearch').value; Render.kanban(); }, 200));
@@ -4139,20 +4374,15 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     buildColumnsMenu();
     if (['status', 'herkunft', 'quelle', 'onlyOpen', 'onlyNoDate'].some((k) => !!State.filters[k])) { $('moreFilters').hidden = false; $('btnMoreFilters').setAttribute('aria-expanded', 'true'); }
 
-    // Lokale Daten laden
-    try {
-      const snap = await Store.get('snapshot');
-      if (snap && snap.schema === 2 && Array.isArray(snap.actions)) { State.snapshot = snap; State.source = 'local'; }
-      const areas = await Store.get('areas');
-      if (Areas.isValid(areas)) Areas.state = areas;
-      const manual = await Store.get('manual');
-      if (Array.isArray(manual)) State.manual = manual.filter((m) => m && m.src === 'manual' && m.id);
-      State.storageOk = true;
-    } catch (e) {
-      State.storageOk = false;
+    // Lokale Daten laden: im Ansichtsmodus den zuletzt geladenen Stand, sonst die eigenen Daten
+    let viewLoaded = false;
+    if (prefs && prefs.mode === 'view') {
+      try {
+        const d = await Store.get('stand');
+        if (Stand.isValid(d)) { Stand.apply(d); viewLoaded = true; }
+      } catch (e) { viewLoaded = false; }
     }
-    if (!Areas.state) { Areas.state = Areas.defaults(); Areas.save(); }
-    if (!Areas.find(State.area)) State.area = 'gesamt';
+    if (!viewLoaded) { State.mode = 'edit'; await loadOwnData(); }
     refresh();
     window.ASIDashboard = Object.freeze({ version: APP_VERSION, selfTest: State.selfTest });
   }
