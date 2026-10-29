@@ -1,4 +1,4 @@
-# Excel-Maßnahmen Bereichen zuordnen, Sonar ausblenden (Fassung 1.5.0)
+# Excel-Maßnahmen Bereichen zuordnen, Sonar ausblenden (ab Fassung 1.5.1)
 
 ## Nach Zuständigkeit zuordnen (für viele Maßnahmen auf einmal)
 
@@ -9,7 +9,17 @@
 
 Die Regel gilt dauerhaft, auch nach „Excel aktualisieren“ und für neue Zeilen derselben Zuständigkeit.
 
-## Einzeln zuordnen
+## Direkt in der Tabelle (ab 1.5.1)
+
+In der Ansicht **Maßnahmen** hat jede Zeile in der Spalte **„Bereich“** eine Auswahl. Wählen Sie dort den Bereich, und die Maßnahme erscheint sofort in diesem Bereich.
+
+- „ohne Bereich“ nimmt die Maßnahme wieder heraus.
+- Eine Meldung bietet „Rückgängig“ an.
+- Das funktioniert für Excel-Maßnahmen und für manuell erfasste Maßnahmen.
+- Bei Excel-Maßnahmen gilt die Auswahl wie eine Einzelzuordnung (siehe unten).
+- Tipp: Erst über den Filter „Zuständigkeit“ eingrenzen, dann Zeile für Zeile zuordnen.
+
+## Einzeln zuordnen (in den Details)
 
 In den Details einer Excel-Maßnahme gibt es den Abschnitt **„Bereich zuordnen“**:
 
@@ -39,5 +49,5 @@ In der Gesamtübersicht unter dem Lagebild: **„Sonar ausblenden“** bzw. **�
 | Bestehende Funktionen | 63 von 63 |
 | Bereiche | 44 von 44 |
 | Veröffentlichen und Ansichtsmodus | 32 von 32 |
-| Neu: Zuordnung und Sonar | 23 von 23 |
+| Zuordnung, Tabelle und Sonar | 29 von 29 |
 | Selbstprüfung | 28 von 28 |

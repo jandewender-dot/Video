@@ -665,6 +665,9 @@ dialog.drawer[open]{animation:drawerIn var(--duration-base) var(--ease-smooth)}
 .seg-zurueckgestellt{background:var(--mark-postponed)}
 .qf-rejected{--qf-c:var(--mark-rejected)}.qf-postponed{--qf-c:var(--mark-postponed)}
 .hide-bereich .c-bereich{display:none}
+.area-pick{min-height:36px;min-width:150px;max-width:220px;padding:0 var(--space-2);font-size:13px;line-height:18px}
+table.data.dense .area-pick{min-height:32px}
+@media print{.area-pick{border:0;background:none;padding:0;appearance:none;-webkit-appearance:none;min-width:0}}
 .kpi-navy{--kpi-mark:var(--mark-done)}
 .kpi-wrap{display:flex;flex-direction:column;gap:var(--space-3);margin:var(--space-5) 0 var(--space-4)}
 .kpi-wrap .kpi-grid{margin:0}
@@ -1165,7 +1168,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 (function () {
   'use strict';
 
-  const APP_VERSION = '1.5.0';
+  const APP_VERSION = '1.5.1';
 
   /* =====================================================================
    * Konfiguration
@@ -3297,7 +3300,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         td('umgesetzt am', dateCell(r.umgesetzt), 'c-umg nowrap'),
         td('Status', r.status || h('span', { class: 'muted', text: '–' }), 'c-status'),
         td('Kommentar', comment, 'c-kommentar col-comment'),
-        td('Bereich', Areas.name(r.bereichId) || h('span', { class: 'muted', text: 'ohne Bereich' }), 'c-bereich'),
+        td('Bereich', State.mode === 'edit' ? areaSelect(it) : (Areas.name(r.bereichId) || h('span', { class: 'muted', text: 'ohne Bereich' })), 'c-bereich'),
         td('Aktionen', btns, 'c-act')
       ]);
       // Ganze Zeile per Maus anklickbar (Tastatur nutzt die Schaltfläche „Details“)
@@ -4163,6 +4166,41 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     await persistManual();
     refresh();
     showMessage('ok', Util.num(n) + ' ' + Util.plural(n, 'Maßnahme wurde', 'Maßnahmen wurden') + ' „' + Areas.name(target) + '“ zugeordnet.', 12000, { label: 'Rückgängig', run: () => Editor.restore(prev, 'Zuordnung wurde rückgängig gemacht.') });
+  }
+
+  /** Auswahl „Bereich“ direkt in der Maßnahmentabelle (nur Pflege) */
+  function areaSelect(it) {
+    const r = it.rec;
+    const sel = h('select', { class: 'select select-sm area-pick', 'aria-label': 'Bereich: ' + (r.aktion || 'Maßnahme').slice(0, 80), dataset: { id: r.id } });
+    sel.appendChild(h('option', { value: '' }, 'ohne Bereich'));
+    Areas.deps().forEach((a) => sel.appendChild(h('option', { value: a.id }, a.name)));
+    sel.value = Areas.isDep(r.bereichId) ? r.bereichId : '';
+    sel.addEventListener('click', (ev) => ev.stopPropagation());
+    sel.addEventListener('change', () => setArea(r, sel.value, true));
+    return sel;
+  }
+  /** Bereich einer Maßnahme setzen: Excel über die Einzelzuordnung, manuell direkt am Eintrag */
+  async function setArea(r, target, fromTable) {
+    const prevAssign = JSON.parse(JSON.stringify(Assign.state));
+    const prevManual = State.manual.slice();
+    if (r.src === 'excel') {
+      Assign.state.byKey[Assign.key(r)] = target || '-';
+      await Assign.save();
+    } else {
+      State.manual = State.manual.map((m) => (m.id === r.id ? Object.assign({}, m, { bereichId: target, updated: new Date().toISOString() }) : m));
+      await persistManual();
+    }
+    refresh();
+    if (fromTable) {
+      const again = document.querySelector('#actionsBody select.area-pick[data-id="' + r.id + '"]');
+      if (again) again.focus();
+    }
+    const name = Areas.name(target) || 'ohne Bereich';
+    showMessage('ok', '„' + (r.aktion || 'Maßnahme').slice(0, 60) + '“ → ' + name + '.', 8000, { label: 'Rückgängig', run: async () => {
+      Assign.state = prevAssign; await Assign.save();
+      State.manual = prevManual; await persistManual();
+      refresh(); showMessage('info', 'Zuordnung wurde rückgängig gemacht.', 5000);
+    } });
   }
 
   /** Dialog „Excel-Maßnahmen nach Zuständigkeit zuordnen“ */
