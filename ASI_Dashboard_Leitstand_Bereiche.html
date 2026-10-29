@@ -296,6 +296,13 @@ kbd{display:inline-block;font:600 11px/1 var(--font-sans);padding:2px 6px;border
 .zust-table .select{min-width:200px}
 .zust-tag{white-space:nowrap}
 #zustDialog .sx-dialog__foot{flex-wrap:wrap}
+.choice-list{list-style:none;margin:var(--space-3) 0 0;padding:0;display:grid;gap:var(--space-2)}
+.choice-item{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;text-align:left;padding:var(--space-3) var(--space-4);border:1px solid var(--border-control);border-radius:var(--radius-md);background:var(--surface-raised);color:var(--ink);cursor:pointer;font:inherit}
+.choice-item:hover{border-color:var(--ink-muted);background:var(--surface-sunken)}
+.choice-item.is-primary{border-color:var(--strong-bg);box-shadow:inset 3px 0 0 var(--strong-bg)}
+.choice-item:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.choice-title{font-weight:700}
+.choice-hint{font-size:13px;line-height:18px;color:var(--ink-muted)}
 .view-banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-2) var(--space-4);padding:var(--space-2) var(--space-5);background:var(--navy-800);color:#fff;font-size:14px;line-height:20px}
 .view-banner[hidden]{display:none}
 .view-banner__text strong{margin-right:var(--space-2)}
@@ -808,6 +815,7 @@ table.data.dense .area-pick{min-height:32px}
   .result-count{color:#000}
   a{color:#000}
 }
+.menu-sep{border-top:1px solid var(--border-subtle);margin-top:4px;padding-top:4px}
 
 </style>
 </head>
@@ -843,6 +851,9 @@ table.data.dense .area-pick{min-height:32px}
         <li role="none"><button type="button" role="menuitem" class="menu-item" id="btnExportAll"><span class="mi-title">CSV – alle Maßnahmen</span><span class="mi-hint">Für Excel, Semikolon-getrennt</span></button></li>
         <li role="none"><button type="button" role="menuitem" class="menu-item" id="btnExportXlsx"><span class="mi-title">Excel-Datei – alle Maßnahmen</span><span class="mi-hint">Inkl. manuell erfasster Einträge</span></button></li>
         <li role="none" class="edit-only menu-sep"><button type="button" role="menuitem" class="menu-item" id="btnPublish"><span class="mi-title">Stand veröffentlichen</span><span class="mi-hint">„ASI_Stand.xlsx“ für den SharePoint-Ordner speichern</span></button></li>
+        <li role="none" class="edit-only menu-sep"><button type="button" role="menuitem" class="menu-item" id="btnBackupSave"><span class="mi-title">Sicherung speichern</span><span class="mi-hint" id="btnBackupSaveHint">Speicherort selbst wählen (z. B. OneDrive, Netzlaufwerk)</span></button></li>
+        <li role="none" class="edit-only" id="liBackupWhere" hidden><button type="button" role="menuitem" class="menu-item" id="btnBackupWhere"><span class="mi-title">Sicherung an anderem Ort speichern …</span><span class="mi-hint">Neuen Speicherort bzw. Dateinamen wählen</span></button></li>
+        <li role="none" class="edit-only"><button type="button" role="menuitem" class="menu-item" id="btnBackupRestore"><span class="mi-title">Sicherung wiederherstellen</span><span class="mi-hint" id="btnBackupRestoreHint">Sicherungsdatei auswählen</span></button></li>
       </ul>
     </div>
   </div>
@@ -1124,6 +1135,14 @@ table.data.dense .area-pick{min-height:32px}
   </div>
 </dialog>
 
+<dialog id="choiceDialog" aria-labelledby="choiceTitle" aria-describedby="choiceText">
+  <div class="dlg">
+    <div class="dlg-head"><h2 id="choiceTitle">Auswahl</h2><button type="button" class="dlg-close" data-close aria-label="Dialog schließen">×</button></div>
+    <div class="dlg-body"><p id="choiceText"></p><ul class="choice-list" id="choiceList"></ul></div>
+    <div class="dlg-foot"><button type="button" class="btn" data-close id="btnChoiceCancel">Abbrechen</button></div>
+  </div>
+</dialog>
+
 <dialog id="importDialog" aria-labelledby="importTitle">
   <div class="dlg">
     <div class="dlg-head"><h2 id="importTitle">Import</h2><button type="button" class="dlg-close" data-close aria-label="Dialog schließen">×</button></div>
@@ -1168,7 +1187,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 (function () {
   'use strict';
 
-  const APP_VERSION = '1.5.1';
+  const APP_VERSION = '1.6.0';
 
   /* =====================================================================
    * Konfiguration
@@ -2180,13 +2199,13 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       const recs = (d.snapshot ? d.snapshot.actions : []).concat(d.manual);
       const areaName = (id) => { const a = d.areas.areas.find((x) => x.id === id); return a && id !== 'gesamt' ? a.name : ''; };
       const info = [
-        ['ASI-Stand – veröffentlichter Stand des Maßnahmen- und Fristendashboards'], [],
-        ['Veröffentlicht am', Util.formatDateTime(d.publishedAt)],
+        [d.purpose === 'sicherung' ? 'ASI-Sicherung – Sicherung der Pflegedaten des Maßnahmen- und Fristendashboards' : 'ASI-Stand – veröffentlichter Stand des Maßnahmen- und Fristendashboards'], [],
+        [d.purpose === 'sicherung' ? 'Gesichert am' : 'Veröffentlicht am', Util.formatDateTime(d.publishedAt)],
         ['Gepflegt von', d.publishedBy || '–'],
         ['Excel-Grundlage', d.snapshot ? d.snapshot.fileName : 'keine'],
         ['Maßnahmen gesamt', recs.length],
         ['davon manuell erfasst', d.manual.length], [],
-        ['Hinweis', 'Diese Datei im Dashboard über „Stand laden“ bzw. „Excel aktualisieren“ öffnen. Änderungen hier in Excel werden vom Dashboard nicht übernommen.']
+        ['Hinweis', (d.purpose === 'sicherung' ? 'Wiederherstellen im Dashboard: Export & Druck › „Sicherung wiederherstellen“ oder „Excel aktualisieren“ › „Als eigene Daten übernehmen“.' : 'Diese Datei im Dashboard über „Stand laden“ bzw. „Excel aktualisieren“ öffnen.') + ' Änderungen hier in Excel werden vom Dashboard nicht übernommen.']
       ];
       const wsInfo = XLSX.utils.aoa_to_sheet(info);
       wsInfo['!cols'] = [{ wch: 24 }, { wch: 90 }];
@@ -2245,11 +2264,64 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       Exporter.download(blob, STAND_FILE);
       showMessage('info', '„' + STAND_FILE + '“ wurde heruntergeladen. Bitte in den gemeinsamen SharePoint-Ordner verschieben und die vorhandene Datei ersetzen.', 12000);
     },
-    async enterView(d, fileName) {
-      if (State.mode === 'edit') {
-        const ok = await confirmAction('In den Ansichtsmodus wechseln?', '„' + fileName + '“ ist ein veröffentlichter Stand vom ' + Util.formatDateTime(d.publishedAt) + (d.publishedBy ? ' (gepflegt von ' + d.publishedBy + ')' : '') + '. Im Ansichtsmodus sehen Sie diesen Stand, können aber nichts ändern. Ihre eigenen Daten in diesem Browser bleiben gespeichert und sind nach „Ansichtsmodus beenden“ wieder da.', 'Stand anzeigen');
-        if (!ok) return false;
+    /** Stand- oder Sicherungsdatei geladen: in der Pflege wählen, ob übernommen oder nur angesehen wird */
+    async offer(d, fileName) {
+      if (State.mode === 'view') return Stand.enterView(d);
+      const backup = d.purpose === 'sicherung';
+      const n = (d.snapshot ? d.snapshot.actions.length : 0) + d.manual.length;
+      const own = (State.snapshot ? State.snapshot.actions.length : 0) + State.manual.length;
+      const adopt = { key: 'adopt', label: 'Als eigene Daten übernehmen', hint: 'Ersetzt Ihre Daten in diesem Browser (' + Util.num(own) + ' Maßnahmen, Bereiche, Zuordnungen). Danach pflegen Sie mit diesem Stand weiter – z. B. nach einem PC-Wechsel.' };
+      const view = { key: 'view', label: 'Nur ansehen (Ansichtsmodus)', hint: 'Zeigt den Stand schreibgeschützt an. Ihre eigenen Daten bleiben gespeichert und sind nach „Ansichtsmodus beenden“ wieder da.' };
+      const choice = await chooseAction(backup ? 'Sicherung öffnen' : 'Veröffentlichten Stand öffnen',
+        '„' + fileName + '“ ist ' + (backup ? 'eine Sicherung' : 'ein veröffentlichter Stand') + ' vom ' + Util.formatDateTime(d.publishedAt) + (d.publishedBy ? ' (gepflegt von ' + d.publishedBy + ')' : '') + ' mit ' + Util.num(n) + ' Maßnahmen. Was möchten Sie tun?',
+        backup ? [adopt, view] : [view, adopt]);
+      if (choice === 'adopt') {
+        if (own > 0) {
+          const ok = await confirmAction('Eigene Daten ersetzen?', 'Ihre ' + Util.num(own) + ' Maßnahmen, Bereichsnamen und Zuordnungen in diesem Browser werden durch den Inhalt von „' + fileName + '“ ersetzt. Unmittelbar danach können Sie das noch rückgängig machen.', 'Daten ersetzen');
+          if (!ok) return false;
+        }
+        return Stand.adopt(d, fileName);
       }
+      if (choice === 'view') return Stand.enterView(d);
+      return false;
+    },
+    /** Inhalt einer Stand-/Sicherungsdatei als eigene Pflegedaten übernehmen */
+    async adopt(d, fileName) {
+      const prev = { snapshot: State.snapshot, manual: State.manual, areas: Areas.state, assign: Assign.state };
+      const persist = async (snap, manual, areas, assign) => {
+        try {
+          if (snap) await Store.put('snapshot', snap); else await Store.del('snapshot');
+          await Store.put('manual', manual);
+          await Store.put('areas', areas);
+          await Store.put('excelAssign', assign);
+          State.storageOk = true;
+        } catch (e) { State.storageOk = false; }
+      };
+      State.mode = 'edit';
+      State.stand = null;
+      State.snapshot = d.snapshot;
+      State.manual = d.manual.filter((m) => m && m.src === 'manual' && m.id);
+      Areas.state = d.areas;
+      Assign.state = d.excelAssign || Assign.empty();
+      State.source = d.snapshot ? 'local' : 'none';
+      State.today = DateUtil.todayNumber();
+      State.generic = {};
+      State.pageLimit = CONFIG.pageSize;
+      if (!Areas.find(State.area)) State.area = 'gesamt';
+      await persist(State.snapshot, State.manual, Areas.state, Assign.state);
+      savePrefs();
+      refresh();
+      showMessage('ok', '„' + fileName + '“ (Stand vom ' + Util.formatDateTime(d.publishedAt) + ') wurde als eigene Daten übernommen.', 12000, { label: 'Rückgängig', run: async () => {
+        State.snapshot = prev.snapshot; State.manual = prev.manual; Areas.state = prev.areas; Assign.state = prev.assign;
+        State.source = prev.snapshot ? 'local' : 'none';
+        if (!Areas.find(State.area)) State.area = 'gesamt';
+        await persist(prev.snapshot, prev.manual, prev.areas, prev.assign);
+        refresh();
+        showMessage('info', 'Übernahme wurde rückgängig gemacht.', 6000);
+      } });
+      return true;
+    },
+    async enterView(d) {
       Stand.apply(d);
       try { await Store.put('stand', d); } catch (e) { State.storageOk = false; }
       savePrefs();
@@ -2554,12 +2626,12 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         else dlg.setAttribute('open', '');
       } catch (e) { dlg.setAttribute('open', ''); }
     },
-    anyModalOpen() { return ['editDialog', 'confirmDialog', 'importDialog', 'areaDialog', 'themesDialog', 'publishDialog', 'zustDialog'].some((id) => $(id).open); },
+    anyModalOpen() { return ['editDialog', 'confirmDialog', 'importDialog', 'areaDialog', 'themesDialog', 'publishDialog', 'zustDialog', 'choiceDialog'].some((id) => $(id).open); },
     close(dlg) {
       try { if (typeof dlg.close === 'function') dlg.close(); else dlg.removeAttribute('open'); } catch (e) { dlg.removeAttribute('open'); }
     },
     init() {
-      ['detailDialog', 'editDialog', 'confirmDialog', 'importDialog', 'areaDialog', 'themesDialog', 'publishDialog', 'zustDialog'].forEach((id) => {
+      ['detailDialog', 'editDialog', 'confirmDialog', 'importDialog', 'areaDialog', 'themesDialog', 'publishDialog', 'zustDialog', 'choiceDialog'].forEach((id) => {
         const dlg = $(id);
         dlg.addEventListener('click', (ev) => {
           const t = ev.target;
@@ -2593,6 +2665,164 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       $('btnConfirmCancel').focus();
     });
   }
+
+  /** Dialog mit mehreren Wahlmöglichkeiten; liefert den Schlüssel der Wahl oder null */
+  function chooseAction(title, text, options) {
+    return new Promise((resolve) => {
+      const dlg = $('choiceDialog');
+      $('choiceTitle').textContent = title;
+      $('choiceText').textContent = text;
+      const list = $('choiceList');
+      clear(list);
+      let result = null;
+      options.forEach((o, i) => list.appendChild(h('li', null, h('button', { type: 'button', class: 'choice-item' + (i === 0 ? ' is-primary' : ''), dataset: { key: o.key }, onclick: () => { result = o.key; Dialogs.close(dlg); } }, [
+        h('span', { class: 'choice-title', text: o.label }), h('span', { class: 'choice-hint', text: o.hint })
+      ]))));
+      const onClose = () => { dlg.removeEventListener('close', onClose); resolve(result); };
+      dlg.addEventListener('close', onClose);
+      Dialogs.open(dlg);
+      const first = list.querySelector('button');
+      if (first) first.focus();
+    });
+  }
+
+  /* =====================================================================
+   * Sicherung an einem selbst gewählten Speicherort (Edge/Chrome: Speichern-Dialog,
+   * der Browser merkt sich die Datei; sonst Download). Format wie der veröffentlichte Stand.
+   * ===================================================================== */
+  const BACKUP_FILE = 'ASI_Sicherung.xlsx';
+  const XLSX_TYPES = [{ description: 'Excel-Arbeitsmappe', accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] } }];
+  /* Datei-Verweis in einer eigenen kleinen Datenbank; wird erst beim Klick gelesen, nie beim Start */
+  const HandleStore = {
+    req(mode, fn) {
+      return new Promise((resolve, reject) => {
+        let o;
+        try { o = window.indexedDB.open('asi-dashboard-symsafe-dateien', 1); } catch (e) { reject(e); return; }
+        o.onupgradeneeded = () => o.result.createObjectStore('h');
+        o.onerror = () => reject(o.error);
+        o.onsuccess = () => {
+          let out;
+          const t = o.result.transaction('h', mode);
+          const r = fn(t.objectStore('h'));
+          if (r) r.onsuccess = () => { out = r.result; };
+          t.oncomplete = () => { o.result.close(); resolve(out); };
+          t.onerror = () => { o.result.close(); reject(t.error); };
+        };
+      });
+    },
+    get() { return HandleStore.req('readonly', (st) => st.get('backup')); },
+    put(hd) { return HandleStore.req('readwrite', (st) => st.put(hd, 'backup')); }
+  };
+  const Backup = {
+    handle: null,
+    loaded: false,
+    meta: null,
+    async load() {
+      try { const m = await Store.get('backupMeta'); if (m && typeof m.name === 'string') Backup.meta = m; } catch (e) { /* ignorieren */ }
+      Backup.updateMenu();
+    },
+    async getHandle() {
+      if (!Backup.loaded) {
+        Backup.loaded = true;
+        if (Backup.meta && Backup.meta.remembered) {
+          try { const hd = await HandleStore.get(); if (hd && typeof hd.createWritable === 'function') Backup.handle = hd; } catch (e) { Backup.handle = null; }
+        }
+      }
+      return Backup.handle;
+    },
+    async permit(hd, mode) {
+      if (typeof hd.queryPermission !== 'function') return true;
+      let p = await hd.queryPermission({ mode: mode });
+      if (p === 'granted') return true;
+      if (typeof hd.requestPermission !== 'function') return false;
+      p = await hd.requestPermission({ mode: mode });
+      return p === 'granted';
+    },
+    async remember(hd) {
+      Backup.handle = hd;
+      Backup.loaded = true;
+      try { await HandleStore.put(hd); return true; } catch (e) { return false; }
+    },
+    async save(newPlace) {
+      if (State.mode !== 'edit') return;
+      if (!State.allItems.length && !State.manual.length) { showMessage('warn', 'Es gibt noch keine Daten zum Sichern.', 6000); return; }
+      const data = Stand.collect(Prefs.load().publisher || '');
+      data.purpose = 'sicherung';
+      const blob = new Blob([XLSX.write(Stand.buildWorkbook(data), { bookType: 'xlsx', type: 'array', compression: true })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const done = async (name, remembered) => {
+        Backup.meta = { name: name, savedAt: data.publishedAt, remembered: remembered };
+        try { await Store.put('backupMeta', Backup.meta); } catch (e) { /* ignorieren */ }
+        Backup.updateMenu();
+        showMessage('ok', 'Sicherung gespeichert: „' + name + '“ (' + Util.formatDateTime(data.publishedAt) + ').' + (remembered ? ' Das Dashboard merkt sich diese Datei für die nächste Sicherung und zum Wiederherstellen.' : ''), 10000);
+      };
+      if (typeof window.showSaveFilePicker !== 'function') {
+        Exporter.download(blob, BACKUP_FILE);
+        Backup.meta = { name: BACKUP_FILE, savedAt: data.publishedAt, download: true };
+        try { await Store.put('backupMeta', Backup.meta); } catch (e) { /* ignorieren */ }
+        Backup.updateMenu();
+        showMessage('info', '„' + BACKUP_FILE + '“ wurde heruntergeladen. Bitte an einen sicheren Ort verschieben (z. B. OneDrive oder Netzlaufwerk). Wiederherstellen: „Sicherung wiederherstellen“ und die Datei auswählen.', 12000);
+        return;
+      }
+      let hd = newPlace ? null : await Backup.getHandle();
+      for (let attempt = 0; attempt < 2; attempt++) {
+        if (hd) {
+          let ok = false;
+          try { ok = await Backup.permit(hd, 'readwrite'); } catch (e) { ok = false; }
+          if (!ok) { showMessage('warn', 'Edge hat den Zugriff auf „' + hd.name + '“ nicht erlaubt. Mit „Sicherung an anderem Ort speichern …“ können Sie einen Speicherort neu wählen.', 10000); return; }
+        } else {
+          try {
+            hd = await window.showSaveFilePicker({ suggestedName: (Backup.meta && Backup.meta.name) || BACKUP_FILE, id: 'asi-sicherung', types: XLSX_TYPES });
+          } catch (e) {
+            if (e && e.name === 'AbortError') return;
+            Exporter.download(blob, BACKUP_FILE);
+            showMessage('info', 'Der Speichern-Dialog war nicht verfügbar; „' + BACKUP_FILE + '“ wurde heruntergeladen.', 10000);
+            return;
+          }
+        }
+        try {
+          const w = await hd.createWritable();
+          await w.write(blob);
+          await w.close();
+          const remembered = await Backup.remember(hd);
+          await done(hd.name, remembered);
+          return;
+        } catch (e) {
+          if (attempt === 0 && hd === Backup.handle && e && (e.name === 'NotFoundError' || e.name === 'NotAllowedError' || e.name === 'InvalidStateError')) {
+            showMessage('warn', 'Die bisherige Sicherungsdatei „' + hd.name + '“ ist nicht mehr erreichbar (verschoben oder gelöscht). Bitte den Speicherort neu wählen.', 10000);
+            hd = null; continue;
+          }
+          showMessage('error', 'Sicherung fehlgeschlagen: ' + String(e && e.message || e), 12000);
+          return;
+        }
+      }
+    },
+    async restore() {
+      if (State.mode !== 'edit') return;
+      if (await Backup.getHandle()) {
+        let ok = false;
+        try { ok = await Backup.permit(Backup.handle, 'read'); } catch (e) { ok = false; }
+        if (ok) {
+          try { const f = await Backup.handle.getFile(); await handleFile(f); return; } catch (e) {
+            showMessage('warn', '„' + Backup.handle.name + '“ wurde am gemerkten Speicherort nicht gefunden. Bitte die Sicherungsdatei auswählen.', 10000);
+          }
+        }
+      }
+      if (typeof window.showOpenFilePicker === 'function') {
+        let hd;
+        try { [hd] = await window.showOpenFilePicker({ id: 'asi-sicherung', types: XLSX_TYPES, multiple: false }); } catch (e) { if (e && e.name === 'AbortError') return; hd = null; }
+        if (hd) { const rem = await Backup.remember(hd); Backup.meta = Object.assign({}, Backup.meta || {}, { name: hd.name, remembered: rem }); try { await Store.put('backupMeta', Backup.meta); } catch (e) { /* ignorieren */ } Backup.updateMenu(); await handleFile(await hd.getFile()); return; }
+      }
+      openFilePicker();
+    },
+    updateMenu() {
+      const m = Backup.meta;
+      const rem = !!(Backup.handle || (m && m.remembered));
+      const name = Backup.handle ? Backup.handle.name : (m ? m.name : '');
+      $('btnBackupSaveHint').textContent = rem ? 'In „' + name + '“' + (m && m.savedAt ? ' · zuletzt ' + Util.formatDateTime(m.savedAt) : '') : 'Speicherort selbst wählen (z. B. OneDrive, Netzlaufwerk)';
+      $('liBackupWhere').hidden = !rem;
+      $('btnBackupRestoreHint').textContent = rem ? 'Aus „' + name + '“' : (name ? 'Datei „' + name + '“ auswählen' : 'Sicherungsdatei auswählen');
+    }
+  };
 
   /* =====================================================================
    * UI – Rendering
@@ -4004,7 +4234,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       const standData = Stand.detect(wb);
       if (standData) {
         setLoading(false);
-        await Stand.enterView(standData, file.name);
+        await Stand.offer(standData, file.name);
         return;
       }
       if (State.mode === 'view') {
@@ -4551,6 +4781,9 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     });
     $('btnViewReload').addEventListener('click', openFilePicker);
     $('btnZustSave').addEventListener('click', () => ZustAssign.save());
+    $('btnBackupSave').addEventListener('click', () => Backup.save(false));
+    $('btnBackupWhere').addEventListener('click', () => Backup.save(true));
+    $('btnBackupRestore').addEventListener('click', () => Backup.restore());
     $('btnZustOpen').addEventListener('click', () => { Dialogs.close($('areaDialog')); ZustAssign.open(); });
     $('btnViewExit').addEventListener('click', async () => {
       const ok = await confirmAction('Ansichtsmodus beenden?', 'Der geladene Stand wird aus diesem Browser entfernt. Angezeigt werden danach Ihre eigenen Daten (leer, wenn Sie selbst nichts pflegen). Den Stand können Sie jederzeit wieder über „Stand laden“ öffnen.', 'Ansichtsmodus beenden');
@@ -4657,6 +4890,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       } catch (e) { viewLoaded = false; }
     }
     if (!viewLoaded) { State.mode = 'edit'; await loadOwnData(); }
+    await Backup.load();
     refresh();
     window.ASIDashboard = Object.freeze({ version: APP_VERSION, selfTest: State.selfTest });
   }
