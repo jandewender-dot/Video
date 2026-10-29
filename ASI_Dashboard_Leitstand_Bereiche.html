@@ -1145,7 +1145,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 (function () {
   'use strict';
 
-  const APP_VERSION = '1.3.0';
+  const APP_VERSION = '1.4.0';
 
   /* =====================================================================
    * Konfiguration
@@ -1432,14 +1432,16 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
    * ===================================================================== */
   const FIELD_DEFS = [
     { key: 'herkunft', label: 'Herkunft', aliases: ['Herkunft', 'Quelle', 'Source', 'Ursprung'] },
-    { key: 'thema', label: 'Thema', aliases: ['Thema', 'Themen', 'Topic', 'Bereich', 'Themenbereich', 'Themenfeld'] },
+    { key: 'thema', label: 'Thema', aliases: ['Thema', 'Themen', 'Topic', 'Themenbereich', 'Themenfeld'] },
     { key: 'aktion', label: 'Aktion', required: true, aliases: ['Aktion', 'Maßnahme', 'Massnahme', 'Maßnahmen', 'Massnahmen', 'Aufgabe', 'Activity', 'Beschreibung', 'Aktivität', 'Maßnahmenbeschreibung', 'Action', 'Aufgaben'] },
     { key: 'zustaendigkeit', label: 'Zuständigkeit', aliases: ['Zuständigkeit', 'Zustaendigkeit', 'Verantwortlich', 'Verantwortliche Person', 'Verantwortlicher', 'Owner', 'Verantwortung', 'Zuständig', 'Verantwortliche'] },
     { key: 'vom', label: 'vom', aliases: ['vom', 'erfasst am', 'erstellt am', 'Startdatum', 'Datum', 'Erfassungsdatum', 'angelegt am'] },
     { key: 'zieldatum', label: 'Zieldatum', aliases: ['Zieldatum', 'Zieltermin', 'Frist', 'Fristdatum', 'fällig am', 'faellig am', 'Due Date', 'Termin', 'Fälligkeit', 'Fälligkeitsdatum', 'Deadline', 'fällig bis', 'bis wann'] },
     { key: 'umgesetzt', label: 'umgesetzt am', aliases: ['umgesetzt am', 'erledigt am', 'abgeschlossen am', 'Abschlussdatum', 'Completed Date', 'Erledigungsdatum', 'Datum erledigt', 'Umsetzungsdatum'] },
     { key: 'kommentar', label: 'Kommentar', aliases: ['Kommentar', 'Bemerkung', 'Hinweise', 'Notiz', 'Notes', 'Kommentare', 'Bemerkungen', 'Anmerkung', 'Anmerkungen', 'Hinweis', 'Notizen'] },
-    { key: 'status', label: 'Status', aliases: ['Status', 'Bearbeitungsstatus', 'Maßnahmenstatus', 'Massnahmenstatus', 'Stand'] }
+    { key: 'status', label: 'Status', aliases: ['Status', 'Bearbeitungsstatus', 'Maßnahmenstatus', 'Massnahmenstatus', 'Stand'] },
+    // Optional: Zuordnung zu den Bereichen des Dashboards über den Bereichsnamen. Nur exakte Überschrift, damit z. B. „Thema / Bereich“ Thema bleibt.
+    { key: 'bereich', label: 'Bereich', optional: true, exactOnly: true, aliases: ['Bereich'] }
   ];
   const FIELD_BY_KEY = {};
   FIELD_DEFS.forEach((f) => { f.normAliases = f.aliases.map((a) => Util.norm(a)); FIELD_BY_KEY[f.key] = f; });
@@ -1451,6 +1453,12 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     { key: 'termine', label: 'Termine', names: ['termine', 'termin', 'kalender', 'terminplan', 'terminuebersicht', 'events', 'veranstaltungen'], headerHints: ['veranstaltung', 'uhrzeit', 'ort'] },
     { key: 'themen', label: 'Themen', names: ['themen', 'thema', 'themenliste', 'themenspeicher', 'topics'], headerHints: [] }
   ];
+  /* Legendenzeilen, die in Arbeitsmappen oft innerhalb der Tabelle stehen:
+   * Maßnahmen: Thema = Farbname, Aktion = Statuswort, sonst nichts (z. B. „grün | erledigt“).
+   * Weitere Blätter: nur eine Zelle der Form „Kürzel = Bedeutung“ (z. B. „BR = Betriebsrat“). */
+  const LEGEND_COLORS = new Set(['gruen', 'hellgruen', 'dunkelgruen', 'grau', 'hellgrau', 'dunkelgrau', 'weiss', 'rot', 'hellrot', 'gelb', 'orange', 'blau', 'hellblau']);
+  const LEGEND_STATUS = new Set(['offen', 'inbearbeitung', 'erledigt', 'zurueckgestellt', 'abgelehnt']);
+  const LEGEND_ABBR = /^[A-Za-zÄÖÜäöüß.\-]{1,12}\s*=\s*\S/;
   const ACTION_SHEET_NAMES = ['massnahmen', 'massnahmenliste', 'massnahme', 'aktivitaeten', 'actions', 'aufgaben', 'massnahmenplan', 'massnahmentracking'];
 
   const HeaderMapper = {
@@ -1466,6 +1474,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           let score = 0;
           let method = '';
           if (n === alias) { score = 3 + prio; method = 'exakt'; }
+          else if (f.exactOnly) score = 0;
           else if (alias.length >= 4 && n.indexOf(alias) !== -1 && n.length <= alias.length + 14) { score = 2 + alias.length / 100 + prio; method = 'enthält'; }
           else if (n.length >= 5 && alias.length >= 5 && Util.similarity(n, alias) >= 0.8) { score = 1 + Util.similarity(n, alias) / 10 + prio; method = 'ähnlich'; }
           if (score > 0 && (!best || score > best.score)) best = { field: f.key, score: score, method: method, alias: alias };
@@ -1815,6 +1824,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       });
 
       const actions = [];
+      const legendRows = [];
       let dataRows = 0;
       let emptyRows = 0;
       const get = (row, key) => (mapping[key] ? row[mapping[key].col] || null : null);
@@ -1838,12 +1848,16 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           vom: DateUtil.parse(get(row, 'vom'), date1904),
           ziel: DateUtil.parse(get(row, 'zieldatum'), date1904),
           umgesetzt: DateUtil.parse(get(row, 'umgesetzt'), date1904),
+          bereichName: txt(row, 'bereich'),
           extra: []
         };
         unmapped.forEach((u) => {
           const v = Util.clean(RowUtil.text(row[u.col]));
           if (v) rec.extra.push([u.label, v]);
         });
+        const onlyThemaAktion = !rec.herkunft && !rec.zust && !rec.kommentar && !rec.status && !rec.bereichName && !rec.extra.length &&
+          rec.vom.s === 'empty' && rec.ziel.s === 'empty' && rec.umgesetzt.s === 'empty';
+        if (onlyThemaAktion && LEGEND_COLORS.has(Util.norm(rec.thema)) && LEGEND_STATUS.has(Util.norm(rec.aktion))) { legendRows.push(r + 1); continue; }
         actions.push(rec);
       }
       // Zeilen unterhalb der Kopfzeile, die vollständig leer sind (innerhalb des genutzten Bereichs)
@@ -1868,7 +1882,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         if (!def) { s.role = hr >= 0 ? 'nicht zugeordnet' : 'keine Tabellenstruktur erkannt'; return; }
         if (hr < 0) { s.role = def.label + ' (keine Kopfzeile erkannt)'; return; }
         const table = Importer.genericTable(s, hr, date1904);
-        if (!table.rows.length) { s.role = def.label + ' (keine Datenzeilen)'; return; }
+        if (!table.rows.length) { s.role = def.label + ' (keine Datenzeilen' + (table.legendRows.length ? '; ' + table.legendRows.length + ' Legendenzeilen übersprungen' : '') + ')'; return; }
         s.role = def.label;
         s.headerRow = hr + 1;
         sections[def.key].push(table);
@@ -1891,7 +1905,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           }),
           unmapped: unmapped.map((u) => ({ col: Util.colLetter(u.col), label: u.label }))
         },
-        stats: { dataRows: dataRows + blankInside, imported: actions.length, emptyIgnored: emptyRows + blankInside, blankRows: blankInside, sheetsChecked: sheets.length, date1904: date1904 },
+        stats: { dataRows: dataRows + blankInside, imported: actions.length, emptyIgnored: emptyRows + blankInside, blankRows: blankInside, sheetsChecked: sheets.length, date1904: date1904, legendRows: legendRows },
         actions: actions,
         sections: sections
       };
@@ -1914,7 +1928,14 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       for (let c = 0; c <= lastCol; c++) raw.push(hRow[c] ? RowUtil.text(hRow[c]) : '');
       const labels = Importer.uniqueLabels(raw);
       const dataRows = [];
-      for (let r = hr + 1; r < sheet.matrix.length; r++) if (RowUtil.nonEmpty(sheet.matrix[r])) dataRows.push(sheet.matrix[r]);
+      const legendRows = [];
+      for (let r = hr + 1; r < sheet.matrix.length; r++) {
+        const row = sheet.matrix[r];
+        if (!RowUtil.nonEmpty(row)) continue;
+        const filled = row.filter((c) => c && Util.clean(RowUtil.text(c)) !== '');
+        if (filled.length === 1 && LEGEND_ABBR.test(Util.clean(RowUtil.text(filled[0])))) { legendRows.push(r + 1); continue; }
+        dataRows.push(row);
+      }
       // Spalten ohne Überschrift und ohne Daten entfernen
       const keep = [];
       for (let c = 0; c <= lastCol; c++) if (raw[c] || dataRows.some((row) => row[c])) keep.push(c);
@@ -1943,7 +1964,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         });
         return { c: cells, k: keys };
       });
-      return { sheetName: sheet.name, headerRow: hr + 1, columns: columns.map((c) => ({ label: c.label, isDate: c.isDate })), rows: rows };
+      return { sheetName: sheet.name, headerRow: hr + 1, columns: columns.map((c) => ({ label: c.label, isDate: c.isDate })), rows: rows, legendRows: legendRows };
     }
   };
 
@@ -2247,7 +2268,13 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
   function deriveItems() {
     const all = [];
     const excel = State.snapshot ? State.snapshot.actions : [];
-    excel.forEach((r) => all.push(r));
+    const byName = new Map(Areas.deps().map((a) => [a.name.trim().toLocaleLowerCase('de'), a.id]));
+    excel.forEach((r) => {
+      // Excel-Maßnahmen: Bereich über den Namen in der Spalte „Bereich“ (Groß/Klein egal); unbekannte Namen bleiben ohne Bereich
+      const nm = r.bereichName ? r.bereichName.trim().toLocaleLowerCase('de') : '';
+      r.bereichId = (nm && byName.get(nm)) || '';
+      all.push(r);
+    });
     State.manual.forEach((r) => all.push(r));
     const dupMap = new Map();
     const items = all.map((rec) => {
@@ -2303,7 +2330,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     contra: { label: 'widersprüchlicher Status', test: (it) => it.contradictions.length > 0 },
     dup: { label: 'mögliche Dubletten', test: (it) => it.dup },
     zielVorVom: { label: 'Zieldatum vor Erfassungsdatum', test: (it) => it.zielBeforeVom },
-    noArea: { label: 'ohne Bereich', test: (it) => !Areas.isDep(it.rec.bereichId) }
+    noArea: { label: 'ohne Bereich', test: (it) => !Areas.isDep(it.rec.bereichId) },
+    unknownArea: { label: 'unbekannter Bereich in Excel', test: (it) => it.rec.src === 'excel' && !!it.rec.bereichName && !Areas.isDep(it.rec.bereichId) }
   };
 
   function applyFilters() {
@@ -2763,7 +2791,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         ? h('div', { class: 'sx-hero__stack' }, [h('h3', { id: 'heroTitle', text: 'Maßnahmen in ' + name }), h('section', { class: 'sx-block' }, [h('h4', { text: 'Maßnahmen nach Status' }), Render.statusOverview(c)]), actions])
         : h('div', { class: 'sx-hero__stack' }, [
           h('h3', { id: 'heroTitle', text: 'Noch keine Maßnahmen in ' + name }),
-          h('p', { text: State.mode === 'view' ? 'Im veröffentlichten Stand gibt es für diesen Bereich noch keine Maßnahmen.' : 'Erfassen Sie hier die Maßnahmen dieses Bereichs. Die Gesamtübersicht übernimmt sie automatisch. Maßnahmen aus der Excel-Datei erscheinen vorerst nur in der Gesamtübersicht.' }),
+          h('p', { text: State.mode === 'view' ? 'Im veröffentlichten Stand gibt es für diesen Bereich noch keine Maßnahmen.' : 'Erfassen Sie hier die Maßnahmen dieses Bereichs. Die Gesamtübersicht übernimmt sie automatisch. Maßnahmen aus der Excel-Datei erscheinen hier, wenn in ihrer Spalte „Bereich“ „' + name + '“ steht.' }),
           actions
         ]);
       return h('section', { class: 'sx-hero sx-hero--single', 'aria-labelledby': 'heroTitle' }, h('div', { class: 'sx-hero__body' }, stack));
@@ -2912,7 +2940,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         ]));
         body.appendChild(h('p', { class: 'field-err', id: 'unassignedErr', hidden: true }));
       }
-      if (excel) body.appendChild(h('p', { class: 'card-note', text: Util.num(excel) + ' ' + Util.plural(excel, 'Maßnahme', 'Maßnahmen') + ' aus der Excel-Datei ' + Util.plural(excel, 'hat', 'haben') + ' noch keinen Bereich. Die Bereichszuordnung beim Excel-Import ist noch nicht eingerichtet; bis dahin erscheinen diese Maßnahmen nur in der Gesamtübersicht.' }));
+      if (excel) body.appendChild(h('p', { class: 'card-note', text: Util.num(excel) + ' ' + Util.plural(excel, 'Maßnahme', 'Maßnahmen') + ' aus der Excel-Datei ' + Util.plural(excel, 'hat', 'haben') + ' noch keinen Bereich und ' + Util.plural(excel, 'erscheint', 'erscheinen') + ' nur in der Gesamtübersicht. ' + (hasAreaColumn(State.snapshot) ? 'Bitte in der Excel-Spalte „Bereich“ den Namen des Bereichs genau wie in der Bereichsleiste eintragen und „Excel aktualisieren“ wählen.' : 'Für die Zuordnung in der Excel-Tabelle eine Spalte „Bereich“ ergänzen und dort den Namen des Bereichs genau wie in der Bereichsleiste eintragen.') }));
       return h('section', { class: 'card unassigned-card', 'aria-label': 'Maßnahmen ohne Bereich' }, [h('div', { class: 'card-head' }, h('h3', { text: 'Maßnahmen ohne Bereich' })), body]);
     },
 
@@ -3461,7 +3489,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         metric('Ohne Zieldatum', items.filter(DQ_FILTERS.noDate.test).length, 'noDate'),
         metric('Zieldatum nicht lesbar', items.filter(DQ_FILTERS.badDate.test).length, 'badDate'),
         metric('Widersprüchlicher Status', items.filter(DQ_FILTERS.contra.test).length, 'contra'),
-        metric('Mögliche Dubletten', items.filter(DQ_FILTERS.dup.test).length, 'dup')
+        metric('Mögliche Dubletten', items.filter(DQ_FILTERS.dup.test).length, 'dup'),
+        hasAreaColumn(s) ? metric('Unbekannter Bereich (Excel)', items.filter(DQ_FILTERS.unknownArea.test).length, 'unknownArea') : null
       ]);
       grid.querySelectorAll('button.kpi').forEach((b) => b.removeAttribute('aria-pressed'));
       root.appendChild(grid);
@@ -3483,6 +3512,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           h('dt', { text: 'Datenzeilen erkannt' }), h('dd', { text: Util.num(s.stats.dataRows) }),
           h('dt', { text: 'Maßnahmen übernommen' }), h('dd', { text: Util.num(s.stats.imported) }),
           h('dt', { text: 'Leere Zeilen ignoriert' }), h('dd', { text: Util.num(s.stats.emptyIgnored) }),
+          legendNotes(s).length ? h('dt', { text: 'Legendenzeilen übersprungen' }) : null, legendNotes(s).length ? h('dd', { text: legendNotes(s).join('; ') }) : null,
           h('dt', { text: 'Arbeitsblätter geprüft' }), h('dd', { text: Util.num(s.stats.sheetsChecked) }),
           h('dt', { text: 'Datumssystem' }), h('dd', { text: s.stats.date1904 ? '1904 (Mac)' : '1900 (Standard)' })
         ])));
@@ -3494,7 +3524,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (s) {
         const tb = h('tbody');
         s.actionSheet.mapping.forEach((m) => tb.appendChild(h('tr', null, [
-          h('td', { 'data-label': 'Feld', text: m.label + (m.field === 'aktion' ? ' *' : '') }),
+          h('td', { 'data-label': 'Feld', text: m.label + (m.field === 'aktion' ? ' *' : '') + ((FIELD_BY_KEY[m.field] || {}).optional ? ' (optional)' : '') }),
           h('td', { 'data-label': 'Spalte', text: m.col || '–' }),
           h('td', { 'data-label': 'Überschrift in Excel' }, m.header ? m.header : h('span', { class: 'muted', text: 'nicht gefunden' })),
           h('td', { 'data-label': 'Erkennung' }, m.method ? h('span', { class: 'tag', text: m.method }) : '–')
@@ -3593,7 +3623,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       row('Thema / Bereich', r.thema);
       row('Herkunft', r.herkunft);
       row('Zuständigkeit', r.zust);
-      row('Bereich', Areas.name(r.bereichId) || 'ohne Bereich');
+      row('Bereich', Areas.name(r.bereichId) || (r.src === 'excel' && r.bereichName ? 'ohne Bereich – in Excel steht „' + r.bereichName + '“, diesen Bereich gibt es im Dashboard nicht' : 'ohne Bereich'));
       row('vom', DateUtil.display(r.vom));
       row('Zieldatum', r.ziel && r.ziel.s === 'invalid' ? '⚠ nicht lesbar: ' + r.ziel.raw : DateUtil.display(r.ziel));
       row('Tage bis Frist', it.days === null ? '' : (it.days > 0 ? '+' : '') + it.days + (it.done ? '' : ' (' + relText(it.days) + ')'));
@@ -3888,6 +3918,16 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     }
   }
 
+  /** Übersprungene Legendenzeilen des Datenstands, z. B. „Maßnahmen: Zeilen 193–196“ */
+  function legendNotes(s) {
+    const out = [];
+    const rows = (list) => (list.length === 1 ? 'Zeile ' + list[0] : 'Zeilen ' + list.join(', '));
+    if (s.stats.legendRows && s.stats.legendRows.length) out.push('„' + s.actionSheet.name + '“: ' + rows(s.stats.legendRows) + ' (Farblegende)');
+    Object.keys(s.sections || {}).forEach((k) => s.sections[k].forEach((t) => { if (t.legendRows && t.legendRows.length) out.push('„' + t.sheetName + '“: ' + rows(t.legendRows) + ' (Abkürzungen)'); }));
+    return out;
+  }
+  function hasAreaColumn(s) { return !!s && s.actionSheet.mapping.some((m) => m.field === 'bereich' && m.col); }
+
   function showImportSummary(s, saved, ms) {
     $('importTitle').textContent = 'Import erfolgreich';
     const body = $('importBody');
@@ -3905,7 +3945,14 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       State.manual.length ? h('li', { text: Util.num(State.manual.length) + ' manuell erfasste Maßnahmen bleiben unverändert erhalten' }) : null,
       h('li', { text: 'Stand heute: ' + c.ueberfaellig + ' überfällig, ' + c.f7 + ' in 7 Tagen fällig, ' + c.erledigt + ' erledigt' })
     ]));
-    const missing = s.actionSheet.mapping.filter((m) => !m.col && m.field !== 'aktion').map((m) => m.label);
+    const legends = legendNotes(s);
+    if (legends.length) body.appendChild(h('div', { class: 'banner banner-info', style: 'margin:12px 0 0' }, h('div', { class: 'banner-body', text: 'Als Legende erkannt und nicht übernommen: ' + legends.join('; ') + '.' })));
+    if (hasAreaColumn(s)) {
+      const withName = s.actions.filter((a) => a.bereichName);
+      const unknown = State.allItems.filter(DQ_FILTERS.unknownArea.test).length;
+      body.appendChild(h('div', { class: 'banner ' + (unknown ? 'banner-warn' : 'banner-info'), style: 'margin:12px 0 0' }, h('div', { class: 'banner-body', text: 'Spalte „Bereich“: ' + Util.num(withName.length - unknown) + ' ' + Util.plural(withName.length - unknown, 'Maßnahme', 'Maßnahmen') + ' einem Bereich zugeordnet' + (unknown ? ', ' + Util.num(unknown) + ' mit einem Bereichsnamen, den es im Dashboard nicht gibt (siehe Datenqualität)' : '') + '. Maßgeblich ist der Name wie in der Bereichsleiste.' })));
+    }
+    const missing = s.actionSheet.mapping.filter((m) => !m.col && m.field !== 'aktion' && !(FIELD_BY_KEY[m.field] || {}).optional).map((m) => m.label);
     if (missing.length) body.appendChild(h('div', { class: 'banner banner-warn', style: 'margin:12px 0 0' }, h('div', { class: 'banner-body', text: 'Nicht gefundene Spalten: ' + missing.join(', ') + '. Die zugehörigen Auswertungen bleiben leer.' })));
     const bad = State.items.filter((i) => i.zielBad).length;
     if (bad) body.appendChild(h('div', { class: 'banner banner-warn', style: 'margin:12px 0 0' }, h('div', { class: 'banner-body', text: bad + ' Zieldaten konnten nicht gelesen werden und werden nicht als Frist bewertet (siehe Datenqualität).' })));
@@ -4141,6 +4188,16 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         Areas.state = saved;
         return ok;
       });
+      t('Excel: Farblegende, Abkürzungen und Spalte „Bereich“', () => {
+        const ws = XLSX.utils.aoa_to_sheet([['Herkunft', 'Thema', 'Aktion', 'Zuständigkeit', 'Zieldatum', 'Status', 'Bereich'], ['ASA', 'Brandschutz', 'Löscher prüfen', 'A', '', 'offen', 'bereich 2'], ['', 'grün ', 'erledigt'], ['', 'weiß', 'in Bearbeitung'], ['', 'grün', 'erledigt', 'B']]);
+        const wsM = XLSX.utils.aoa_to_sheet([['Meeting', 'Teilnehmer'], ['ASA', 'BL, BR'], ['BR = Betriebsrat']]);
+        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Maßnahmen'); XLSX.utils.book_append_sheet(wb, wsM, 'Übersicht_Meetings');
+        const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const snap = Importer.analyze(Importer.parseWorkbook(buf instanceof ArrayBuffer ? buf : buf.buffer, 'xlsx', 't.xlsx'), { fileName: 't.xlsx', fileSize: 1 });
+        const m = snap.sections.meetings[0];
+        const thema = snap.actionSheet.mapping.find((x) => x.field === 'thema'), ber = snap.actionSheet.mapping.find((x) => x.field === 'bereich');
+        return { ok: snap.actions.length === 2 && snap.stats.legendRows.join() === '3,4' && m.rows.length === 1 && m.legendRows.join() === '3' && thema.col === 'B' && ber.col === 'G' && snap.actions[0].bereichName === 'bereich 2' && HeaderMapper.mapHeaders(['Thema / Bereich', 'Aktion']).thema && !HeaderMapper.mapHeaders(['Thema / Bereich', 'Aktion']).bereich, detail: snap.actions.length + '/' + snap.stats.legendRows.join() };
+      });
       t('Stand veröffentlichen und wieder laden (Excel-Datei)', () => {
         const d = { format: 'ASI-Stand', version: 1, appVersion: APP_VERSION, publishedAt: '2026-10-29T10:00:00.000Z', publishedBy: 'Test', snapshot: null,
           manual: Array.from({ length: 12 }, (_, i) => ({ id: 'm-' + i, src: 'manual', row: null, bereichId: 'b1', herkunft: '', thema: 'Brandschutz', aktion: 'Löscher <prüfen> & „ok“ ' + 'x'.repeat(3900), zust: 'A', kommentar: '', status: 'offen', vom: { s: 'empty' }, ziel: DateUtil.make(2026, 11, 3, 0, 0, ''), umgesetzt: { s: 'empty' }, extra: [] })),
@@ -4157,7 +4214,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       t('CSV-Schutz gegen Formel-Injection', () => Exporter.csvCell('=1+1') === "'=1+1" && Exporter.csvCell('a;b') === '"a;b"');
       t('Spalten-Alias-Erkennung', () => {
         const m = HeaderMapper.mapHeaders(['Lfd. Nr.', 'Quelle', 'Bereich', 'Maßnahme', 'Verantwortliche Person', 'erstellt am', 'Fällig am', 'Erledigt am', 'Bemerkung', 'Bearbeitungsstatus']);
-        const ok = m.herkunft.col === 1 && m.thema.col === 2 && m.aktion.col === 3 && m.zustaendigkeit.col === 4 && m.vom.col === 5 && m.zieldatum.col === 6 && m.umgesetzt.col === 7 && m.kommentar.col === 8 && m.status.col === 9;
+        const ok = m.herkunft.col === 1 && m.bereich.col === 2 && !m.thema && m.aktion.col === 3 && m.zustaendigkeit.col === 4 && m.vom.col === 5 && m.zieldatum.col === 6 && m.umgesetzt.col === 7 && m.kommentar.col === 8 && m.status.col === 9;
         return { ok: ok, detail: ok ? '9 von 9 Feldern korrekt' : JSON.stringify(m) };
       });
       t('Spalten-Alias tolerant (Umlaute, Leerzeichen, Groß/klein)', () => {

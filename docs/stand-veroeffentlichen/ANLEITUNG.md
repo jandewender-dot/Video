@@ -1,6 +1,6 @@
 # Stand veröffentlichen und Ansichtsmodus
 
-Gilt für `ASI_Dashboard_Leitstand_Bereiche.html` (Fassung 1.3.0, zur Abnahme). Das freigegebene Original `ASI_Dashboard_Enterprise_FINAL.html` ist unverändert.
+Gilt für `ASI_Dashboard_Leitstand_Bereiche.html` (ab Fassung 1.3.0, zur Abnahme). Das freigegebene Original `ASI_Dashboard_Enterprise_FINAL.html` ist unverändert.
 
 ## Prinzip
 
