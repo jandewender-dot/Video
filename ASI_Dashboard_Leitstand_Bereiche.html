@@ -303,12 +303,11 @@ kbd{display:inline-block;font:600 11px/1 var(--font-sans);padding:2px 6px;border
 .choice-item:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
 .choice-title{font-weight:700}
 .choice-hint{font-size:13px;line-height:18px;color:var(--ink-muted)}
-.start-screen{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:var(--space-5);background:radial-gradient(circle at 70% 20%,var(--navy-700),var(--navy-950,#050b18) 75%);overflow:auto}
+.start-screen{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:var(--space-3);background:radial-gradient(ellipse at 50% 48%,#1f4f97 0%,var(--navy-700) 32%,var(--navy-900) 62%,var(--navy-950) 100%);overflow:auto}
 .start-screen[hidden]{display:none}
-.start-card{width:min(600px,100%);display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--space-3);padding:var(--space-6) var(--space-6) var(--space-5);border-radius:var(--radius-lg,20px);color:#0b1730;border:1px solid rgba(255,255,255,.35);
-  /* weißer Kern, der nach außen strahlend ins Blau übergeht */
-  background:radial-gradient(ellipse 78% 74% at 50% 46%,#ffffff 0%,#ffffff 52%,#e4eefc 66%,#9cc0f2 82%,#3f86df 94%,#1f6fd1 100%);
-  box-shadow:0 0 0 1px rgba(31,111,209,.35),0 0 48px rgba(63,134,223,.55),0 0 120px rgba(31,111,209,.35),0 24px 60px rgba(0,0,0,.45)}
+.start-card{width:min(860px,100%);display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--space-3);padding:96px 150px 88px;color:#0b1730;
+  /* weißer Kern, der strahlend über Blau weich in den dunkelblauen Hintergrund übergeht – ohne sichtbare Kante */
+  background:radial-gradient(ellipse closest-side at 50% 50%,#ffffff 0%,#ffffff 50%,#f4f8fe 58%,#dce9fb 66%,#b3cff4 74%,rgba(110,162,232,.82) 82%,rgba(52,112,199,.55) 89%,rgba(31,79,151,.25) 95%,rgba(16,32,63,0) 100%)}
 .start-info{width:100%;margin-top:var(--space-2);padding:var(--space-3) var(--space-4);border-radius:var(--radius-md);background:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.95);color:#10203f;font-size:13px;line-height:19px;box-shadow:0 2px 10px rgba(11,23,48,.12)}
 .start-info strong{font-weight:700}
 .start-brand img{display:block;width:117px;height:auto}
@@ -319,6 +318,16 @@ kbd{display:inline-block;font:600 11px/1 var(--font-sans);padding:2px 6px;border
 .start-check{display:inline-flex;align-items:center;gap:8px;text-align:left;font-size:13px;color:#10203f;padding:4px 12px;border-radius:999px;background:rgba(255,255,255,.8)}
 body.has-start{overflow:hidden}
 @media print{.start-screen{display:none !important}}
+.backup-warn{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) var(--space-5);background:#b5121b;color:#fff;font-size:14px;line-height:20px;box-shadow:inset 0 -1px 0 rgba(0,0,0,.18);animation:warn-pop var(--duration-base,240ms) var(--ease-smooth,ease-out)}
+.backup-warn[hidden]{display:none}
+.backup-warn svg{flex:none;width:22px;height:22px}
+.backup-warn__text{margin:0;flex:1;min-width:0}
+.backup-warn__btn{flex:none;background:#fff;color:#8f0d15;border-color:#fff;font-weight:700}
+.backup-warn__btn:hover{background:#ffe9ea}
+.backup-warn__btn:focus-visible{outline:2px solid #fff;outline-offset:2px}
+@keyframes warn-pop{from{transform:translateY(-8px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.backup-warn{animation:none}}
+@media (max-width:760px){.start-card{padding:72px 36px 64px}.backup-warn{flex-wrap:wrap;padding:var(--space-2) var(--space-3)}}
 .view-banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-2) var(--space-4);padding:var(--space-2) var(--space-5);background:var(--navy-800);color:#fff;font-size:14px;line-height:20px}
 .view-banner[hidden]{display:none}
 .view-banner__text strong{margin-right:var(--space-2)}
@@ -899,6 +908,12 @@ table.data.dense .area-pick{min-height:32px}
   </div>
 </div>
 
+<div class="backup-warn no-print" id="backupWarn" role="alert" hidden>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17h.01"/></svg>
+  <p class="backup-warn__text"><strong>Achtung –</strong> <span id="backupWarnText"></span></p>
+  <button type="button" class="btn btn-sm backup-warn__btn" id="btnBackupWarn">Sicherung jetzt erstellen</button>
+</div>
+
 <div class="source-bar" id="sourceBar" aria-label="Datenquelle">
   <span class="source-item"><span>Datei:</span> <strong id="srcFile">–</strong></span>
   <span class="source-item"><span>Letzter erfolgreicher Import:</span> <strong id="srcTime">–</strong></span>
@@ -1216,7 +1231,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 (function () {
   'use strict';
 
-  const APP_VERSION = '1.7.1';
+  const APP_VERSION = '1.8.0';
 
   /* =====================================================================
    * Konfiguration
@@ -2161,7 +2176,43 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       Areas.state.next += 1;
       Areas.state.areas.push({ id: id, name: name });
       Areas.save();
+      Unsaved.note('changed');
       return id;
+    }
+  };
+
+  /* =====================================================================
+   * Ungesicherte Änderungen seit der letzten Sicherung (bleibt über Neustarts erhalten)
+   * ===================================================================== */
+  const Unsaved = {
+    state: { added: 0, changed: false },
+    async load() {
+      Unsaved.state = { added: 0, changed: false };
+      try { const u = await Store.get('unsaved'); if (u && typeof u.added === 'number') Unsaved.state = { added: u.added, changed: !!u.changed }; } catch (e) { /* ignorieren */ }
+    },
+    /** Liefert das Speicher-Versprechen, damit Aufrufer auf das Schreiben warten können */
+    note(kind) {
+      if (State.mode !== 'edit') return Promise.resolve();
+      if (kind === 'added') Unsaved.state.added += 1;
+      Unsaved.state.changed = true;
+      Unsaved.render();
+      return Store.put('unsaved', Object.assign({}, Unsaved.state)).catch(() => {});
+    },
+    reset() {
+      Unsaved.state = { added: 0, changed: false };
+      Unsaved.render();
+      return Store.put('unsaved', Object.assign({}, Unsaved.state)).catch(() => {});
+    },
+    render() {
+      const el = $('backupWarn');
+      const show = State.mode === 'edit' && Unsaved.state.changed;
+      if (show) {
+        const n = Unsaved.state.added;
+        $('backupWarnText').textContent = n > 0
+          ? 'Sie haben ' + Util.num(n) + ' neue ' + Util.plural(n, 'Maßnahme', 'Maßnahmen') + ' hinzugefügt. Bitte vor dem Beenden des Tools eine neue Sicherungsdatei erstellen!'
+          : 'Sie haben Daten geändert (z. B. Maßnahmen, Bereiche oder Zuordnungen). Bitte vor dem Beenden des Tools eine neue Sicherungsdatei erstellen!';
+      }
+      if (el.hidden === show) el.hidden = !show;
     }
   };
 
@@ -2197,6 +2248,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     },
     async save() {
       if (State.mode === 'view') return false;
+      await Unsaved.note('changed');
       try { await Store.put('excelAssign', Assign.state); return true; } catch (e) { State.storageOk = false; return false; }
     }
   };
@@ -2340,6 +2392,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       State.pageLimit = CONFIG.pageSize;
       if (!Areas.find(State.area)) State.area = 'gesamt';
       await persist(State.snapshot, State.manual, Areas.state, Assign.state);
+      const prevUnsaved = Object.assign({}, Unsaved.state);
+      await Unsaved.reset(); // Daten entsprechen jetzt der geladenen Datei
       savePrefs();
       refresh();
       showMessage('ok', '„' + fileName + '“ (Stand vom ' + Util.formatDateTime(d.publishedAt) + ') wurde als eigene Daten übernommen.', 12000, { label: 'Rückgängig', run: async () => {
@@ -2347,6 +2401,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         State.source = prev.snapshot ? 'local' : 'none';
         if (!Areas.find(State.area)) State.area = 'gesamt';
         await persist(prev.snapshot, prev.manual, prev.areas, prev.assign);
+        Unsaved.state = prevUnsaved; Store.put('unsaved', Unsaved.state).catch(() => {});
         refresh();
         showMessage('info', 'Übernahme wurde rückgängig gemacht.', 6000);
       } });
@@ -2406,6 +2461,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     }
     if (!Areas.state) { Areas.state = Areas.defaults(); Areas.save(); }
     if (!Areas.find(State.area)) State.area = 'gesamt';
+    await Unsaved.load();
   }
 
   /** Ein-/ausblendbare Spalten der Maßnahmentabelle (Friststatus und Aktion bleiben immer sichtbar) */
@@ -2784,11 +2840,13 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         Backup.meta = { name: name, savedAt: data.publishedAt, remembered: remembered };
         try { await Store.put('backupMeta', Backup.meta); } catch (e) { /* ignorieren */ }
         Backup.updateMenu();
+        await Unsaved.reset();
         showMessage('ok', 'Sicherung gespeichert: „' + name + '“ (' + Util.formatDateTime(data.publishedAt) + ').' + (remembered ? ' Das Dashboard merkt sich diese Datei für die nächste Sicherung und zum Wiederherstellen.' : ''), 10000);
       };
       if (typeof window.showSaveFilePicker !== 'function') {
         Exporter.download(blob, BACKUP_FILE);
         Backup.meta = { name: BACKUP_FILE, savedAt: data.publishedAt, download: true };
+        await Unsaved.reset();
         try { await Store.put('backupMeta', Backup.meta); } catch (e) { /* ignorieren */ }
         Backup.updateMenu();
         showMessage('info', '„' + BACKUP_FILE + '“ wurde heruntergeladen. Bitte an einen sicheren Ort verschieben (z. B. OneDrive oder Netzlaufwerk). Wiederherstellen: „Sicherung wiederherstellen“ und die Datei auswählen.', 12000);
@@ -2977,6 +3035,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       else badge.appendChild(h('span', { class: 'pill pill-none' }, 'Kein Excel-Datenstand'));
       if (State.mode === 'view') { clear(badge); badge.appendChild(h('span', { class: 'pill pill-local' }, 'Veröffentlichter Stand')); }
       document.body.classList.toggle('is-view', State.mode === 'view');
+      Unsaved.render();
       const vb = $('viewBanner');
       vb.hidden = State.mode !== 'view';
       if (State.mode === 'view' && State.stand) {
@@ -4217,6 +4276,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         if (idx >= 0) State.manual[idx] = Object.assign({}, State.manual[idx], base, { updated: nowIso });
       } else {
         State.manual.push(Object.assign({ id: Util.uid(), created: nowIso }, base));
+        Unsaved.note('added');
       }
       const ok = await persistManual();
       if (!ok && Store.available) { State.manual = prevManual; showMessage('error', 'Die Maßnahme konnte nicht lokal gespeichert werden. Bitte erneut versuchen.'); return; }
@@ -4254,6 +4314,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 
   async function persistManual() {
     if (State.mode === 'view') return false;
+    await Unsaved.note('changed');
     try { await Store.put('manual', State.manual); State.storageOk = true; return true; } catch (e) { State.storageOk = false; return false; }
   }
 
@@ -4643,6 +4704,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (area && area.name !== t.value.trim()) {
         area.name = t.value.trim();
         Areas.save();
+        Unsaved.note('changed');
         refresh();
       }
     },
@@ -4905,6 +4967,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     });
     $('btnViewReload').addEventListener('click', openFilePicker);
     $('btnZustSave').addEventListener('click', () => ZustAssign.save());
+    $('btnBackupWarn').addEventListener('click', () => Backup.save(false));
     $('btnStart').addEventListener('click', () => StartScreen.start());
     $('btnStartSkip').addEventListener('click', () => StartScreen.hide());
     $('startShow').addEventListener('change', () => { State.startScreen = $('startShow').checked; savePrefs(); });

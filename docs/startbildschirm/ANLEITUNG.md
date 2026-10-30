@@ -1,6 +1,6 @@
 # Startbildschirm (ab Fassung 1.7.0)
 
-Beim Öffnen des Dashboards erscheint ein Startbildschirm. Er zeigt Logo und Titel sowie welche Daten in diesem Browser gespeichert sind, und hat die Schaltfläche **„Start“**. Das Feld strahlt von Weiß nach außen ins Blau; unten steht der Hinweis „Erstellt von Jan Dewender. Bei Fragen oder Problemen mit dem Tool bitte melden.“
+Beim Öffnen des Dashboards erscheint ein Startbildschirm. Er zeigt Logo und Titel sowie welche Daten in diesem Browser gespeichert sind, und hat die Schaltfläche **„Start“**. Das Feld strahlt von Weiß über Blau fließend in den dunkelblauen Hintergrund; unten steht der Hinweis „Erstellt von Jan Dewender. Bei Fragen oder Problemen mit dem Tool bitte melden.“
 
 ## „Start“ – welche Daten laden?
 

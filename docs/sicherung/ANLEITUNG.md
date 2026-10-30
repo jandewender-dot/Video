@@ -1,4 +1,4 @@
-# Sicherung und Übernahme (Fassung 1.6.0)
+# Sicherung und Übernahme (ab Fassung 1.6.0)
 
 ## Warum eine Sicherung?
 
@@ -10,6 +10,18 @@ Die Daten gehen verloren, wenn:
 - Sie im InPrivate-Fenster arbeiten.
 
 Eine Sicherungsdatei holt alles zurück.
+
+## Rotes Warnfeld „Achtung – … bitte eine neue Sicherungsdatei erstellen!“ (ab 1.8.0)
+
+Sobald im Tool etwas geändert wird, erscheint oben ein rotes Warnfeld. Das gilt für neue Maßnahmen, aber auch für Änderungen, Löschungen, umbenannte Bereiche und Zuordnungen. Bei neuen Maßnahmen nennt es die Anzahl:
+
+> Achtung – Sie haben 2 neue Maßnahmen hinzugefügt. Bitte vor dem Beenden des Tools eine neue Sicherungsdatei erstellen!
+
+- Die Schaltfläche **„Sicherung jetzt erstellen“** im Warnfeld sichert sofort.
+- Das Warnfeld verschwindet erst nach einer Sicherung, oder wenn eine Sicherung bzw. ein Stand als eigene Daten übernommen wird.
+- Es bleibt auch nach dem Schließen und Neuöffnen des Dashboards bestehen.
+- Das reine Einlesen der Ursprungs-Excel löst es nicht aus, denn die Excel-Datei ist ja selbst gespeichert.
+- Im Ansichtsmodus erscheint es nicht.
 
 ## Sicherung speichern
 
@@ -41,7 +53,7 @@ Jede veröffentlichte `ASI_Stand.xlsx` ist damit zugleich eine Sicherung.
 
 | Testreihe | Ergebnis |
 |---|---|
-| Neu: Übernahme und Sicherung | 19 von 19 |
+| Übernahme, Sicherung und Warnfeld | 25 von 25 |
 | Veröffentlichen und Ansichtsmodus | 32 von 32 |
 | Zuordnung | 29 von 29 |
 | Bestehende Funktionen | 63 von 63 |
