@@ -303,6 +303,17 @@ kbd{display:inline-block;font:600 11px/1 var(--font-sans);padding:2px 6px;border
 .choice-item:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
 .choice-title{font-weight:700}
 .choice-hint{font-size:13px;line-height:18px;color:var(--ink-muted)}
+.start-screen{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:var(--space-5);background:radial-gradient(circle at 70% 20%,var(--navy-700),var(--navy-950,#050b18) 75%);overflow:auto}
+.start-screen[hidden]{display:none}
+.start-card{width:min(560px,100%);display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--space-3);padding:var(--space-6) var(--space-5);border-radius:var(--radius-lg,20px);background:var(--surface-raised);color:var(--ink);box-shadow:var(--shadow-float)}
+.start-brand img{display:block;width:117px;height:auto}
+.start-kicker{margin:0;font-size:13px;color:var(--ink-muted);letter-spacing:.02em}
+.start-title{margin:0;font-family:var(--font-display);font-size:26px;line-height:32px}
+.start-status{margin:0;color:var(--ink-muted);font-size:14px;line-height:21px}
+.start-btn{min-width:220px;min-height:52px;font-size:18px;margin-top:var(--space-2)}
+.start-check{font-size:13px;color:var(--ink-muted)}
+body.has-start{overflow:hidden}
+@media print{.start-screen{display:none !important}}
 .view-banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-2) var(--space-4);padding:var(--space-2) var(--space-5);background:var(--navy-800);color:#fff;font-size:14px;line-height:20px}
 .view-banner[hidden]{display:none}
 .view-banner__text strong{margin-right:var(--space-2)}
@@ -820,6 +831,17 @@ table.data.dense .area-pick{min-height:32px}
 </style>
 </head>
 <body class="sx">
+<section class="start-screen" id="startScreen" role="dialog" aria-modal="true" aria-labelledby="startTitle" aria-describedby="startStatus" hidden>
+  <div class="start-card">
+    <div class="start-brand"><img data-logo-copy width="117" height="96" alt="Symsafe – Gesund nach Hause"></div>
+    <p class="start-kicker">Arbeitsschutz · ASI</p>
+    <h1 class="start-title" id="startTitle">Maßnahmen- &amp; Fristendashboard</h1>
+    <p class="start-status" id="startStatus"></p>
+    <button type="button" class="btn btn-primary start-btn" id="btnStart">Start</button>
+    <button type="button" class="btn btn-link" id="btnStartSkip">Direkt zum Dashboard</button>
+    <label class="check start-check"><input type="checkbox" id="startShow" checked> Startbildschirm beim Öffnen anzeigen</label>
+  </div>
+</section>
 <a class="skip-link" href="#main">Zum Inhalt springen</a>
 
 <header class="app-header">
@@ -854,6 +876,7 @@ table.data.dense .area-pick{min-height:32px}
         <li role="none" class="edit-only menu-sep"><button type="button" role="menuitem" class="menu-item" id="btnBackupSave"><span class="mi-title">Sicherung speichern</span><span class="mi-hint" id="btnBackupSaveHint">Speicherort selbst wählen (z. B. OneDrive, Netzlaufwerk)</span></button></li>
         <li role="none" class="edit-only" id="liBackupWhere" hidden><button type="button" role="menuitem" class="menu-item" id="btnBackupWhere"><span class="mi-title">Sicherung an anderem Ort speichern …</span><span class="mi-hint">Neuen Speicherort bzw. Dateinamen wählen</span></button></li>
         <li role="none" class="edit-only"><button type="button" role="menuitem" class="menu-item" id="btnBackupRestore"><span class="mi-title">Sicherung wiederherstellen</span><span class="mi-hint" id="btnBackupRestoreHint">Sicherungsdatei auswählen</span></button></li>
+        <li role="none" class="menu-sep"><button type="button" role="menuitem" class="menu-item" id="btnShowStart"><span class="mi-title">Startbildschirm</span><span class="mi-hint">Excel, Sicherung oder Stand laden</span></button></li>
       </ul>
     </div>
   </div>
@@ -935,7 +958,7 @@ table.data.dense .area-pick{min-height:32px}
       <div class="view-head">
         <div><h2 id="h-massnahmen" tabindex="-1">Maßnahmen</h2><p class="view-sub">Alle Maßnahmen mit Friststatus – Excel-Import und manuelle Erfassung</p></div>
         <span class="spacer"></span>
-        <button type="button" class="btn btn-navy no-print" id="btnNewAction2">
+        <button type="button" class="btn btn-navy no-print edit-only" id="btnNewAction2">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Neue Maßnahme</button>
       </div>
       <div class="card" id="actionsCard">
@@ -1187,7 +1210,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 (function () {
   'use strict';
 
-  const APP_VERSION = '1.6.1';
+  const APP_VERSION = '1.7.0';
 
   /* =====================================================================
    * Konfiguration
@@ -2086,6 +2109,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     stand: null,       // Kopfdaten des geladenen Stands im Ansichtsmodus
     dense: false,
     sonarHidden: false, // Sonar in der Gesamtübersicht ausgeblendet (Einstellung je Browser)
+    startScreen: true,  // Startbildschirm beim Öffnen anzeigen (Einstellung je Browser)
     selectedId: null
   };
 
@@ -2265,14 +2289,15 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       showMessage('info', '„' + STAND_FILE + '“ wurde heruntergeladen. Bitte in den gemeinsamen SharePoint-Ordner verschieben und die vorhandene Datei ersetzen.', 12000);
     },
     /** Stand- oder Sicherungsdatei geladen: in der Pflege wählen, ob übernommen oder nur angesehen wird */
-    async offer(d, fileName) {
+    async offer(d, fileName, preset) {
       if (State.mode === 'view') return Stand.enterView(d);
+      if (preset === 'view') return Stand.enterView(d);
       const backup = d.purpose === 'sicherung';
       const n = (d.snapshot ? d.snapshot.actions.length : 0) + d.manual.length;
       const own = (State.snapshot ? State.snapshot.actions.length : 0) + State.manual.length;
       const adopt = { key: 'adopt', label: 'Als eigene Daten übernehmen', hint: 'Ersetzt Ihre Daten in diesem Browser (' + Util.num(own) + ' Maßnahmen, Bereiche, Zuordnungen). Danach pflegen Sie mit diesem Stand weiter – z. B. nach einem PC-Wechsel.' };
       const view = { key: 'view', label: 'Nur ansehen (Ansichtsmodus)', hint: 'Zeigt den Stand schreibgeschützt an. Ihre eigenen Daten bleiben gespeichert und sind nach „Ansichtsmodus beenden“ wieder da.' };
-      const choice = await chooseAction(backup ? 'Sicherung öffnen' : 'Veröffentlichten Stand öffnen',
+      const choice = preset === 'adopt' ? 'adopt' : await chooseAction(backup ? 'Sicherung öffnen' : 'Veröffentlichten Stand öffnen',
         '„' + fileName + '“ ist ' + (backup ? 'eine Sicherung' : 'ein veröffentlichter Stand') + ' vom ' + Util.formatDateTime(d.publishedAt) + (d.publishedBy ? ' (gepflegt von ' + d.publishedBy + ')' : '') + ' mit ' + Util.num(n) + ' Maßnahmen. Was möchten Sie tun?',
         backup ? [adopt, view] : [view, adopt]);
       if (choice === 'adopt') {
@@ -2626,7 +2651,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         else dlg.setAttribute('open', '');
       } catch (e) { dlg.setAttribute('open', ''); }
     },
-    anyModalOpen() { return ['editDialog', 'confirmDialog', 'importDialog', 'areaDialog', 'themesDialog', 'publishDialog', 'zustDialog', 'choiceDialog'].some((id) => $(id).open); },
+    anyModalOpen() { return !$('startScreen').hidden || ['editDialog', 'confirmDialog', 'importDialog', 'areaDialog', 'themesDialog', 'publishDialog', 'zustDialog', 'choiceDialog'].some((id) => $(id).open); },
     close(dlg) {
       try { if (typeof dlg.close === 'function') dlg.close(); else dlg.removeAttribute('open'); } catch (e) { dlg.removeAttribute('open'); }
     },
@@ -2710,8 +2735,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         };
       });
     },
-    get() { return HandleStore.req('readonly', (st) => st.get('backup')); },
-    put(hd) { return HandleStore.req('readwrite', (st) => st.put(hd, 'backup')); }
+    get(key) { return HandleStore.req('readonly', (st) => st.get(key || 'backup')); },
+    put(hd, key) { return HandleStore.req('readwrite', (st) => st.put(hd, key || 'backup')); }
   };
   const Backup = {
     handle: null,
@@ -2796,13 +2821,14 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         }
       }
     },
-    async restore() {
+    async restore(preset) {
       if (State.mode !== 'edit') return;
+      const opts = { stand: preset };
       if (await Backup.getHandle()) {
         let ok = false;
         try { ok = await Backup.permit(Backup.handle, 'read'); } catch (e) { ok = false; }
         if (ok) {
-          try { const f = await Backup.handle.getFile(); await handleFile(f); return; } catch (e) {
+          try { const f = await Backup.handle.getFile(); await handleFile(f, opts); return; } catch (e) {
             showMessage('warn', '„' + Backup.handle.name + '“ wurde am gemerkten Speicherort nicht gefunden. Bitte die Sicherungsdatei auswählen.', 10000);
           }
         }
@@ -2810,8 +2836,9 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (typeof window.showOpenFilePicker === 'function') {
         let hd;
         try { [hd] = await window.showOpenFilePicker({ id: 'asi-sicherung', types: XLSX_TYPES, multiple: false }); } catch (e) { if (e && e.name === 'AbortError') return; hd = null; }
-        if (hd) { const rem = await Backup.remember(hd); Backup.meta = Object.assign({}, Backup.meta || {}, { name: hd.name, remembered: rem }); try { await Store.put('backupMeta', Backup.meta); } catch (e) { /* ignorieren */ } Backup.updateMenu(); await handleFile(await hd.getFile()); return; }
+        if (hd) { const rem = await Backup.remember(hd); Backup.meta = Object.assign({}, Backup.meta || {}, { name: hd.name, remembered: rem }); try { await Store.put('backupMeta', Backup.meta); } catch (e) { /* ignorieren */ } Backup.updateMenu(); await handleFile(await hd.getFile(), opts); return; }
       }
+      pendingFileOpts = opts;
       openFilePicker();
     },
     updateMenu() {
@@ -2821,6 +2848,94 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       $('btnBackupSaveHint').textContent = rem ? 'In „' + name + '“' + (m && m.savedAt ? ' · zuletzt ' + Util.formatDateTime(m.savedAt) : '') : 'Speicherort selbst wählen (z. B. OneDrive, Netzlaufwerk)';
       $('liBackupWhere').hidden = !rem;
       $('btnBackupRestoreHint').textContent = rem ? 'Aus „' + name + '“' : (name ? 'Datei „' + name + '“ auswählen' : 'Sicherungsdatei auswählen');
+    }
+  };
+
+  /* Gemerkte Dateien für den Startbildschirm: Ursprungs-Excel und veröffentlichter Stand.
+   * Der Datei-Verweis wird erst beim Klick gelesen (wie bei der Sicherung). */
+  const FileMemo = {
+    meta: {},
+    mem: {},
+    async load() {
+      try { const m = await Store.get('fileMeta'); if (m && typeof m === 'object') FileMemo.meta = m; } catch (e) { /* ignorieren */ }
+    },
+    async handle(kind) {
+      if (FileMemo.mem[kind] !== undefined) return FileMemo.mem[kind];
+      FileMemo.mem[kind] = null;
+      if (FileMemo.meta[kind] && FileMemo.meta[kind].remembered) {
+        try { const hd = await HandleStore.get(kind); if (hd && typeof hd.getFile === 'function') FileMemo.mem[kind] = hd; } catch (e) { FileMemo.mem[kind] = null; }
+      }
+      return FileMemo.mem[kind];
+    },
+    async remember(kind, hd) {
+      FileMemo.mem[kind] = hd;
+      let rem = false;
+      try { await HandleStore.put(hd, kind); rem = true; } catch (e) { rem = false; }
+      FileMemo.meta[kind] = { name: hd.name, at: new Date().toISOString(), remembered: rem };
+      try { await Store.put('fileMeta', FileMemo.meta); } catch (e) { /* ignorieren */ }
+    },
+    /** Datei öffnen: gemerkte Datei, sonst Auswahl (gemerkt), sonst Dateifeld. Gibt die Datei zurück oder null. */
+    async open(kind, opts) {
+      const hd = await FileMemo.handle(kind);
+      if (hd) {
+        let ok = false;
+        try { ok = await Backup.permit(hd, 'read'); } catch (e) { ok = false; }
+        if (ok) {
+          try { return await hd.getFile(); } catch (e) { showMessage('warn', '„' + hd.name + '“ wurde am gemerkten Ort nicht gefunden (verschoben oder umbenannt). Bitte die Datei neu auswählen.', 10000); }
+        }
+      }
+      if (typeof window.showOpenFilePicker === 'function') {
+        let picked = null;
+        try { [picked] = await window.showOpenFilePicker({ id: 'asi-' + kind, multiple: false, types: [{ description: 'Excel-Arbeitsmappe', accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx', '.xlsm'], 'application/vnd.ms-excel': ['.xls'], 'application/vnd.ms-excel.sheet.binary.macroEnabled.12': ['.xlsb'] } }] }); } catch (e) { if (e && e.name === 'AbortError') return null; picked = null; }
+        if (picked) { await FileMemo.remember(kind, picked); return picked.getFile(); }
+      }
+      pendingFileOpts = opts || null;
+      openFilePicker();
+      return null;
+    },
+    label(kind) { const m = FileMemo.meta[kind]; return m && m.remembered ? m.name : ''; }
+  };
+
+  const StartScreen = {
+    show() {
+      const el = $('startScreen');
+      const total = (State.snapshot ? State.snapshot.actions.length : 0) + State.manual.length;
+      let status;
+      if (State.mode === 'view' && State.stand) status = 'Ansichtsmodus: veröffentlichter Stand vom ' + Util.formatDateTime(State.stand.publishedAt) + (State.stand.publishedBy ? ' (gepflegt von ' + State.stand.publishedBy + ')' : '') + ', ' + Util.num(total) + ' Maßnahmen.';
+      else if (total) status = 'In diesem Browser gespeichert: ' + Util.num(total) + ' Maßnahmen' + (State.snapshot ? ' aus „' + State.snapshot.fileName + '“ (eingelesen ' + Util.formatDateTime(State.snapshot.importedAt) + ')' : '') + (State.manual.length ? ', davon ' + Util.num(State.manual.length) + ' manuell' : '') + '.' + (Backup.meta && Backup.meta.savedAt ? ' Letzte Sicherung: ' + Util.formatDateTime(Backup.meta.savedAt) + '.' : '');
+      else status = 'In diesem Browser sind noch keine Daten gespeichert. Wählen Sie „Start“ und lesen Sie die Excel-Datei, eine Sicherung oder den veröffentlichten Stand ein.';
+      $('startStatus').textContent = status;
+      $('startShow').checked = State.startScreen;
+      el.hidden = false;
+      document.body.classList.add('has-start');
+      // Rest der Seite inaktiv schalten (Dialoge, Meldungen und Ladeanzeige bleiben bedienbar)
+      Array.from(document.body.children).forEach((c) => { if (c !== el && c.tagName !== 'DIALOG' && c.tagName !== 'SCRIPT' && c.id !== 'messageArea' && c.id !== 'loadingOverlay') c.inert = true; });
+      $('btnStart').focus();
+    },
+    hide() {
+      $('startScreen').hidden = true;
+      document.body.classList.remove('has-start');
+      Array.from(document.body.children).forEach((c) => { c.inert = false; });
+    },
+    async start() {
+      const total = (State.snapshot ? State.snapshot.actions.length : 0) + State.manual.length;
+      const hint = (kind, fallback) => (FileMemo.label(kind) ? 'Lädt direkt „' + FileMemo.label(kind) + '“ (gemerkt).' : fallback);
+      const opts = [];
+      if (State.mode === 'edit') {
+        opts.push({ key: 'excel', label: 'Ursprungs-Excel einlesen', hint: hint('excel', 'Die Maßnahmenliste aus Excel auswählen; das Dashboard merkt sich die Datei.') + ' Manuelle Maßnahmen, Bereiche und Zuordnungen bleiben erhalten.' });
+        const bk = Backup.meta && Backup.meta.remembered ? Backup.meta.name : '';
+        opts.push({ key: 'backup', label: 'Sicherung laden', hint: (bk ? 'Lädt direkt „' + bk + '“ (gemerkt).' : 'Eine Sicherungsdatei auswählen; das Dashboard merkt sich die Datei.') + ' Ersetzt die Daten in diesem Browser durch die Sicherung.' });
+      }
+      opts.push({ key: 'stand', label: State.mode === 'view' ? 'Aktuellen Stand laden' : 'Veröffentlichten Stand ansehen', hint: hint('stand', '„ASI_Stand.xlsx“ aus dem gemeinsamen Ordner auswählen; das Dashboard merkt sich die Datei.') + ' Schreibgeschützt (Ansichtsmodus).' });
+      if (total) opts.push({ key: 'continue', label: 'Mit den gespeicherten Daten weiterarbeiten', hint: 'Ohne Einlesen direkt zum Dashboard (' + Util.num(total) + ' Maßnahmen).' });
+      if (State.mode === 'view' && total) { const c = opts.pop(); opts.unshift(c); }
+      const choice = await chooseAction('Welche Daten möchten Sie laden?', 'Die gewählte Datei wird sofort eingelesen.', opts);
+      if (!choice) { $('btnStart').focus(); return; }
+      StartScreen.hide();
+      if (choice === 'continue') return;
+      if (choice === 'backup') { await Backup.restore('adopt'); return; }
+      const f = await FileMemo.open(choice, choice === 'stand' ? { stand: 'view' } : null);
+      if (f) await handleFile(f, choice === 'stand' ? { stand: 'view' } : null);
     }
   };
 
@@ -4214,13 +4329,15 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     $('loadingOverlay').hidden = !on;
     if (text) $('loadingText').textContent = text;
   }
+  let pendingFileOpts = null; // Vorgabe für die nächste Dateiauswahl über das Dateifeld (z. B. vom Startbildschirm)
   function openFilePicker() {
     const input = $('fileInput');
     input.value = '';
     input.click();
   }
 
-  async function handleFile(file) {
+  async function handleFile(file, opts) {
+    opts = opts || {};
     if (!file || importBusy) return;
     importBusy = true;
     setLoading(true, 'Excel-Datei „' + file.name + '“ wird geprüft …');
@@ -4234,7 +4351,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       const standData = Stand.detect(wb);
       if (standData) {
         setLoading(false);
-        await Stand.offer(standData, file.name);
+        await Stand.offer(standData, file.name, opts.stand);
         return;
       }
       if (State.mode === 'view') {
@@ -4367,7 +4484,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     onFiltersChanged();
     $('fSearch').focus();
   }
-  function savePrefs() { const old = Prefs.load(); Prefs.save({ view: State.view, filters: State.filters, hiddenCols: Array.from(State.hiddenCols), dense: State.dense, area: State.area, mode: State.mode, publisher: old.publisher || '', sonarHidden: State.sonarHidden }); }
+  function savePrefs() { const old = Prefs.load(); Prefs.save({ view: State.view, filters: State.filters, hiddenCols: Array.from(State.hiddenCols), dense: State.dense, area: State.area, mode: State.mode, publisher: old.publisher || '', sonarHidden: State.sonarHidden, startScreen: State.startScreen }); }
 
   /** Bereich wechseln */
   function selectArea(id, focusTab) {
@@ -4697,7 +4814,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     $('fileInput').addEventListener('change', (ev) => {
       const input = ev.target;
       const file = input.files && input.files[0];
-      if (file) handleFile(file);
+      const opts = pendingFileOpts; pendingFileOpts = null;
+      if (file) handleFile(file, opts);
     });
     $('btnNewAction').addEventListener('click', () => Editor.open(null));
     $('btnNewAction2').addEventListener('click', () => Editor.open(null));
@@ -4781,6 +4899,10 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     });
     $('btnViewReload').addEventListener('click', openFilePicker);
     $('btnZustSave').addEventListener('click', () => ZustAssign.save());
+    $('btnStart').addEventListener('click', () => StartScreen.start());
+    $('btnStartSkip').addEventListener('click', () => StartScreen.hide());
+    $('startShow').addEventListener('change', () => { State.startScreen = $('startShow').checked; savePrefs(); });
+    $('btnShowStart').addEventListener('click', () => StartScreen.show());
     $('btnBackupSave').addEventListener('click', () => Backup.save(false));
     $('btnBackupWhere').addEventListener('click', () => Backup.save(true));
     $('btnBackupRestore').addEventListener('click', () => Backup.restore());
@@ -4877,6 +4999,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     if (prefs && Array.isArray(prefs.hiddenCols)) prefs.hiddenCols.forEach((k) => { if (TABLE_COLS.some((c) => c.key === k)) State.hiddenCols.add(k); });
     if (prefs && typeof prefs.dense === 'boolean') State.dense = prefs.dense;
     if (prefs && typeof prefs.sonarHidden === 'boolean') State.sonarHidden = prefs.sonarHidden;
+    if (prefs && typeof prefs.startScreen === 'boolean') State.startScreen = prefs.startScreen;
     if (prefs && typeof prefs.area === 'string') State.area = prefs.area;
     buildColumnsMenu();
     if (['status', 'herkunft', 'quelle', 'onlyOpen', 'onlyNoDate'].some((k) => !!State.filters[k])) { $('moreFilters').hidden = false; $('btnMoreFilters').setAttribute('aria-expanded', 'true'); }
@@ -4892,7 +5015,9 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     document.querySelectorAll('img[data-logo-copy]').forEach((img) => { const src = document.querySelector('.logo-tile img'); if (src) img.src = src.src; });
     if (!viewLoaded) { State.mode = 'edit'; await loadOwnData(); }
     await Backup.load();
+    await FileMemo.load();
     refresh();
+    if (State.startScreen && !window.__ASI_OHNE_STARTBILDSCHIRM) StartScreen.show(); // Schalter nur für automatisierte Tests
     window.ASIDashboard = Object.freeze({ version: APP_VERSION, selfTest: State.selfTest });
   }
 
