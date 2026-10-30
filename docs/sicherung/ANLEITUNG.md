@@ -22,6 +22,7 @@ Sobald im Tool etwas geändert wird, erscheint oben ein rotes Warnfeld. Das gilt
 - Es bleibt auch nach dem Schließen und Neuöffnen des Dashboards bestehen.
 - Das reine Einlesen der Ursprungs-Excel löst es nicht aus, denn die Excel-Datei ist ja selbst gespeichert.
 - Im Ansichtsmodus erscheint es nicht.
+- Zusätzlich fragt Edge beim Schließen oder Neuladen des Tabs nach, solange nicht gesichert ist (ab 1.8.1). Den Text dieser Rückfrage legt der Browser selbst fest, z. B. „Diese Website verlassen? Von Ihnen vorgenommene Änderungen werden möglicherweise nicht gespeichert.“
 
 ## Sicherung speichern
 
@@ -53,7 +54,7 @@ Jede veröffentlichte `ASI_Stand.xlsx` ist damit zugleich eine Sicherung.
 
 | Testreihe | Ergebnis |
 |---|---|
-| Übernahme, Sicherung und Warnfeld | 25 von 25 |
+| Übernahme, Sicherung, Warnfeld und Rückfrage | 27 von 27 |
 | Veröffentlichen und Ansichtsmodus | 32 von 32 |
 | Zuordnung | 29 von 29 |
 | Bestehende Funktionen | 63 von 63 |

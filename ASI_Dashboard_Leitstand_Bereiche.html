@@ -305,9 +305,10 @@ kbd{display:inline-block;font:600 11px/1 var(--font-sans);padding:2px 6px;border
 .choice-hint{font-size:13px;line-height:18px;color:var(--ink-muted)}
 .start-screen{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:var(--space-3);background:radial-gradient(ellipse at 50% 48%,#1f4f97 0%,var(--navy-700) 32%,var(--navy-900) 62%,var(--navy-950) 100%);overflow:auto}
 .start-screen[hidden]{display:none}
-.start-card{width:min(860px,100%);display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--space-3);padding:96px 150px 88px;color:#0b1730;
-  /* weißer Kern, der strahlend über Blau weich in den dunkelblauen Hintergrund übergeht – ohne sichtbare Kante */
-  background:radial-gradient(ellipse closest-side at 50% 50%,#ffffff 0%,#ffffff 50%,#f4f8fe 58%,#dce9fb 66%,#b3cff4 74%,rgba(110,162,232,.82) 82%,rgba(52,112,199,.55) 89%,rgba(31,79,151,.25) 95%,rgba(16,32,63,0) 100%)}
+.start-card{width:min(620px,100%);display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--space-3);padding:var(--space-6) var(--space-6) var(--space-5);border-radius:14px;color:#0b1730;
+  /* eckiges Feld: weißer Kern, zum Rand hin leicht blau, nach außen ein weicher blauer Schein, der in den dunkelblauen Hintergrund ausläuft */
+  background:linear-gradient(180deg,rgba(255,255,255,0) 70%,rgba(220,233,251,.9) 100%),linear-gradient(0deg,rgba(255,255,255,0) 82%,rgba(232,241,253,.9) 100%),#ffffff;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),inset 0 0 36px rgba(110,162,232,.45),0 0 0 1px rgba(160,198,245,.55),0 0 28px 6px rgba(140,186,242,.65),0 0 90px 28px rgba(63,134,223,.45),0 0 200px 70px rgba(31,79,151,.35)}
 .start-info{width:100%;margin-top:var(--space-2);padding:var(--space-3) var(--space-4);border-radius:var(--radius-md);background:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.95);color:#10203f;font-size:13px;line-height:19px;box-shadow:0 2px 10px rgba(11,23,48,.12)}
 .start-info strong{font-weight:700}
 .start-brand img{display:block;width:117px;height:auto}
@@ -327,7 +328,7 @@ body.has-start{overflow:hidden}
 .backup-warn__btn:focus-visible{outline:2px solid #fff;outline-offset:2px}
 @keyframes warn-pop{from{transform:translateY(-8px);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.backup-warn{animation:none}}
-@media (max-width:760px){.start-card{padding:72px 36px 64px}.backup-warn{flex-wrap:wrap;padding:var(--space-2) var(--space-3)}}
+@media (max-width:760px){.start-card{padding:var(--space-5) var(--space-4)}.backup-warn{flex-wrap:wrap;padding:var(--space-2) var(--space-3)}}
 .view-banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-2) var(--space-4);padding:var(--space-2) var(--space-5);background:var(--navy-800);color:#fff;font-size:14px;line-height:20px}
 .view-banner[hidden]{display:none}
 .view-banner__text strong{margin-right:var(--space-2)}
@@ -1231,7 +1232,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 (function () {
   'use strict';
 
-  const APP_VERSION = '1.8.0';
+  const APP_VERSION = '1.8.1';
 
   /* =====================================================================
    * Konfiguration
@@ -4968,6 +4969,12 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     $('btnViewReload').addEventListener('click', openFilePicker);
     $('btnZustSave').addEventListener('click', () => ZustAssign.save());
     $('btnBackupWarn').addEventListener('click', () => Backup.save(false));
+    // Beim Schließen/Neuladen nachfragen, solange Änderungen nicht gesichert sind (Text legt der Browser fest)
+    window.addEventListener('beforeunload', (ev) => {
+      if (window.__ASI_TEST_OHNE_RUECKFRAGE || State.mode !== 'edit' || !Unsaved.state.changed) return;
+      ev.preventDefault();
+      ev.returnValue = '';
+    });
     $('btnStart').addEventListener('click', () => StartScreen.start());
     $('btnStartSkip').addEventListener('click', () => StartScreen.hide());
     $('startShow').addEventListener('change', () => { State.startScreen = $('startShow').checked; savePrefs(); });
