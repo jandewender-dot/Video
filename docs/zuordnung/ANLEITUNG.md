@@ -1,3 +1,5 @@
+> **Hinweis:** Gilt für Version 1.x. Für Version 2.0 siehe `docs/version2/ANLEITUNG.md`.
+
 # Excel-Maßnahmen Bereichen zuordnen, Sonar ausblenden (ab Fassung 1.5.1)
 
 ## Nach Zuständigkeit zuordnen (für viele Maßnahmen auf einmal)

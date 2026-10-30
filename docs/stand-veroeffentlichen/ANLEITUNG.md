@@ -1,3 +1,5 @@
+> **Hinweis:** Gilt für Version 1.x. Für Version 2.0 siehe `docs/version2/ANLEITUNG.md`.
+
 # Stand veröffentlichen und Ansichtsmodus
 
 Gilt für `ASI_Dashboard_Leitstand_Bereiche.html` (ab Fassung 1.3.0, zur Abnahme). Das freigegebene Original `ASI_Dashboard_Enterprise_FINAL.html` ist unverändert.

@@ -1,3 +1,5 @@
+> **Hinweis:** Gilt für Version 1.x. Für Version 2.0 siehe `docs/version2/ANLEITUNG.md`.
+
 # Sicherung und Übernahme (ab Fassung 1.6.0)
 
 ## Warum eine Sicherung?

@@ -329,6 +329,22 @@ body.has-start{overflow:hidden}
 @keyframes warn-pop{from{transform:translateY(-8px);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.backup-warn{animation:none}}
 @media (max-width:760px){.start-card{padding:var(--space-5) var(--space-4)}.backup-warn{flex-wrap:wrap;padding:var(--space-2) var(--space-3)}}
+.start-myarea{display:flex;flex-direction:column;gap:4px;align-items:stretch;width:min(320px,100%);text-align:left;font-size:13px;color:#10203f}
+.start-myarea .select{min-height:40px}
+.start-info p{margin:0}
+.start-news{margin-top:6px;text-align:left}
+.start-news summary{cursor:pointer;color:#1a2f57;font-weight:600}
+.start-news ul{margin:6px 0 0;padding-left:18px}
+.start-news li{margin:2px 0}
+.frist-dialog{width:min(980px,calc(100vw - 32px))}
+.frist-table{width:100%}
+.frist-table td{vertical-align:top}
+.frist-input{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.frist-input .input{width:auto;min-width:150px}
+.frist-state{font-size:13px;color:var(--status-done-ink);min-width:90px}
+.frist-card{border-left:4px solid var(--mark-warn,#c77700)}
+.wirk-set{border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:var(--space-3);margin:0}
+.wirk-set legend{font-weight:700;padding:0 6px}
 .view-banner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-2) var(--space-4);padding:var(--space-2) var(--space-5);background:var(--navy-800);color:#fff;font-size:14px;line-height:20px}
 .view-banner[hidden]{display:none}
 .view-banner__text strong{margin-right:var(--space-2)}
@@ -359,6 +375,7 @@ body.is-view .edit-only{display:none!important}
 .tag{display:inline-flex;align-items:center;min-height:22px;font-size:12px;line-height:16px;padding:0 var(--space-2);border-radius:var(--radius-pill);background:var(--status-done-bg);color:var(--status-done-ink);font-weight:600;white-space:nowrap}
 .tag-warn{background:var(--status-soon-bg);color:var(--status-soon-ink)}
 .tag-manual{background:var(--nav-active);color:var(--ink)}
+.tag-ok{background:var(--status-done-bg);color:var(--status-done-ink)}
 .days{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
 .days.neg{color:var(--status-overdue-ink)}.days.soon,.days.mid{color:var(--status-soon-ink)}.days.done{color:var(--ink-muted);font-weight:500}
 .rel{font-size:12px;line-height:16px;font-weight:600;white-space:nowrap}
@@ -854,8 +871,20 @@ table.data.dense .area-pick{min-height:32px}
     <p class="start-status" id="startStatus"></p>
     <button type="button" class="btn btn-primary start-btn" id="btnStart">Start</button>
     <button type="button" class="btn btn-link" id="btnStartSkip">Direkt zum Dashboard</button>
+    <div class="start-myarea"><label for="startMyArea">Beim Öffnen anzeigen (Mein Bereich)</label><select class="select" id="startMyArea"></select></div>
     <label class="check start-check"><input type="checkbox" id="startShow" checked> Startbildschirm beim Öffnen anzeigen</label>
-    <p class="start-info" id="startInfo"><strong>Erstellt von Jan Dewender.</strong> Bei Fragen oder Problemen mit dem Tool bitte melden.</p>
+    <div class="start-info" id="startInfo">
+      <p><strong>Erstellt von Jan Dewender.</strong> Bei Fragen oder Problemen mit dem Tool bitte melden.</p>
+      <details class="start-news"><summary><span id="startVersion">Version</span> · Was ist neu?</summary>
+        <ul>
+          <li>Das Dashboard ist führend: Alle Maßnahmen – auch die aus Excel übernommenen – lassen sich hier bearbeiten (Termine, Status, Bereich).</li>
+          <li>„Daten › Speichern“ erzeugt ASI_Stand.xlsx: zugleich Sicherung und Stand für alle, die ansehen.</li>
+          <li>Neue Maßnahmen brauchen Bereich, Zuständigkeit und Zieldatum; „Fristen nachpflegen“ hilft bei Maßnahmen ohne Termin.</li>
+          <li>Wirksamkeitskontrolle (§ 3 Abs. 1 ArbSchG), Priorität und STOP-Art je Maßnahme.</li>
+          <li>„Mein Bereich“: Jede Person kann wählen, welcher Bereich beim Öffnen erscheint. Das Sonar ist standardmäßig ausgeblendet.</li>
+        </ul>
+      </details>
+    </div>
   </div>
 </section>
 <a class="skip-link" href="#main">Zum Inhalt springen</a>
@@ -871,28 +900,35 @@ table.data.dense .area-pick{min-height:32px}
   <div class="header-actions">
     <button type="button" class="btn btn-primary" id="btnImport">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h10l6 6v10H4z"/><path d="M14 4v6h6"/><path d="M8 14l2.5 3L8 20M13 14l-2.5 3 2.5 3" transform="translate(0,-1)"/></svg>
-      <span id="btnImportLabel">Excel aktualisieren</span>
+      <span id="btnImportLabel">Excel einlesen</span>
     </button>
     <button type="button" class="btn btn-dark edit-only" id="btnNewAction">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
       Neue Maßnahme
     </button>
     <div class="menu-wrap">
+      <button type="button" class="btn btn-dark" id="btnDataMenu" aria-haspopup="menu" aria-expanded="false" aria-controls="dataMenu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></svg>
+        Daten <span class="caret" aria-hidden="true">▾</span>
+      </button>
+      <ul class="menu menu-right" id="dataMenu" role="menu" aria-labelledby="btnDataMenu" hidden>
+        <li role="none" class="edit-only"><button type="button" role="menuitem" class="menu-item" id="btnBackupSave"><span class="mi-title">Speichern</span><span class="mi-hint" id="btnBackupSaveHint">Beim ersten Mal den gemeinsamen Ordner wählen</span></button></li>
+        <li role="none" class="edit-only" id="liBackupWhere" hidden><button type="button" role="menuitem" class="menu-item" id="btnBackupWhere"><span class="mi-title">Speichern unter …</span><span class="mi-hint">Anderen Ordner oder Dateinamen wählen</span></button></li>
+        <li role="none" class="edit-only"><button type="button" role="menuitem" class="menu-item" id="btnBackupRestore"><span class="mi-title">Gespeicherten Stand laden</span><span class="mi-hint" id="btnBackupRestoreHint">Datei auswählen – ersetzt die Daten in diesem Browser</span></button></li>
+        <li role="none" class="menu-sep"><button type="button" role="menuitem" class="menu-item" id="btnShowStart"><span class="mi-title">Startbildschirm</span><span class="mi-hint">Excel, gespeicherten Stand oder Mein Bereich wählen</span></button></li>
+      </ul>
+    </div>
+    <div class="menu-wrap">
       <button type="button" class="btn btn-dark" id="btnExportMenu" aria-haspopup="menu" aria-expanded="false" aria-controls="exportMenu">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5"/><path d="M4 17v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2"/></svg>
         Export &amp; Druck <span class="caret" aria-hidden="true">▾</span>
       </button>
       <ul class="menu menu-right" id="exportMenu" role="menu" aria-labelledby="btnExportMenu" hidden>
-        <li role="none" class="menu-narrow edit-only"><button type="button" role="menuitem" class="menu-item" id="btnNewActionMenu"><span class="mi-title">Neue Maßnahme</span><span class="mi-hint">Maßnahme manuell erfassen</span></button></li>
+        <li role="none" class="menu-narrow edit-only"><button type="button" role="menuitem" class="menu-item" id="btnNewActionMenu"><span class="mi-title">Neue Maßnahme</span><span class="mi-hint">Maßnahme im Dashboard erfassen</span></button></li>
         <li role="none"><button type="button" role="menuitem" class="menu-item" id="btnPrint"><span class="mi-title">Drucken / PDF</span><span class="mi-hint">Optimierte Druckansicht der aktuellen Seite</span></button></li>
         <li role="none"><button type="button" role="menuitem" class="menu-item" id="btnExportFiltered"><span class="mi-title">CSV – gefilterte Maßnahmen</span><span class="mi-hint">Nur die aktuell angezeigten Einträge</span></button></li>
         <li role="none"><button type="button" role="menuitem" class="menu-item" id="btnExportAll"><span class="mi-title">CSV – alle Maßnahmen</span><span class="mi-hint">Für Excel, Semikolon-getrennt</span></button></li>
-        <li role="none"><button type="button" role="menuitem" class="menu-item" id="btnExportXlsx"><span class="mi-title">Excel-Datei – alle Maßnahmen</span><span class="mi-hint">Inkl. manuell erfasster Einträge</span></button></li>
-        <li role="none" class="edit-only menu-sep"><button type="button" role="menuitem" class="menu-item" id="btnPublish"><span class="mi-title">Stand veröffentlichen</span><span class="mi-hint">„ASI_Stand.xlsx“ für den SharePoint-Ordner speichern</span></button></li>
-        <li role="none" class="edit-only menu-sep"><button type="button" role="menuitem" class="menu-item" id="btnBackupSave"><span class="mi-title">Sicherung speichern</span><span class="mi-hint" id="btnBackupSaveHint">Speicherort selbst wählen (z. B. OneDrive, Netzlaufwerk)</span></button></li>
-        <li role="none" class="edit-only" id="liBackupWhere" hidden><button type="button" role="menuitem" class="menu-item" id="btnBackupWhere"><span class="mi-title">Sicherung an anderem Ort speichern …</span><span class="mi-hint">Neuen Speicherort bzw. Dateinamen wählen</span></button></li>
-        <li role="none" class="edit-only"><button type="button" role="menuitem" class="menu-item" id="btnBackupRestore"><span class="mi-title">Sicherung wiederherstellen</span><span class="mi-hint" id="btnBackupRestoreHint">Sicherungsdatei auswählen</span></button></li>
-        <li role="none" class="menu-sep"><button type="button" role="menuitem" class="menu-item" id="btnShowStart"><span class="mi-title">Startbildschirm</span><span class="mi-hint">Excel, Sicherung oder Stand laden</span></button></li>
+        <li role="none"><button type="button" role="menuitem" class="menu-item" id="btnExportXlsx"><span class="mi-title">Excel-Datei – alle Maßnahmen</span><span class="mi-hint">Mit Bereich, Priorität und Wirksamkeit</span></button></li>
       </ul>
     </div>
   </div>
@@ -912,7 +948,7 @@ table.data.dense .area-pick{min-height:32px}
 <div class="backup-warn no-print" id="backupWarn" role="alert" hidden>
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17h.01"/></svg>
   <p class="backup-warn__text"><strong>Achtung –</strong> <span id="backupWarnText"></span></p>
-  <button type="button" class="btn btn-sm backup-warn__btn" id="btnBackupWarn">Sicherung jetzt erstellen</button>
+  <button type="button" class="btn btn-sm backup-warn__btn" id="btnBackupWarn">Jetzt speichern</button>
 </div>
 
 <div class="source-bar" id="sourceBar" aria-label="Datenquelle">
@@ -935,32 +971,19 @@ table.data.dense .area-pick{min-height:32px}
       <li><button type="button" class="nav-btn" data-view="massnahmen">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 6h12M9 12h12M9 18h12"/><path d="M3 6l1.5 1.5L7 5M3 12l1.5 1.5L7 11M3 18l1.5 1.5L7 17"/></svg>
         <span class="nav-label">Maßnahmen</span><span class="nav-count" data-count="massnahmen">0</span></button></li>
-      <li><button type="button" class="nav-btn" data-view="kanban">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="11" rx="1"/><rect x="17" y="4" width="4" height="7" rx="1"/></svg>
-        <span class="nav-label">Kanban</span></button></li>
       <li><button type="button" class="nav-btn" data-view="themen">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7l8-4 8 4-8 4z"/><path d="M4 12l8 4 8-4M4 17l8 4 8-4"/></svg>
         <span class="nav-label">Themen</span><span class="nav-count" data-count="themen">0</span></button></li>
       <li><button type="button" class="nav-btn" data-view="termine">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
         <span class="nav-label">Termine</span><span class="nav-count" data-count="termine">0</span></button></li>
-      <li class="nav-sep" aria-hidden="true">Weitere Blätter</li>
-      <li><button type="button" class="nav-btn" data-view="ideen">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/></svg>
-        <span class="nav-label">Ideenspeicher</span><span class="nav-count" data-count="ideen">0</span></button></li>
-      <li><button type="button" class="nav-btn" data-view="reflexion">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 3"/></svg>
-        <span class="nav-label">Jahresreflexion</span><span class="nav-count" data-count="reflexion">0</span></button></li>
-      <li><button type="button" class="nav-btn" data-view="meetings">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2 20c0-3.3 2.7-6 6-6s6 2.7 6 6M14 14.3c.6-.2 1.3-.3 2-.3 3.3 0 6 2.7 6 6"/></svg>
-        <span class="nav-label">Meetingübersicht</span><span class="nav-count" data-count="meetings">0</span></button></li>
-      <li class="nav-sep" aria-hidden="true">System</li>
-      <li><button type="button" class="nav-btn" data-view="qualitaet">
+      <li class="nav-sep edit-only" aria-hidden="true">System</li>
+      <li class="edit-only"><button type="button" class="nav-btn" data-view="qualitaet">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>
         <span class="nav-label">Datenqualität</span><span class="nav-count" data-count="qualitaet">0</span></button></li>
     </ul>
     <div class="nav-info">
-      <p><strong>Hinweis:</strong> Importierte und manuell erfasste Daten werden nur lokal in diesem Browser für den aktuellen Benutzer gespeichert. Andere Personen sehen diese Daten nicht.</p>
+      <p><strong>Hinweis:</strong> Die Daten liegen in diesem Browser. „Daten › Speichern“ erzeugt <em>ASI_Stand.xlsx</em> – Ihre Sicherung und der Stand für alle, die ansehen.</p>
       <button type="button" class="btn btn-danger btn-sm" id="btnResetLocal">Lokale Daten zurücksetzen</button>
     </div>
   </nav>
@@ -978,7 +1001,7 @@ table.data.dense .area-pick{min-height:32px}
 
     <section class="view" id="view-massnahmen" aria-labelledby="h-massnahmen" hidden>
       <div class="view-head">
-        <div><h2 id="h-massnahmen" tabindex="-1">Maßnahmen</h2><p class="view-sub">Alle Maßnahmen mit Friststatus – Excel-Import und manuelle Erfassung</p></div>
+        <div><h2 id="h-massnahmen" tabindex="-1">Maßnahmen</h2><p class="view-sub">Alle Maßnahmen mit Friststatus – hier im Dashboard gepflegt</p></div>
         <span class="spacer"></span>
         <button type="button" class="btn btn-navy no-print edit-only" id="btnNewAction2">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Neue Maßnahme</button>
@@ -999,7 +1022,7 @@ table.data.dense .area-pick{min-height:32px}
             <div class="field"><label for="fStatus">Bestehender Status</label><select class="select" id="fStatus"></select></div>
             <div class="field"><label for="fHerkunft">Herkunft</label><select class="select" id="fHerkunft"></select></div>
             <div class="field"><label for="fQuelle">Erfassung</label><select class="select" id="fQuelle">
-              <option value="">Alle</option><option value="excel">Aus Excel</option><option value="manual">Manuell erfasst</option></select></div>
+              <option value="">Alle</option><option value="excel">Aus Excel übernommen</option><option value="manual">Im Dashboard erfasst</option></select></div>
             <div class="field"><span class="lbl" id="lblOptions">Optionen</span>
               <div class="checks" role="group" aria-labelledby="lblOptions">
                 <label class="check"><input type="checkbox" id="fOnlyOpen"> nur offene</label>
@@ -1035,16 +1058,6 @@ table.data.dense .area-pick{min-height:32px}
       </div>
     </section>
 
-    <section class="view" id="view-kanban" aria-labelledby="h-kanban" hidden>
-      <div class="view-head">
-        <div><h2 id="h-kanban" tabindex="-1">Kanban</h2><p class="view-sub">Visualisierung nach Friststatus. Maßnahmen „In Bearbeitung“ mit dringender Frist bleiben in der Fristspalte.</p></div>
-        <span class="spacer"></span>
-        <div class="field no-print" style="min-width:220px"><label for="kbSearch">Suche</label><input class="input" type="search" id="kbSearch" autocomplete="off"></div>
-        <div class="field no-print" style="min-width:200px"><label for="kbZust">Zuständigkeit</label><select class="select" id="kbZust"></select></div>
-      </div>
-      <div id="kanbanContent"></div>
-    </section>
-
     <section class="view" id="view-themen" aria-labelledby="h-themen" hidden>
       <div class="view-head"><div><h2 id="h-themen" tabindex="-1">Themen</h2><p class="view-sub">Themen und Bereiche aus der Maßnahmenliste sowie ein ggf. vorhandenes Themenblatt</p></div></div>
       <div id="themenContent"></div>
@@ -1053,21 +1066,6 @@ table.data.dense .area-pick{min-height:32px}
     <section class="view" id="view-termine" aria-labelledby="h-termine" hidden>
       <div class="view-head"><div><h2 id="h-termine" tabindex="-1">Termine</h2><p class="view-sub">Kommende Fristen der Maßnahmen und ggf. vorhandenes Terminblatt</p></div></div>
       <div id="termineContent"></div>
-    </section>
-
-    <section class="view" id="view-ideen" aria-labelledby="h-ideen" hidden>
-      <div class="view-head"><div><h2 id="h-ideen" tabindex="-1">Ideenspeicher</h2><p class="view-sub">Ideen und Vorschläge aus der Arbeitsmappe</p></div></div>
-      <div id="ideenContent"></div>
-    </section>
-
-    <section class="view" id="view-reflexion" aria-labelledby="h-reflexion" hidden>
-      <div class="view-head"><div><h2 id="h-reflexion" tabindex="-1">Jahresreflexion</h2><p class="view-sub">Rückblick und Bewertung aus der Arbeitsmappe</p></div></div>
-      <div id="reflexionContent"></div>
-    </section>
-
-    <section class="view" id="view-meetings" aria-labelledby="h-meetings" hidden>
-      <div class="view-head"><div><h2 id="h-meetings" tabindex="-1">Meetingübersicht</h2><p class="view-sub">Besprechungen und Sitzungen aus der Arbeitsmappe</p></div></div>
-      <div id="meetingsContent"></div>
     </section>
 
     <section class="view" id="view-qualitaet" aria-labelledby="h-qualitaet" hidden>
@@ -1098,25 +1096,35 @@ table.data.dense .area-pick{min-height:32px}
   <form class="dlg" id="editForm" novalidate>
     <div class="dlg-head"><h2 id="editTitle">Neue Maßnahme</h2><button type="button" class="dlg-close" data-close aria-label="Dialog schließen">×</button></div>
     <div class="dlg-body">
-      <p class="field-hint" id="editIntro" style="margin-bottom:12px">Pflichtfeld ist mit <span class="req">*</span> markiert. Manuell erfasste Maßnahmen werden lokal in diesem Browser gespeichert und bleiben bei einem Excel-Import erhalten.</p>
+      <p class="field-hint" id="editIntro" style="margin-bottom:12px"></p>
       <div class="form-grid">
         <div class="field full"><label for="eAktion">Aktion / Maßnahme <span class="req" aria-hidden="true">*</span></label>
           <textarea class="textarea" id="eAktion" required aria-required="true" aria-describedby="eAktionErr" maxlength="4000"></textarea>
           <span class="field-err" id="eAktionErr" hidden>⚠ Bitte eine Aktion bzw. Maßnahmenbeschreibung eingeben.</span></div>
-        <div class="field full"><label for="eBereich">Bereich <span class="req" aria-hidden="true">*</span></label><select class="select" id="eBereich" required aria-required="true" aria-describedby="eBereichErr"></select><span class="field-err" id="eBereichErr" hidden></span></div>
+        <div class="field full"><label for="eBereich">Bereich <span class="req" id="eBereichReq" aria-hidden="true">*</span></label><select class="select" id="eBereich" required aria-required="true" aria-describedby="eBereichErr"></select><span class="field-err" id="eBereichErr" hidden></span></div>
         <div class="field"><label for="eThema">Thema / Bereich</label><input class="input" id="eThema" list="dlThema" maxlength="300" autocomplete="off"></div>
-        <div class="field"><label for="eZust">Zuständigkeit / Verantwortlich</label><input class="input" id="eZust" list="dlZust" maxlength="300" autocomplete="off"></div>
+        <div class="field"><label for="eZust">Zuständigkeit / Verantwortlich <span class="req" id="eZustReq" aria-hidden="true">*</span></label><input class="input" id="eZust" list="dlZust" maxlength="300" autocomplete="off" aria-describedby="eZustErr"><span class="field-err" id="eZustErr" hidden></span></div>
         <div class="field"><label for="eHerkunft">Herkunft / Quelle</label><input class="input" id="eHerkunft" list="dlHerkunft" maxlength="300" autocomplete="off"></div>
         <div class="field"><label for="eStatus">Status</label><input class="input" id="eStatus" list="dlStatus" maxlength="120" autocomplete="off" aria-describedby="eStatusHint"><span class="field-hint" id="eStatusHint">z. B. Offen, In Bearbeitung, Erledigt</span></div>
         <div class="field"><label for="eVom">vom (erfasst am)</label><input class="input" type="date" id="eVom" min="1990-01-01" max="2100-12-31"></div>
-        <div class="field full"><label for="eZiel">Zieldatum / Frist</label>
+        <div class="field full"><label for="eZiel">Zieldatum / Frist <span class="req" id="eZielReq" aria-hidden="true">*</span></label>
           <div class="date-row"><input class="input" type="date" id="eZiel" min="1990-01-01" max="2100-12-31" aria-describedby="eZielHint eZielErr">
             <div class="quick-dates" role="group" aria-label="Frist schnell setzen">
               <button type="button" class="btn btn-xs" data-days="7">+1 Woche</button><button type="button" class="btn btn-xs" data-days="14">+2 Wochen</button><button type="button" class="btn btn-xs" data-days="30">+30 Tage</button><button type="button" class="btn btn-xs" data-days="90">+3 Monate</button><button type="button" class="btn btn-xs" data-days="clear">Leeren</button>
             </div></div>
           <span class="field-hint" id="eZielHint"></span><span class="field-err" id="eZielErr" hidden></span></div>
         <div class="field"><label for="eUmgesetzt">umgesetzt am</label><input class="input" type="date" id="eUmgesetzt" min="1990-01-01" max="2100-12-31" aria-describedby="eUmgErr"><span class="field-err" id="eUmgErr" hidden></span></div>
+        <div class="field"><label for="ePrio">Priorität</label><select class="select" id="ePrio"><option value="">–</option><option value="hoch">hoch</option><option value="mittel">mittel</option><option value="niedrig">niedrig</option></select></div>
+        <div class="field"><label for="eArt">Art der Maßnahme (STOP)</label><select class="select" id="eArt" aria-describedby="eArtHint"><option value="">–</option><option value="S">S – Substitution</option><option value="T">T – technisch</option><option value="O">O – organisatorisch</option><option value="P">P – personenbezogen</option></select><span class="field-hint" id="eArtHint">Rangfolge nach § 4 ArbSchG: personenbezogene Maßnahmen sind nachrangig.</span></div>
         <div class="field full"><label for="eKommentar">Kommentar</label><textarea class="textarea" id="eKommentar" maxlength="8000"></textarea></div>
+        <fieldset class="field full wirk-set"><legend>Wirksamkeitskontrolle (§ 3 Abs. 1 ArbSchG)</legend>
+          <div class="form-grid">
+            <div class="field"><label for="eWirkDatum">Geprüft am</label><input class="input" type="date" id="eWirkDatum" min="1990-01-01" max="2100-12-31" aria-describedby="eWirkErr"><span class="field-err" id="eWirkErr" hidden></span></div>
+            <div class="field"><label for="eWirkErgebnis">Ergebnis</label><select class="select" id="eWirkErgebnis"><option value="">noch nicht geprüft</option><option value="wirksam">wirksam</option><option value="teilweise wirksam">teilweise wirksam</option><option value="nicht wirksam">nicht wirksam</option></select></div>
+            <div class="field full"><label for="eWirkDurch">Geprüft durch</label><input class="input" id="eWirkDurch" list="dlZust" maxlength="300" autocomplete="off"></div>
+          </div>
+          <p class="field-hint">Prüfen, ob die Maßnahme umgesetzt ist und die Gefährdung ausreichend verringert hat. Bei „nicht wirksam“ eine neue Maßnahme anlegen.</p>
+        </fieldset>
       </div>
       <datalist id="dlThema"></datalist><datalist id="dlZust"></datalist><datalist id="dlHerkunft"></datalist>
       <datalist id="dlStatus"><option value="Offen"></option><option value="In Bearbeitung"></option><option value="Erledigt"></option><option value="Zurückgestellt"></option></datalist>
@@ -1170,14 +1178,22 @@ table.data.dense .area-pick{min-height:32px}
 
 <dialog id="publishDialog" aria-labelledby="publishTitle" aria-describedby="publishText">
   <div class="dlg">
-    <div class="dlg-head"><h2 id="publishTitle">Stand veröffentlichen</h2><button type="button" class="dlg-close" data-close aria-label="Dialog schließen">×</button></div>
+    <div class="dlg-head"><h2 id="publishTitle">Speichern</h2><button type="button" class="dlg-close" data-close aria-label="Dialog schließen">×</button></div>
     <div class="dlg-body">
-      <p id="publishText">Es wird die Datei „ASI_Stand.xlsx“ mit allen Maßnahmen, Bereichen und dem heutigen Datum erzeugt. Speichern Sie sie im gemeinsamen SharePoint-Ordner und ersetzen Sie die vorhandene Datei. Alle anderen öffnen sie im Dashboard über „Excel aktualisieren“ bzw. „Stand laden“ und sehen den Stand nur lesend.</p>
+      <p id="publishText">Das Dashboard speichert alle Maßnahmen, Bereiche und Einstellungen in der Datei „ASI_Stand.xlsx“. Wählen Sie im nächsten Schritt den gemeinsamen SharePoint-Ordner. Die Datei ist zugleich Ihre Sicherung und der Stand, den die anderen über „Stand laden“ bzw. den Startbildschirm sehen. Ab dann genügt „Daten › Speichern“.</p>
       <div class="field"><label for="pubName">Gepflegt von (optional, erscheint im Ansichtsmodus)</label>
         <input type="text" id="pubName" class="input" maxlength="80" autocomplete="name"></div>
     </div>
-    <div class="dlg-foot"><button type="button" class="btn" data-close>Abbrechen</button><button type="button" class="btn btn-navy" id="btnPublishSave">Speichern …</button></div>
+    <div class="dlg-foot"><button type="button" class="btn" data-close>Abbrechen</button><button type="button" class="btn btn-navy" id="btnPublishSave">Weiter zum Speichern …</button></div>
   </div>
+</dialog>
+
+<dialog class="sx-dialog frist-dialog" id="fristDialog" aria-labelledby="fristTitle">
+  <h3 id="fristTitle">Fristen nachpflegen</h3>
+  <p>Offene Maßnahmen ohne Zieldatum. Datum eintragen oder per Schnellwahl setzen – jede Eingabe wird sofort gespeichert.</p>
+  <div class="zust-wrap"><table class="data frist-table"><caption class="visually-hidden">Offene Maßnahmen ohne Zieldatum</caption><thead><tr><th scope="col">Maßnahme</th><th scope="col">Zuständigkeit</th><th scope="col">Bereich</th><th scope="col">Zieldatum</th></tr></thead><tbody id="fristBody"></tbody></table></div>
+  <p class="sx-dialog__hint" id="fristHint"></p>
+  <div class="sx-dialog__foot"><button class="sx-btn sx-btn--strong" type="button" data-close>Fertig</button></div>
 </dialog>
 
 <dialog id="choiceDialog" aria-labelledby="choiceTitle" aria-describedby="choiceText">
@@ -1232,7 +1248,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 (function () {
   'use strict';
 
-  const APP_VERSION = '1.8.1';
+  const APP_VERSION = '2.0.0';
 
   /* =====================================================================
    * Konfiguration
@@ -1528,8 +1544,16 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     { key: 'kommentar', label: 'Kommentar', aliases: ['Kommentar', 'Bemerkung', 'Hinweise', 'Notiz', 'Notes', 'Kommentare', 'Bemerkungen', 'Anmerkung', 'Anmerkungen', 'Hinweis', 'Notizen'] },
     { key: 'status', label: 'Status', aliases: ['Status', 'Bearbeitungsstatus', 'Maßnahmenstatus', 'Massnahmenstatus', 'Stand'] },
     // Optional: Zuordnung zu den Bereichen des Dashboards über den Bereichsnamen. Nur exakte Überschrift, damit z. B. „Thema / Bereich“ Thema bleibt.
-    { key: 'bereich', label: 'Bereich', optional: true, exactOnly: true, aliases: ['Bereich'] }
+    { key: 'bereich', label: 'Bereich', optional: true, exactOnly: true, aliases: ['Bereich'] },
+    { key: 'prio', label: 'Priorität', optional: true, aliases: ['Priorität', 'Prioritaet', 'Prio', 'Priority'] },
+    { key: 'art', label: 'Art (STOP)', optional: true, exactOnly: true, aliases: ['Art', 'Maßnahmenart', 'STOP', 'TOP', 'STOP-Art'] },
+    { key: 'wirkDatum', label: 'Wirksamkeit geprüft am', optional: true, exactOnly: true, aliases: ['Wirksamkeit geprüft am', 'Wirksamkeitsprüfung am', 'Wirksamkeitskontrolle am', 'geprüft am'] },
+    { key: 'wirkErgebnis', label: 'Wirksamkeit', optional: true, exactOnly: true, aliases: ['Wirksamkeit', 'Ergebnis Wirksamkeit', 'Wirksamkeitskontrolle', 'Ergebnis Wirksamkeitskontrolle'] }
   ];
+  /** STOP-Rangfolge (§ 4 ArbSchG; S = Substitution, T = technisch, O = organisatorisch, P = personenbezogen) */
+  const ART_LABELS = { S: 'S – Substitution', T: 'T – technisch', O: 'O – organisatorisch', P: 'P – personenbezogen' };
+  function normArt(v) { const t = Util.norm(v); if (!t) return ''; const c = t.charAt(0).toUpperCase(); return ART_LABELS[c] ? c : ''; }
+  const WIRK_OPTIONS = ['wirksam', 'teilweise wirksam', 'nicht wirksam'];
   const FIELD_BY_KEY = {};
   FIELD_DEFS.forEach((f) => { f.normAliases = f.aliases.map((a) => Util.norm(a)); FIELD_BY_KEY[f.key] = f; });
 
@@ -1936,13 +1960,17 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           ziel: DateUtil.parse(get(row, 'zieldatum'), date1904),
           umgesetzt: DateUtil.parse(get(row, 'umgesetzt'), date1904),
           bereichName: txt(row, 'bereich'),
+          prio: txt(row, 'prio'),
+          art: normArt(txt(row, 'art')),
+          wirkDatum: DateUtil.parse(get(row, 'wirkDatum'), date1904),
+          wirkErgebnis: txt(row, 'wirkErgebnis'),
           extra: []
         };
         unmapped.forEach((u) => {
           const v = Util.clean(RowUtil.text(row[u.col]));
           if (v) rec.extra.push([u.label, v]);
         });
-        const onlyThemaAktion = !rec.herkunft && !rec.zust && !rec.kommentar && !rec.status && !rec.bereichName && !rec.extra.length &&
+        const onlyThemaAktion = !rec.herkunft && !rec.zust && !rec.kommentar && !rec.status && !rec.bereichName && !rec.prio && !rec.wirkErgebnis && !rec.extra.length &&
           rec.vom.s === 'empty' && rec.ziel.s === 'empty' && rec.umgesetzt.s === 'empty';
         if (onlyThemaAktion && LEGEND_COLORS.has(Util.norm(rec.thema)) && LEGEND_STATUS.has(Util.norm(rec.aktion))) { legendRows.push(r + 1); continue; }
         actions.push(rec);
@@ -2130,7 +2158,10 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     mode: 'edit',      // 'edit' = Pflege, 'view' = Ansichtsmodus (veröffentlichter Stand)
     stand: null,       // Kopfdaten des geladenen Stands im Ansichtsmodus
     dense: false,
-    sonarHidden: false, // Sonar in der Gesamtübersicht ausgeblendet (Einstellung je Browser)
+    sonarHidden: true,  // Sonar standardmäßig ausgeblendet; einblenden je Browser
+    sonarUser: false,   // Sonar-Einstellung wurde bewusst gewählt
+    myArea: '',         // „Mein Bereich“: wird beim Öffnen angezeigt (je Browser)
+    persisted: null,    // Browserspeicher dauerhaft (navigator.storage.persist)
     startScreen: true,  // Startbildschirm beim Öffnen anzeigen (Einstellung je Browser)
     selectedId: null
   };
@@ -2210,8 +2241,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (show) {
         const n = Unsaved.state.added;
         $('backupWarnText').textContent = n > 0
-          ? 'Sie haben ' + Util.num(n) + ' neue ' + Util.plural(n, 'Maßnahme', 'Maßnahmen') + ' hinzugefügt. Bitte vor dem Beenden des Tools eine neue Sicherungsdatei erstellen!'
-          : 'Sie haben Daten geändert (z. B. Maßnahmen, Bereiche oder Zuordnungen). Bitte vor dem Beenden des Tools eine neue Sicherungsdatei erstellen!';
+          ? 'Sie haben ' + Util.num(n) + ' neue ' + Util.plural(n, 'Maßnahme', 'Maßnahmen') + ' hinzugefügt. Bitte vor dem Beenden des Tools speichern – das erstellt zugleich die Sicherungsdatei!'
+          : 'Sie haben Daten geändert (z. B. Termine, Bereiche oder Wirksamkeit). Bitte vor dem Beenden des Tools speichern – das erstellt zugleich die Sicherungsdatei!';
       }
       if (el.hidden === show) el.hidden = !show;
     }
@@ -2255,6 +2286,38 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
   };
 
   /* =====================================================================
+   * Datenmodell ab Version 2: Das Dashboard ist führend. Alle Maßnahmen stehen in einer bearbeitbaren
+   * Liste (State.manual); Excel-Zeilen werden beim Einlesen übernommen (origin: 'excel').
+   * ===================================================================== */
+  const Model = {
+    byName() { return new Map(Areas.deps().map((a) => [a.name.trim().toLocaleLowerCase('de'), a.id])); },
+    /** Bereich einer neu übernommenen Excel-Zeile: Spalte „Bereich“, sonst Regel je Zuständigkeit */
+    areaFor(r, byName) {
+      const nm = r.bereichName ? r.bereichName.trim().toLocaleLowerCase('de') : '';
+      if (nm && byName.get(nm)) return byName.get(nm);
+      const z = r.zust ? Assign.state.byZust[Assign.zustKey(r.zust)] : '';
+      return z && Areas.isDep(z) ? z : '';
+    },
+    fromExcel(r, snap, bereichId) {
+      return Object.assign({ prio: '', art: '', wirkDatum: { s: 'empty' }, wirkErgebnis: '', wirkDurch: '' }, r, {
+        id: Util.uid(), src: 'manual', origin: 'excel', excelRow: r.row, excelFile: snap ? snap.fileName : '', row: null,
+        bereichId: bereichId || '', created: (snap && snap.importedAt) || new Date().toISOString()
+      });
+    },
+    /** Daten aus Version 1 (Excel-Maßnahmen im Datenstand + Zuordnungen) in die gemeinsame Liste überführen */
+    migrate(snapshot, manual, assignState) {
+      if (!snapshot || !Array.isArray(snapshot.actions) || !snapshot.actions.length) return { snapshot: snapshot, manual: manual, moved: 0 };
+      const keep = Assign.state;
+      Assign.state = Assign.isValid(assignState) ? assignState : Assign.empty();
+      const byName = Model.byName();
+      const moved = snapshot.actions.map((r) => Model.fromExcel(r, snapshot, Assign.resolve(r, byName).id));
+      Assign.state = keep;
+      return { snapshot: Object.assign({}, snapshot, { actions: [] }), manual: moved.concat(manual), moved: moved.length };
+    },
+    excelCount() { return State.manual.filter((m) => m.origin === 'excel').length; }
+  };
+
+  /* =====================================================================
    * Veröffentlichter Stand (eine pflegende Person, alle anderen sehen den Stand)
    * Datei: Excel-Arbeitsmappe mit lesbaren Blättern und einem ausgeblendeten Datenblatt.
    * Das Dashboard liest ausschließlich das Datenblatt; Änderungen in Excel werden nicht übernommen.
@@ -2265,13 +2328,13 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
   const Stand = {
     collect(publishedBy) {
       return {
-        format: 'ASI-Stand', version: 1, appVersion: APP_VERSION,
+        format: 'ASI-Stand', version: 2, appVersion: APP_VERSION,
         publishedAt: new Date().toISOString(), publishedBy: publishedBy || '',
         snapshot: State.snapshot, manual: State.manual, areas: Areas.state, excelAssign: Assign.state
       };
     },
     isValid(d) {
-      return !!d && d.format === 'ASI-Stand' && d.version === 1 && typeof d.publishedAt === 'string' && Array.isArray(d.manual) &&
+      return !!d && d.format === 'ASI-Stand' && (d.version === 1 || d.version === 2) && typeof d.publishedAt === 'string' && Array.isArray(d.manual) &&
         Areas.isValid(d.areas) && (d.snapshot === null || (typeof d.snapshot === 'object' && Array.isArray(d.snapshot.actions))) &&
         (d.excelAssign === undefined || Assign.isValid(d.excelAssign));
     },
@@ -2279,26 +2342,26 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       const wb = XLSX.utils.book_new();
       const excelEpoch = DateUtil.dayNumber(1899, 12, 30);
       const dateVal = (dt) => (dt && dt.s === 'ok' ? DateUtil.num(dt) - excelEpoch : (dt && dt.s === 'invalid' ? dt.raw : ''));
-      const recs = (d.snapshot ? d.snapshot.actions : []).concat(d.manual);
+      const recs = Model.migrate(d.snapshot, d.manual, d.excelAssign).manual;
       const areaName = (id) => { const a = d.areas.areas.find((x) => x.id === id); return a && id !== 'gesamt' ? a.name : ''; };
       const info = [
-        [d.purpose === 'sicherung' ? 'ASI-Sicherung – Sicherung der Pflegedaten des Maßnahmen- und Fristendashboards' : 'ASI-Stand – veröffentlichter Stand des Maßnahmen- und Fristendashboards'], [],
-        [d.purpose === 'sicherung' ? 'Gesichert am' : 'Veröffentlicht am', Util.formatDateTime(d.publishedAt)],
+        ['ASI-Stand – gespeicherter Stand des Maßnahmen- und Fristendashboards (zugleich Sicherung)'], [],
+        ['Gespeichert am', Util.formatDateTime(d.publishedAt)],
         ['Gepflegt von', d.publishedBy || '–'],
         ['Excel-Grundlage', d.snapshot ? d.snapshot.fileName : 'keine'],
         ['Maßnahmen gesamt', recs.length],
-        ['davon manuell erfasst', d.manual.length], [],
-        ['Hinweis', (d.purpose === 'sicherung' ? 'Wiederherstellen im Dashboard: Export & Druck › „Sicherung wiederherstellen“ oder „Excel aktualisieren“ › „Als eigene Daten übernehmen“.' : 'Diese Datei im Dashboard über „Stand laden“ bzw. „Excel aktualisieren“ öffnen.') + ' Änderungen hier in Excel werden vom Dashboard nicht übernommen.']
+        ['davon im Dashboard erfasst', recs.filter((r) => r.origin !== 'excel').length], [],
+        ['Hinweis', 'Diese Datei im Dashboard über den Startbildschirm (Start) oder „Excel einlesen“ bzw. „Stand laden“ öffnen. Änderungen hier in Excel werden vom Dashboard nicht übernommen.']
       ];
       const wsInfo = XLSX.utils.aoa_to_sheet(info);
       wsInfo['!cols'] = [{ wch: 24 }, { wch: 90 }];
       XLSX.utils.book_append_sheet(wb, wsInfo, 'Info');
-      const head = ['Bereich', 'Aktion', 'Thema', 'Herkunft', 'Zuständigkeit', 'vom', 'Zieldatum', 'umgesetzt am', 'Status', 'Kommentar', 'Erfassung'];
+      const head = ['Bereich', 'Aktion', 'Thema', 'Herkunft', 'Zuständigkeit', 'vom', 'Zieldatum', 'umgesetzt am', 'Status', 'Kommentar', 'Erfassung', 'Priorität', 'Art (STOP)', 'Wirksamkeit geprüft am', 'Wirksamkeit', 'geprüft durch'];
       const cut = (v) => (typeof v === 'string' && v.length > 32000 ? v.slice(0, 32000) + ' …' : v);
-      const rows = recs.map((r) => [areaName(r.bereichId), r.aktion, r.thema, r.herkunft, r.zust, dateVal(r.vom), dateVal(r.ziel), dateVal(r.umgesetzt), r.status, r.kommentar, r.src === 'manual' ? 'manuell' : 'Excel'].map(cut));
+      const rows = recs.map((r) => [areaName(r.bereichId), r.aktion, r.thema, r.herkunft, r.zust, dateVal(r.vom), dateVal(r.ziel), dateVal(r.umgesetzt), r.status, r.kommentar, r.origin === 'excel' ? 'Excel' : 'Dashboard', r.prio || '', r.art || '', dateVal(r.wirkDatum), r.wirkErgebnis || '', r.wirkDurch || ''].map(cut));
       const wsM = XLSX.utils.aoa_to_sheet([head].concat(rows));
-      for (let i = 1; i <= rows.length; i++) [5, 6, 7].forEach((c) => { const cell = wsM[XLSX.utils.encode_cell({ r: i, c: c })]; if (cell && cell.t === 'n') cell.z = 'dd.mm.yyyy'; });
-      wsM['!cols'] = [18, 60, 18, 16, 22, 11, 11, 12, 16, 50, 10].map((w) => ({ wch: w }));
+      for (let i = 1; i <= rows.length; i++) [5, 6, 7, 13].forEach((c) => { const cell = wsM[XLSX.utils.encode_cell({ r: i, c: c })]; if (cell && cell.t === 'n') cell.z = 'dd.mm.yyyy'; });
+      wsM['!cols'] = [18, 60, 18, 16, 22, 11, 11, 12, 16, 50, 10, 10, 18, 12, 18, 18].map((w) => ({ wch: w }));
       XLSX.utils.book_append_sheet(wb, wsM, 'Maßnahmen');
       const wsB = XLSX.utils.aoa_to_sheet([['Position', 'Name', 'Kennung']].concat(d.areas.areas.map((a, i) => [i, a.name, a.id])));
       XLSX.utils.book_append_sheet(wb, wsB, 'Bereiche');
@@ -2317,47 +2380,20 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       for (let r = 2; r < 100000; r++) { const c = ws['A' + r]; if (!c || c.v === undefined || c.v === '') break; json += String(c.v); }
       let d = null;
       try { d = JSON.parse(json); } catch (e) { d = null; }
-      if (!Stand.isValid(d)) throw new ImportError('Stand-Datei ist beschädigt', 'Die Datei ist als veröffentlichter Stand gekennzeichnet, ihr Datenblatt ist aber unvollständig oder verändert.', ['Bitte die pflegende Person bitten, den Stand erneut zu veröffentlichen.']);
+      if (!Stand.isValid(d)) throw new ImportError('Stand-Datei ist beschädigt', 'Die Datei ist als gespeicherter Stand gekennzeichnet, ihr Datenblatt ist aber unvollständig oder verändert.', ['Bitte die pflegende Person bitten, erneut zu speichern.']);
       return d;
-    },
-    async publish(name) {
-      if (!State.allItems.length) { showMessage('warn', 'Es gibt noch keine Maßnahmen zum Veröffentlichen.', 6000); return; }
-      // Speichern-Dialog sofort aus dem Klick heraus öffnen (Edge/Chrome), sonst Download
-      let handle = null;
-      if (typeof window.showSaveFilePicker === 'function') {
-        try {
-          handle = await window.showSaveFilePicker({ suggestedName: STAND_FILE, id: 'asi-stand', types: [{ description: 'Excel-Arbeitsmappe', accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] } }] });
-        } catch (e) {
-          if (e && e.name === 'AbortError') return;
-          handle = null;
-        }
-      }
-      const data = Stand.collect(name);
-      const out = XLSX.write(Stand.buildWorkbook(data), { bookType: 'xlsx', type: 'array', compression: true });
-      const blob = new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      if (handle) {
-        try {
-          const w = await handle.createWritable();
-          await w.write(blob);
-          await w.close();
-          showMessage('ok', 'Stand vom ' + Util.formatDateTime(data.publishedAt) + ' wurde als „' + handle.name + '“ gespeichert. Liegt die Datei im gemeinsamen SharePoint-Ordner, sehen alle den neuen Stand nach „Stand laden“.', 10000);
-          return;
-        } catch (e) { /* weiter mit Download */ }
-      }
-      Exporter.download(blob, STAND_FILE);
-      showMessage('info', '„' + STAND_FILE + '“ wurde heruntergeladen. Bitte in den gemeinsamen SharePoint-Ordner verschieben und die vorhandene Datei ersetzen.', 12000);
     },
     /** Stand- oder Sicherungsdatei geladen: in der Pflege wählen, ob übernommen oder nur angesehen wird */
     async offer(d, fileName, preset) {
       if (State.mode === 'view') return Stand.enterView(d);
       if (preset === 'view') return Stand.enterView(d);
-      const backup = d.purpose === 'sicherung';
       const n = (d.snapshot ? d.snapshot.actions.length : 0) + d.manual.length;
-      const own = (State.snapshot ? State.snapshot.actions.length : 0) + State.manual.length;
+      const own = State.manual.length;
+      const backup = d.purpose === 'sicherung' || own > 0; // wer schon pflegt, will meist übernehmen
       const adopt = { key: 'adopt', label: 'Als eigene Daten übernehmen', hint: 'Ersetzt Ihre Daten in diesem Browser (' + Util.num(own) + ' Maßnahmen, Bereiche, Zuordnungen). Danach pflegen Sie mit diesem Stand weiter – z. B. nach einem PC-Wechsel.' };
       const view = { key: 'view', label: 'Nur ansehen (Ansichtsmodus)', hint: 'Zeigt den Stand schreibgeschützt an. Ihre eigenen Daten bleiben gespeichert und sind nach „Ansichtsmodus beenden“ wieder da.' };
-      const choice = preset === 'adopt' ? 'adopt' : await chooseAction(backup ? 'Sicherung öffnen' : 'Veröffentlichten Stand öffnen',
-        '„' + fileName + '“ ist ' + (backup ? 'eine Sicherung' : 'ein veröffentlichter Stand') + ' vom ' + Util.formatDateTime(d.publishedAt) + (d.publishedBy ? ' (gepflegt von ' + d.publishedBy + ')' : '') + ' mit ' + Util.num(n) + ' Maßnahmen. Was möchten Sie tun?',
+      const choice = preset === 'adopt' ? 'adopt' : await chooseAction('Gespeicherten Stand öffnen',
+        '„' + fileName + '“ ist ein gespeicherter Stand vom ' + Util.formatDateTime(d.publishedAt) + (d.publishedBy ? ' (gepflegt von ' + d.publishedBy + ')' : '') + ' mit ' + Util.num(n) + ' Maßnahmen. Was möchten Sie tun?',
         backup ? [adopt, view] : [view, adopt]);
       if (choice === 'adopt') {
         if (own > 0) {
@@ -2383,8 +2419,9 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       };
       State.mode = 'edit';
       State.stand = null;
-      State.snapshot = d.snapshot;
-      State.manual = d.manual.filter((m) => m && m.src === 'manual' && m.id);
+      const mg = Model.migrate(d.snapshot, d.manual.filter((m) => m && m.src === 'manual' && m.id), d.excelAssign);
+      State.snapshot = mg.snapshot;
+      State.manual = mg.manual;
       Areas.state = d.areas;
       Assign.state = d.excelAssign || Assign.empty();
       State.source = d.snapshot ? 'local' : 'none';
@@ -2419,8 +2456,9 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     apply(d) {
       State.mode = 'view';
       State.stand = { publishedAt: d.publishedAt, publishedBy: d.publishedBy || '', appVersion: d.appVersion || '' };
-      State.snapshot = d.snapshot;
-      State.manual = d.manual.filter((m) => m && m.src === 'manual' && m.id);
+      const mg = Model.migrate(d.snapshot, d.manual.filter((m) => m && m.src === 'manual' && m.id), d.excelAssign);
+      State.snapshot = mg.snapshot;
+      State.manual = mg.manual;
       Areas.state = d.areas;
       Assign.state = d.excelAssign || Assign.empty();
       State.source = 'stand';
@@ -2463,6 +2501,15 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     if (!Areas.state) { Areas.state = Areas.defaults(); Areas.save(); }
     if (!Areas.find(State.area)) State.area = 'gesamt';
     await Unsaved.load();
+    // Umstellung von Version 1: Excel-Maßnahmen samt Bereichszuordnung in die bearbeitbare Liste übernehmen
+    const mg = Model.migrate(State.snapshot, State.manual, Assign.state);
+    if (mg.moved) {
+      State.snapshot = mg.snapshot;
+      State.manual = mg.manual;
+      Assign.state = { v: 1, byKey: {}, byZust: Assign.state.byZust || {} };
+      try { await Store.put('snapshot', State.snapshot); await Store.put('manual', State.manual); await Store.put('excelAssign', Assign.state); } catch (e) { State.storageOk = false; }
+      State.migrated = mg.moved;
+    }
   }
 
   /** Ein-/ausblendbare Spalten der Maßnahmentabelle (Friststatus und Aktion bleiben immer sichtbar) */
@@ -2492,15 +2539,6 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
   /** Erzeugt die abgeleitete Liste (Status, Tage, Dubletten, Suchtext) zum Stichtag. */
   function deriveItems() {
     const all = [];
-    const excel = State.snapshot ? State.snapshot.actions : [];
-    const byName = new Map(Areas.deps().map((a) => [a.name.trim().toLocaleLowerCase('de'), a.id]));
-    excel.forEach((r) => {
-      // Excel-Maßnahmen: Bereich aus Einzelzuordnung, Excel-Spalte „Bereich“ oder Regel je Zuständigkeit
-      const res = Assign.resolve(r, byName);
-      r.bereichId = res.id;
-      r.bereichVia = res.via;
-      all.push(r);
-    });
     State.manual.forEach((r) => all.push(r));
     const dupMap = new Map();
     const items = all.map((rec) => {
@@ -2557,7 +2595,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     dup: { label: 'mögliche Dubletten', test: (it) => it.dup },
     zielVorVom: { label: 'Zieldatum vor Erfassungsdatum', test: (it) => it.zielBeforeVom },
     noArea: { label: 'ohne Bereich', test: (it) => !Areas.isDep(it.rec.bereichId) },
-    unknownArea: { label: 'unbekannter Bereich in Excel', test: (it) => it.rec.src === 'excel' && !!it.rec.bereichName && !Areas.isDep(it.rec.bereichId) && it.rec.bereichVia !== 'einzeln' }
+    unknownArea: { label: 'unbekannter Bereich in Excel', test: (it) => it.rec.origin === 'excel' && !!it.rec.bereichName && !Areas.isDep(it.rec.bereichId) },
+    wirkOffen: { label: 'erledigt, Wirksamkeit nicht geprüft', test: (it) => it.done && !it.rec.wirkErgebnis }
   };
 
   function applyFilters() {
@@ -2576,7 +2615,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (f.zust) { if (f.zust === '__leer__' ? r.zust !== '' : r.zust !== f.zust) return false; }
       if (f.herkunft) { if (f.herkunft === '__leer__' ? r.herkunft !== '' : r.herkunft !== f.herkunft) return false; }
       if (f.thema) { if (f.thema === '__leer__' ? r.thema !== '' : r.thema !== f.thema) return false; }
-      if (f.quelle && r.src !== f.quelle) return false;
+      if (f.quelle && (r.origin === 'excel' ? 'excel' : 'manual') !== f.quelle) return false;
       if (f.onlyOpen && !it.isOpen) return false;
       if (f.onlyNoDate && it.zielNum !== null) return false;
       if (f.dq && DQ_FILTERS[f.dq] && !DQ_FILTERS[f.dq].test(it)) return false;
@@ -2714,12 +2753,12 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         else dlg.setAttribute('open', '');
       } catch (e) { dlg.setAttribute('open', ''); }
     },
-    anyModalOpen() { return !$('startScreen').hidden || ['editDialog', 'confirmDialog', 'importDialog', 'areaDialog', 'themesDialog', 'publishDialog', 'zustDialog', 'choiceDialog'].some((id) => $(id).open); },
+    anyModalOpen() { return !$('startScreen').hidden || ['editDialog', 'confirmDialog', 'importDialog', 'areaDialog', 'themesDialog', 'publishDialog', 'zustDialog', 'choiceDialog', 'fristDialog'].some((id) => $(id).open); },
     close(dlg) {
       try { if (typeof dlg.close === 'function') dlg.close(); else dlg.removeAttribute('open'); } catch (e) { dlg.removeAttribute('open'); }
     },
     init() {
-      ['detailDialog', 'editDialog', 'confirmDialog', 'importDialog', 'areaDialog', 'themesDialog', 'publishDialog', 'zustDialog', 'choiceDialog'].forEach((id) => {
+      ['detailDialog', 'editDialog', 'confirmDialog', 'importDialog', 'areaDialog', 'themesDialog', 'publishDialog', 'zustDialog', 'choiceDialog', 'fristDialog'].forEach((id) => {
         const dlg = $(id);
         dlg.addEventListener('click', (ev) => {
           const t = ev.target;
@@ -2778,7 +2817,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
    * Sicherung an einem selbst gewählten Speicherort (Edge/Chrome: Speichern-Dialog,
    * der Browser merkt sich die Datei; sonst Download). Format wie der veröffentlichte Stand.
    * ===================================================================== */
-  const BACKUP_FILE = 'ASI_Sicherung.xlsx';
+  const BACKUP_FILE = 'ASI_Stand.xlsx';
   const XLSX_TYPES = [{ description: 'Excel-Arbeitsmappe', accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] } }];
   /* Datei-Verweis in einer eigenen kleinen Datenbank; wird erst beim Klick gelesen, nie beim Start */
   const HandleStore = {
@@ -2790,8 +2829,12 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         o.onerror = () => reject(o.error);
         o.onsuccess = () => {
           let out;
-          const t = o.result.transaction('h', mode);
-          const r = fn(t.objectStore('h'));
+          let t;
+          let r;
+          try {
+            t = o.result.transaction('h', mode);
+            r = fn(t.objectStore('h'));
+          } catch (e) { o.result.close(); reject(e); return; } // z. B. Verweis nicht speicherbar
           if (r) r.onsuccess = () => { out = r.result; };
           t.oncomplete = () => { o.result.close(); resolve(out); };
           t.onerror = () => { o.result.close(); reject(t.error); };
@@ -2833,16 +2876,15 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     },
     async save(newPlace) {
       if (State.mode !== 'edit') return;
-      if (!State.allItems.length && !State.manual.length) { showMessage('warn', 'Es gibt noch keine Daten zum Sichern.', 6000); return; }
+      if (!State.allItems.length && !State.manual.length) { showMessage('warn', 'Es gibt noch keine Daten zum Speichern.', 6000); return; }
       const data = Stand.collect(Prefs.load().publisher || '');
-      data.purpose = 'sicherung';
       const blob = new Blob([XLSX.write(Stand.buildWorkbook(data), { bookType: 'xlsx', type: 'array', compression: true })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const done = async (name, remembered) => {
         Backup.meta = { name: name, savedAt: data.publishedAt, remembered: remembered };
         try { await Store.put('backupMeta', Backup.meta); } catch (e) { /* ignorieren */ }
         Backup.updateMenu();
         await Unsaved.reset();
-        showMessage('ok', 'Sicherung gespeichert: „' + name + '“ (' + Util.formatDateTime(data.publishedAt) + ').' + (remembered ? ' Das Dashboard merkt sich diese Datei für die nächste Sicherung und zum Wiederherstellen.' : ''), 10000);
+        showMessage('ok', 'Gespeichert: „' + name + '“ (' + Util.formatDateTime(data.publishedAt) + '). Die Datei ist zugleich Ihre Sicherung und der Stand für alle, die ansehen.' + (remembered ? ' Das Dashboard merkt sich die Datei für das nächste Speichern.' : ''), 10000);
       };
       if (typeof window.showSaveFilePicker !== 'function') {
         Exporter.download(blob, BACKUP_FILE);
@@ -2850,7 +2892,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         await Unsaved.reset();
         try { await Store.put('backupMeta', Backup.meta); } catch (e) { /* ignorieren */ }
         Backup.updateMenu();
-        showMessage('info', '„' + BACKUP_FILE + '“ wurde heruntergeladen. Bitte an einen sicheren Ort verschieben (z. B. OneDrive oder Netzlaufwerk). Wiederherstellen: „Sicherung wiederherstellen“ und die Datei auswählen.', 12000);
+        showMessage('info', '„' + BACKUP_FILE + '“ wurde heruntergeladen. Bitte in den gemeinsamen SharePoint-Ordner verschieben und die vorhandene Datei ersetzen. Sie ist zugleich Ihre Sicherung.', 12000);
         return;
       }
       let hd = newPlace ? null : await Backup.getHandle();
@@ -2858,10 +2900,10 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         if (hd) {
           let ok = false;
           try { ok = await Backup.permit(hd, 'readwrite'); } catch (e) { ok = false; }
-          if (!ok) { showMessage('warn', 'Edge hat den Zugriff auf „' + hd.name + '“ nicht erlaubt. Mit „Sicherung an anderem Ort speichern …“ können Sie einen Speicherort neu wählen.', 10000); return; }
+          if (!ok) { showMessage('warn', 'Edge hat den Zugriff auf „' + hd.name + '“ nicht erlaubt. Mit „Daten › Speichern unter …“ können Sie den Speicherort neu wählen.', 10000); return; }
         } else {
           try {
-            hd = await window.showSaveFilePicker({ suggestedName: (Backup.meta && Backup.meta.name) || BACKUP_FILE, id: 'asi-sicherung', types: XLSX_TYPES });
+            hd = await window.showSaveFilePicker({ suggestedName: (Backup.meta && Backup.meta.name) || BACKUP_FILE, id: 'asi-stand', types: XLSX_TYPES });
           } catch (e) {
             if (e && e.name === 'AbortError') return;
             Exporter.download(blob, BACKUP_FILE);
@@ -2878,10 +2920,10 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           return;
         } catch (e) {
           if (attempt === 0 && hd === Backup.handle && e && (e.name === 'NotFoundError' || e.name === 'NotAllowedError' || e.name === 'InvalidStateError')) {
-            showMessage('warn', 'Die bisherige Sicherungsdatei „' + hd.name + '“ ist nicht mehr erreichbar (verschoben oder gelöscht). Bitte den Speicherort neu wählen.', 10000);
+            showMessage('warn', 'Die bisherige Datei „' + hd.name + '“ ist nicht mehr erreichbar (verschoben oder gelöscht). Bitte den Speicherort neu wählen.', 10000);
             hd = null; continue;
           }
-          showMessage('error', 'Sicherung fehlgeschlagen: ' + String(e && e.message || e), 12000);
+          showMessage('error', 'Speichern fehlgeschlagen: ' + String(e && e.message || e), 12000);
           return;
         }
       }
@@ -2894,13 +2936,13 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         try { ok = await Backup.permit(Backup.handle, 'read'); } catch (e) { ok = false; }
         if (ok) {
           try { const f = await Backup.handle.getFile(); await handleFile(f, opts); return; } catch (e) {
-            showMessage('warn', '„' + Backup.handle.name + '“ wurde am gemerkten Speicherort nicht gefunden. Bitte die Sicherungsdatei auswählen.', 10000);
+            showMessage('warn', '„' + Backup.handle.name + '“ wurde am gemerkten Speicherort nicht gefunden. Bitte die Datei auswählen.', 10000);
           }
         }
       }
       if (typeof window.showOpenFilePicker === 'function') {
         let hd;
-        try { [hd] = await window.showOpenFilePicker({ id: 'asi-sicherung', types: XLSX_TYPES, multiple: false }); } catch (e) { if (e && e.name === 'AbortError') return; hd = null; }
+        try { [hd] = await window.showOpenFilePicker({ id: 'asi-stand', types: XLSX_TYPES, multiple: false }); } catch (e) { if (e && e.name === 'AbortError') return; hd = null; }
         if (hd) { const rem = await Backup.remember(hd); Backup.meta = Object.assign({}, Backup.meta || {}, { name: hd.name, remembered: rem }); try { await Store.put('backupMeta', Backup.meta); } catch (e) { /* ignorieren */ } Backup.updateMenu(); await handleFile(await hd.getFile(), opts); return; }
       }
       pendingFileOpts = opts;
@@ -2910,11 +2952,25 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       const m = Backup.meta;
       const rem = !!(Backup.handle || (m && m.remembered));
       const name = Backup.handle ? Backup.handle.name : (m ? m.name : '');
-      $('btnBackupSaveHint').textContent = rem ? 'In „' + name + '“' + (m && m.savedAt ? ' · zuletzt ' + Util.formatDateTime(m.savedAt) : '') : 'Speicherort selbst wählen (z. B. OneDrive, Netzlaufwerk)';
+      $('btnBackupSaveHint').textContent = rem ? 'In „' + name + '“' + (m && m.savedAt ? ' · zuletzt ' + Util.formatDateTime(m.savedAt) : '') : 'Beim ersten Mal den gemeinsamen Ordner wählen';
       $('liBackupWhere').hidden = !rem;
-      $('btnBackupRestoreHint').textContent = rem ? 'Aus „' + name + '“' : (name ? 'Datei „' + name + '“ auswählen' : 'Sicherungsdatei auswählen');
+      $('btnBackupRestoreHint').textContent = rem ? 'Aus „' + name + '“ – ersetzt die Daten in diesem Browser' : 'Datei auswählen – ersetzt die Daten in diesem Browser';
     }
   };
+
+  /** Speichern: beim ersten Mal nach „Gepflegt von“ fragen, danach direkt */
+  function saveFlow(newPlace) {
+    if (State.mode !== 'edit') return;
+    const pr = Prefs.load();
+    if (!pr.publisherAsked) {
+      $('pubName').value = pr.publisher || '';
+      $('publishDialog').dataset.newPlace = newPlace ? '1' : '';
+      Dialogs.open($('publishDialog'));
+      $('pubName').focus();
+      return;
+    }
+    Backup.save(newPlace);
+  }
 
   /* Gemerkte Dateien für den Startbildschirm: Ursprungs-Excel und veröffentlichter Stand.
    * Der Datei-Verweis wird erst beim Klick gelesen (wie bei der Sicherung). */
@@ -2967,10 +3023,15 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       const total = (State.snapshot ? State.snapshot.actions.length : 0) + State.manual.length;
       let status;
       if (State.mode === 'view' && State.stand) status = 'Ansichtsmodus: veröffentlichter Stand vom ' + Util.formatDateTime(State.stand.publishedAt) + (State.stand.publishedBy ? ' (gepflegt von ' + State.stand.publishedBy + ')' : '') + ', ' + Util.num(total) + ' Maßnahmen.';
-      else if (total) status = 'In diesem Browser gespeichert: ' + Util.num(total) + ' Maßnahmen' + (State.snapshot ? ' aus „' + State.snapshot.fileName + '“ (eingelesen ' + Util.formatDateTime(State.snapshot.importedAt) + ')' : '') + (State.manual.length ? ', davon ' + Util.num(State.manual.length) + ' manuell' : '') + '.' + (Backup.meta && Backup.meta.savedAt ? ' Letzte Sicherung: ' + Util.formatDateTime(Backup.meta.savedAt) + '.' : '');
-      else status = 'In diesem Browser sind noch keine Daten gespeichert. Wählen Sie „Start“ und lesen Sie die Excel-Datei, eine Sicherung oder den veröffentlichten Stand ein.';
+      else if (total) status = 'In diesem Browser: ' + Util.num(total) + ' Maßnahmen' + (State.snapshot ? ' (Excel „' + State.snapshot.fileName + '“ eingelesen ' + Util.formatDateTime(State.snapshot.importedAt) + ')' : '') + '.' + (Backup.meta && Backup.meta.savedAt ? ' Zuletzt gespeichert: ' + Util.formatDateTime(Backup.meta.savedAt) + '.' : ' Noch nicht gespeichert.');
+      else status = 'In diesem Browser sind noch keine Daten gespeichert. Wählen Sie „Start“ und lesen Sie die Excel-Datei oder den gespeicherten Stand ein.';
       $('startStatus').textContent = status;
       $('startShow').checked = State.startScreen;
+      const sel = $('startMyArea');
+      clear(sel);
+      Areas.state.areas.forEach((a) => sel.appendChild(h('option', { value: a.id }, a.name)));
+      sel.value = Areas.find(State.myArea) ? State.myArea : 'gesamt';
+      $('startVersion').textContent = 'Version ' + APP_VERSION;
       el.hidden = false;
       document.body.classList.add('has-start');
       // Rest der Seite inaktiv schalten (Dialoge, Meldungen und Ladeanzeige bleiben bedienbar)
@@ -2987,16 +3048,17 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       const hint = (kind, fallback) => (FileMemo.label(kind) ? 'Lädt direkt „' + FileMemo.label(kind) + '“ (gemerkt).' : fallback);
       const opts = [];
       if (State.mode === 'edit') {
-        opts.push({ key: 'excel', label: 'Ursprungs-Excel einlesen', hint: hint('excel', 'Die Maßnahmenliste aus Excel auswählen; das Dashboard merkt sich die Datei.') + ' Manuelle Maßnahmen, Bereiche und Zuordnungen bleiben erhalten.' });
+        opts.push({ key: 'excel', label: 'Excel einlesen', hint: hint('excel', 'Die Maßnahmenliste aus Excel auswählen; das Dashboard merkt sich die Datei.') + (State.manual.some((m) => m.origin === 'excel') ? ' Bereits übernommene Maßnahmen bleiben unverändert, neue Zeilen werden ergänzt.' : ' Danach pflegen Sie alles im Dashboard.') });
         const bk = Backup.meta && Backup.meta.remembered ? Backup.meta.name : '';
-        opts.push({ key: 'backup', label: 'Sicherung laden', hint: (bk ? 'Lädt direkt „' + bk + '“ (gemerkt).' : 'Eine Sicherungsdatei auswählen; das Dashboard merkt sich die Datei.') + ' Ersetzt die Daten in diesem Browser durch die Sicherung.' });
+        opts.push({ key: 'backup', label: 'Gespeicherten Stand übernehmen', hint: (bk ? 'Lädt direkt „' + bk + '“ (gemerkt).' : '„ASI_Stand.xlsx“ auswählen; das Dashboard merkt sich die Datei.') + ' Ersetzt die Daten in diesem Browser – z. B. auf einem neuen PC.' });
       }
-      opts.push({ key: 'stand', label: State.mode === 'view' ? 'Aktuellen Stand laden' : 'Veröffentlichten Stand ansehen', hint: hint('stand', '„ASI_Stand.xlsx“ aus dem gemeinsamen Ordner auswählen; das Dashboard merkt sich die Datei.') + ' Schreibgeschützt (Ansichtsmodus).' });
+      opts.push({ key: 'stand', label: State.mode === 'view' ? 'Aktuellen Stand laden' : 'Gespeicherten Stand nur ansehen', hint: hint('stand', '„ASI_Stand.xlsx“ aus dem gemeinsamen Ordner auswählen; das Dashboard merkt sich die Datei.') + ' Schreibgeschützt (Ansichtsmodus).' });
       if (total) opts.push({ key: 'continue', label: 'Mit den gespeicherten Daten weiterarbeiten', hint: 'Ohne Einlesen direkt zum Dashboard (' + Util.num(total) + ' Maßnahmen).' });
       if (State.mode === 'view' && total) { const c = opts.pop(); opts.unshift(c); }
       const choice = await chooseAction('Welche Daten möchten Sie laden?', 'Die gewählte Datei wird sofort eingelesen.', opts);
       if (!choice) { $('btnStart').focus(); return; }
       StartScreen.hide();
+      if (Areas.find(State.myArea) && State.area !== State.myArea) selectArea(State.myArea);
       if (choice === 'continue') return;
       if (choice === 'backup') { await Backup.restore('adopt'); return; }
       const f = await FileMemo.open(choice, choice === 'stand' ? { stand: 'view' } : null);
@@ -3015,12 +3077,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       Render.filterOptions();
       Render.dashboard();
       Render.actions();
-      Render.kanban();
       Render.themen();
       Render.termine();
-      Render.genericSection('ideen', 'ideenContent', 'Ideenspeicher', 'Ideen oder Vorschläge');
-      Render.genericSection('reflexion', 'reflexionContent', 'Jahresreflexion', 'eine Jahresreflexion bzw. einen Jahresrückblick');
-      Render.genericSection('meetings', 'meetingsContent', 'Meetingübersicht', 'Meetings, Sitzungen oder Besprechungen');
       Render.quality();
       Render.datalists();
     },
@@ -3042,10 +3100,11 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (State.mode === 'view' && State.stand) {
         $('viewBannerText').textContent = 'Stand vom ' + Util.formatDateTime(State.stand.publishedAt) + (State.stand.publishedBy ? ' · gepflegt von ' + State.stand.publishedBy : '') + '. Fristen werden zum heutigen Datum berechnet.';
       }
-      $('btnImportLabel').textContent = State.mode === 'view' ? 'Stand laden' : 'Excel aktualisieren';
+      $('btnImportLabel').textContent = State.mode === 'view' ? 'Stand laden' : 'Excel einlesen';
       const man = $('srcManual');
       clear(man);
-      if (State.manual.length) man.appendChild(h('span', { class: 'pill pill-manual' }, State.manual.length + ' manuell erfasst'));
+      const own = State.manual.filter((m) => m.origin !== 'excel').length;
+      if (own) man.appendChild(h('span', { class: 'pill pill-manual' }, own + ' im Dashboard erfasst'));
       if (!State.storageOk) man.appendChild(h('span', { class: 'pill pill-none', title: 'IndexedDB ist in dieser Umgebung nicht verfügbar' }, 'Speicherung nicht verfügbar'));
       $('srcToday').textContent = DateUtil.weekday(State.today) + ', ' + DateUtil.fmtNum(State.today);
       $('printMeta').textContent = 'Bereich: ' + Areas.name(State.area) + ' · Stichtag ' + DateUtil.fmtNum(State.today) + (s ? ' · Datei: ' + s.fileName + ' · Import: ' + Util.formatDateTime(s.importedAt) : '');
@@ -3063,7 +3122,6 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       };
       setCount('massnahmen', c.total, c.ueberfaellig > 0);
       const sec = State.snapshot ? State.snapshot.sections : null;
-      ['ideen', 'reflexion', 'meetings'].forEach((k) => setCount(k, sec ? sec[k].reduce((s, t) => s + t.rows.length, 0) : 0));
       const themen = new Set(State.items.map((i) => i.rec.thema).filter(Boolean)).size + (sec ? sec.themen.reduce((s, t) => s + t.rows.length, 0) : 0);
       setCount('themen', themen);
       const termine = State.items.filter((i) => i.isOpen && i.days !== null && i.days >= 0 && i.days <= 90).length + (sec ? sec.termine.reduce((s, t) => s + t.rows.length, 0) : 0);
@@ -3098,13 +3156,6 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       $('fSort').value = f.sort;
       $('fOnlyOpen').checked = f.onlyOpen;
       $('fOnlyNoDate').checked = f.onlyNoDate;
-      const kz = $('kbZust');
-      const kv = State.kb.zust;
-      clear(kz);
-      kz.appendChild(h('option', { value: '' }, 'Alle'));
-      distinct('zust').forEach((e) => kz.appendChild(h('option', { value: e[0] === '' ? '__leer__' : e[0] }, (e[0] || '(ohne Angabe)') + ' (' + e[1] + ')')));
-      kz.value = Array.prototype.some.call(kz.options, (o) => o.value === kv) ? kv : '';
-      State.kb.zust = kz.value;
     },
 
     datalists() {
@@ -3128,6 +3179,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       $('dashSub').textContent = home ? 'Management-Übersicht zu Maßnahmen und Fristen im Arbeitsschutz' : 'Alle Maßnahmen und Fristen dieses Bereichs';
       root.appendChild(home ? Render.homeHero(c) : Render.areaHero(c));
       if (home && State.mode === 'edit') { const un = Render.unassignedCard(); if (un) root.appendChild(un); }
+      { const fc = Render.fristCard(); if (fc) root.appendChild(fc); }
       root.appendChild(Render.kpis(c));
       if (!State.items.length) return;
 
@@ -3215,8 +3267,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       const s = State.snapshot;
       const info = h('dl', { class: 'info-list' }, [
         h('dt', { text: 'Maßnahmen gesamt' }), h('dd', { text: Util.num(c.total) }),
-        h('dt', { text: 'davon aus Excel' }), h('dd', { text: Util.num(State.items.filter((i) => i.rec.src === 'excel').length) }),
-        h('dt', { text: 'davon manuell erfasst' }), h('dd', { text: Util.num(State.items.filter((i) => i.rec.src === 'manual').length) }),
+        h('dt', { text: 'davon aus Excel übernommen' }), h('dd', { text: Util.num(State.items.filter((i) => i.rec.origin === 'excel').length) }),
+        h('dt', { text: 'davon im Dashboard erfasst' }), h('dd', { text: Util.num(State.items.filter((i) => i.rec.origin !== 'excel').length) }),
         h('dt', { text: 'Excel-Datei' }), h('dd', { text: s ? s.fileName : '–' }),
         h('dt', { text: 'Letzter Import' }), h('dd', { text: s ? Util.formatDateTime(s.importedAt) : '–' }),
         h('dt', { text: 'Maßnahmenblatt' }), h('dd', { text: s ? s.actionSheet.name + ' (Kopfzeile ' + s.actionSheet.headerRow + ')' : '–' }),
@@ -3234,7 +3286,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           h('h3', { id: 'heroTitle', text: 'Noch keine Maßnahmen vorhanden' }),
           h('p', { text: 'Die Gesamtübersicht liest die Maßnahmen aller Bereiche ab. Lesen Sie die Maßnahmenliste aus Excel ein oder erfassen Sie Maßnahmen direkt in einem Bereich. Alle Daten bleiben lokal in diesem Browser – es erfolgt keine Übertragung an Server.' }),
           h('ol', { class: 'sx-steps' }, [
-            h('li', { text: '„Excel aktualisieren“ wählen oder die Arbeitsmappe ins Feld ziehen (.xlsx, .xlsm, .xls, .xlsb).' }),
+            h('li', { text: '„Excel einlesen“ wählen oder die Arbeitsmappe ins Feld ziehen (.xlsx, .xlsm, .xls, .xlsb). Danach pflegen Sie alles im Dashboard.' }),
             h('li', { text: 'Oder „Neue Maßnahme“ wählen, den Bereich auswählen und Aktion, Zuständigkeit und Fristen eintragen.' }),
             h('li', { text: 'Das Dashboard berechnet Friststatus und Kennzahlen automatisch zum heutigen Datum.' })
           ]),
@@ -3249,7 +3301,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         body.appendChild(h('div', { class: 'sx-hero__stack' }, [
           h('p', { class: 'hero-kicker', text: 'Lagebild Arbeitsschutz · Stichtag ' + DateUtil.fmtNum(State.today) }),
           h('h3', { id: 'heroTitle', text: 'Maßnahmen im Überblick' }),
-          h('p', { text: Util.num(c.open) + ' offene ' + Util.plural(c.open, 'Maßnahme', 'Maßnahmen') + ', davon ' + Util.num(c.ueberfaellig) + ' überfällig. ' + Util.num(c.total) + ' Maßnahmen insgesamt (' + Util.num(State.items.filter((i) => i.rec.src === 'excel').length) + ' aus Excel, ' + Util.num(State.items.filter((i) => i.rec.src === 'manual').length) + ' manuell erfasst).' }),
+          h('p', { text: Util.num(c.open) + ' offene ' + Util.plural(c.open, 'Maßnahme', 'Maßnahmen') + ', davon ' + Util.num(c.ueberfaellig) + ' überfällig. ' + Util.num(c.total) + ' Maßnahmen insgesamt (' + Util.num(State.items.filter((i) => i.rec.origin === 'excel').length) + ' aus Excel übernommen, ' + Util.num(State.items.filter((i) => i.rec.origin !== 'excel').length) + ' im Dashboard erfasst).' }),
           h('section', { class: 'sx-block' }, [h('h4', { text: 'Alle Maßnahmen nach Status' }), Render.statusOverview(c)]),
           h('section', { class: 'sx-block' }, [h('h4', { text: 'Offene Maßnahmen je Bereich' }), Render.areaRanking()]),
           h('div', { class: 'sx-hero__actions no-print' }, [h('button', { type: 'button', class: 'sx-btn sx-btn--ghost', text: 'Schwerpunktthemen ansehen', onclick: openThemes }), Render.sonarToggle()])
@@ -3260,7 +3312,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     },
     sonarToggle() {
       return h('button', { type: 'button', class: 'sx-btn sx-btn--ghost', id: 'btnSonar', 'aria-pressed': State.sonarHidden ? 'true' : 'false', text: State.sonarHidden ? 'Sonar einblenden' : 'Sonar ausblenden',
-        onclick: () => { State.sonarHidden = !State.sonarHidden; savePrefs(); Render.dashboard(); const b = document.getElementById('btnSonar'); if (b) b.focus(); } });
+        onclick: () => { State.sonarHidden = !State.sonarHidden; State.sonarUser = true; savePrefs(); Render.dashboard(); const b = document.getElementById('btnSonar'); if (b) b.focus(); } });
     },
 
     /** Hero eines Bereichs: Leerzustand oder Statusübersicht des Bereichs */
@@ -3407,30 +3459,28 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 
     /** Hinweis auf Maßnahmen ohne Bereich (keine stille Zuordnung) */
     unassignedCard() {
-      const manual = State.manual.filter((m) => !Areas.isDep(m.bereichId));
-      const excel = State.allItems.filter((it) => it.rec.src === 'excel' && !Areas.isDep(it.rec.bereichId)).length;
-      if (!manual.length && !excel) return null;
+      const n = State.allItems.filter((it) => !Areas.isDep(it.rec.bereichId)).length;
+      if (!n) return null;
       const body = h('div', { class: 'card-body unassigned' });
-      if (manual.length) {
-        const sel = h('select', { class: 'select', id: 'unassignedArea', 'aria-label': 'Bereich für die Maßnahmen ohne Bereich' });
-        sel.appendChild(h('option', { value: '' }, 'Bereich wählen …'));
-        Areas.deps().forEach((a) => sel.appendChild(h('option', { value: a.id }, a.name)));
-        body.appendChild(h('p', null, [h('strong', { text: Util.num(manual.length) + ' manuell erfasste ' + Util.plural(manual.length, 'Maßnahme hat', 'Maßnahmen haben') + ' noch keinen Bereich.' }), ' In welchen Bereich sollen sie? Sie können sie auch einzeln über „Bearbeiten“ zuordnen.']));
-        body.appendChild(h('div', { class: 'unassigned-row no-print' }, [
-          sel,
-          h('button', { type: 'button', class: 'btn btn-navy', text: 'Alle zuordnen', onclick: () => assignUnassigned(sel) }),
-          h('button', { type: 'button', class: 'btn btn-link', text: 'Einzeln ansehen', onclick: () => gotoActions({ dq: 'noArea', quelle: 'manual' }) })
-        ]));
-        body.appendChild(h('p', { class: 'field-err', id: 'unassignedErr', hidden: true }));
-      }
-      if (excel) {
-        body.appendChild(h('p', null, [h('strong', { text: Util.num(excel) + ' ' + Util.plural(excel, 'Maßnahme', 'Maßnahmen') + ' aus der Excel-Datei ' + Util.plural(excel, 'hat', 'haben') + ' noch keinen Bereich' }), ' und ' + Util.plural(excel, 'erscheint', 'erscheinen') + ' nur in der Gesamtübersicht. Ordnen Sie sie nach Zuständigkeit zu oder einzeln in den Details.']));
-        body.appendChild(h('div', { class: 'unassigned-row no-print' }, [
-          h('button', { type: 'button', class: 'btn btn-navy', text: 'Nach Zuständigkeit zuordnen …', onclick: () => ZustAssign.open() }),
-          h('button', { type: 'button', class: 'btn btn-link', text: 'Einzeln ansehen', onclick: () => gotoActions({ dq: 'noArea', quelle: 'excel' }) })
-        ]));
-      }
+      body.appendChild(h('p', null, [h('strong', { text: Util.num(n) + ' ' + Util.plural(n, 'Maßnahme hat', 'Maßnahmen haben') + ' noch keinen Bereich' }), ' und ' + Util.plural(n, 'erscheint', 'erscheinen') + ' nur in der Gesamtübersicht. Ordnen Sie sie nach Zuständigkeit zu oder einzeln in der Spalte „Bereich“ der Maßnahmenliste.']));
+      body.appendChild(h('div', { class: 'unassigned-row no-print' }, [
+        h('button', { type: 'button', class: 'btn btn-navy', text: 'Nach Zuständigkeit zuordnen …', onclick: () => ZustAssign.open() }),
+        h('button', { type: 'button', class: 'btn btn-link', text: 'Einzeln zuordnen', onclick: () => gotoActions({ dq: 'noArea' }) })
+      ]));
       return h('section', { class: 'card unassigned-card', 'aria-label': 'Maßnahmen ohne Bereich' }, [h('div', { class: 'card-head' }, h('h3', { text: 'Maßnahmen ohne Bereich' })), body]);
+    },
+
+    /** Hinweis: offene Maßnahmen ohne Zieldatum – Fristen nachpflegen */
+    fristCard() {
+      const n = State.items.filter((it) => !it.done && !isPaused(it) && it.days === null).length;
+      if (!n || State.mode !== 'edit') return null;
+      return h('section', { class: 'card frist-card', 'aria-label': 'Offene Maßnahmen ohne Zieldatum' }, [
+        h('div', { class: 'card-head' }, h('h3', { text: 'Fristen fehlen' })),
+        h('div', { class: 'card-body unassigned' }, [
+          h('p', null, [h('strong', { text: Util.num(n) + ' offene ' + Util.plural(n, 'Maßnahme hat', 'Maßnahmen haben') + ' kein Zieldatum.' }), ' Ohne Frist kann das Dashboard nicht warnen, wenn etwas überfällig wird.']),
+          h('div', { class: 'unassigned-row no-print' }, [h('button', { type: 'button', class: 'btn btn-navy', id: 'btnFristOpen', text: 'Fristen nachpflegen …', onclick: () => FristEdit.open() })])
+        ])
+      ]);
     },
 
     /** Bereichsleiste (BereichTabs) */
@@ -3516,10 +3566,11 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         { key: 'f30', label: 'Fällig ≤ 30 Tage', cls: 'kpi-yellow', val: c.f30, sub: '8 bis 30 Tage', share: c.open ? c.f30 / c.open : 0, filter: { frist: 'f30' } },
         { key: 'inbearbeitung', label: 'In Bearbeitung', cls: 'kpi-blue', val: c.inbearbeitung, sub: 'laut Status', share: c.open ? c.inbearbeitung / c.open : 0, filter: { frist: 'inbearbeitung' } },
         { key: 'ohnedatum', label: 'Offen ohne Datum', cls: 'kpi-grey', val: c.ohnedatum, sub: 'kein gültiges Zieldatum', share: c.open ? c.ohnedatum / c.open : 0, filter: { frist: 'ohnedatum' } },
-        { key: 'gesamt', label: 'Gesamt', cls: 'kpi-navy', val: c.total, sub: Util.num(c.open) + ' offen', share: c.total ? c.open / c.total : 0, filter: {} }
+        { key: 'gesamt', label: 'Gesamt', cls: 'kpi-navy', val: c.total, sub: Util.num(c.open) + ' offen', share: c.total ? c.open / c.total : 0, filter: {} },
+        { key: 'wirk', label: 'Wirksamkeit offen', cls: 'kpi-orange', val: State.items.filter(DQ_FILTERS.wirkOffen.test).length, sub: 'erledigt, nicht geprüft', share: c.erledigt ? State.items.filter(DQ_FILTERS.wirkOffen.test).length / c.erledigt : 0, filter: { dq: 'wirkOffen' } }
       ];
       const tile = (d) => {
-        const pressed = d.key !== 'gesamt' && State.filters.frist === d.filter.frist;
+        const pressed = d.key === 'wirk' ? State.filters.dq === 'wirkOffen' : (d.key !== 'gesamt' && State.filters.frist === d.filter.frist);
         const pct = Math.round(d.share * 100);
         return h('button', { type: 'button', class: 'kpi ' + d.cls, 'aria-pressed': pressed ? 'true' : 'false', 'aria-label': d.label + ': ' + d.val + ' (' + pct + ' Prozent). Als Filter in der Maßnahmenliste anzeigen', onclick: () => gotoActions(d.filter) }, [
           h('span', { class: 'kpi-label', text: d.label }),
@@ -3689,14 +3740,16 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       const statusCell = h('div', { class: 'badge-stack' }, [catBadge(it.cat, it.days), it.inProgress ? progressBadge() : null]);
       const aktion = h('div', null, [h('div', { class: 'clamp', text: r.aktion || '(ohne Aktion)' })]);
       const tags = [];
-      if (r.src === 'manual') tags.push(h('span', { class: 'tag tag-manual', text: 'manuell' }));
+      if (r.origin !== 'excel') tags.push(h('span', { class: 'tag tag-manual', text: 'im Dashboard erfasst' }));
+      if (it.done && !r.wirkErgebnis) tags.push(h('span', { class: 'tag tag-warn', text: 'Wirksamkeit prüfen' }));
+      else if (r.wirkErgebnis) tags.push(h('span', { class: 'tag ' + (r.wirkErgebnis === 'wirksam' ? 'tag-ok' : 'tag-warn'), text: r.wirkErgebnis }));
       if (it.dup) tags.push(h('span', { class: 'tag tag-warn', text: 'mögliche Dublette' }));
       if (it.contradictions.length) tags.push(h('span', { class: 'tag tag-warn', title: it.contradictions.join('; '), text: 'widersprüchlich' }));
       if (tags.length) aktion.appendChild(h('div', { style: 'display:flex;gap:4px;flex-wrap:wrap;margin-top:4px' }, tags));
       const comment = r.kommentar ? h('div', { class: 'clamp clamp-2', text: r.kommentar }) : h('span', { class: 'muted', text: '–' });
       const btns = h('div', { class: 'cell-actions' }, [
         h('button', { type: 'button', class: 'btn btn-sm', 'aria-label': 'Details anzeigen: ' + (r.aktion || 'Maßnahme').slice(0, 80), text: 'Details', onclick: () => Detail.open(it) }),
-        r.src === 'manual' && State.mode === 'edit' ? h('button', { type: 'button', class: 'btn btn-sm', 'aria-label': 'Bearbeiten: ' + (r.aktion || 'Maßnahme').slice(0, 80), text: 'Bearbeiten', onclick: () => Editor.open(r) }) : null
+        State.mode === 'edit' ? h('button', { type: 'button', class: 'btn btn-sm', 'aria-label': 'Bearbeiten: ' + (r.aktion || 'Maßnahme').slice(0, 80), text: 'Bearbeiten', onclick: () => Editor.open(r) }) : null
       ]);
       const td = (label, child, cls) => h('td', { 'data-label': label, class: cls || null }, child);
       const tr = h('tr', { class: [it.done ? 'is-done' : '', State.selectedId === r.id ? 'is-selected' : ''].join(' ').trim() || null, dataset: { id: r.id } }, [
@@ -3724,62 +3777,6 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       return tr;
     },
 
-    /* ---------- Kanban ---------- */
-    kanban() {
-      const root = $('kanbanContent');
-      clear(root);
-      if (!State.items.length) { root.appendChild(sectionEmpty('Keine Maßnahmen vorhanden', 'Sobald Maßnahmen importiert oder erfasst wurden, werden sie hier nach Friststatus gruppiert.')); return; }
-      const cols = [
-        { key: 'ueberfaellig', label: 'Überfällig', kpi: 'kpi-red' },
-        { key: 'f7', label: 'Fällig ≤ 7 Tage', kpi: 'kpi-orange' },
-        { key: 'f30', label: 'Fällig ≤ 30 Tage', kpi: 'kpi-yellow' },
-        { key: 'offen', label: 'Offen', kpi: 'kpi-grey' },
-        { key: 'inbearbeitung', label: 'In Bearbeitung', kpi: 'kpi-blue' },
-        { key: 'erledigt', label: 'Erledigt', kpi: 'kpi-green' },
-        { key: 'ruhend', label: 'Abgelehnt / Zurückgestellt', kpi: 'kpi-grey' }
-      ];
-      const q = State.kb.q.toLowerCase().split(/\s+/).filter(Boolean);
-      const z = State.kb.zust;
-      const buckets = {};
-      cols.forEach((c) => { buckets[c.key] = []; });
-      State.items.forEach((it) => {
-        if (q.length && !q.every((t) => it.searchText.indexOf(t) !== -1)) return;
-        if (z && (z === '__leer__' ? it.rec.zust !== '' : it.rec.zust !== z)) return;
-        let col;
-        if (it.cat === 'erledigt') col = 'erledigt';
-        else if (isPaused(it)) col = 'ruhend';
-        else if (it.cat === 'ueberfaellig' || it.cat === 'f7' || it.cat === 'f30') col = it.cat;
-        else col = it.inProgress ? 'inbearbeitung' : 'offen';
-        buckets[col].push(it);
-      });
-      const board = h('div', { class: 'kanban' });
-      cols.forEach((c) => {
-        const items = buckets[c.key].sort(urgencyCompare);
-        const list = h('ul', { class: 'kb-list', 'aria-label': c.label });
-        items.slice(0, CONFIG.kanbanLimit).forEach((it) => {
-          const r = it.rec;
-          list.appendChild(h('li', null, h('button', { type: 'button', class: 'kb-card ' + c.kpi, onclick: () => Detail.open(it) }, [
-            h('span', { class: 'kb-top' }, catBadge(it.cat, it.days)),
-            h('span', { class: 'kb-title', text: r.aktion || '(ohne Aktion)' }),
-            h('span', { class: 'kb-meta' }, [r.thema ? h('span', { text: 'Thema: ' + r.thema }) : null, h('span', { text: 'Zuständig: ' + (r.zust || '–') }), r.herkunft ? h('span', { text: 'Herkunft: ' + r.herkunft }) : null, State.area === 'gesamt' ? h('span', { text: 'Bereich: ' + (Areas.name(r.bereichId) || 'ohne Bereich') }) : null]),
-            h('span', { class: 'kb-foot' }, [h('span', { text: 'Ziel: ' + (DateUtil.display(r.ziel) || '–') }), relNode(it)]),
-            it.inProgress && c.key !== 'inbearbeitung' ? h('span', null, progressBadge()) : null
-          ])));
-        });
-        if (!items.length) list.appendChild(h('li', { class: 'kb-more', text: 'Keine Einträge' }));
-        if (items.length > CONFIG.kanbanLimit) {
-          const flt = c.key === 'offen' ? { frist: 'alleoffen' } : { frist: c.key };
-          list.appendChild(h('li', { class: 'kb-more' }, h('button', { type: 'button', class: 'btn btn-link', text: '+ ' + (items.length - CONFIG.kanbanLimit) + ' weitere in der Liste anzeigen', onclick: () => gotoActions(flt) })));
-        }
-        board.appendChild(h('section', { class: 'kb-col ' + c.kpi, 'aria-label': c.label + ', ' + items.length + ' Einträge' }, [
-          h('div', { class: 'kb-head' }, [h('h3', { text: c.label }), h('span', { class: 'kb-count', text: String(items.length) })]),
-          list
-        ]));
-      });
-      root.appendChild(board);
-    },
-
-    /* ---------- Themen ---------- */
     themen() {
       const root = $('themenContent');
       clear(root);
@@ -3868,7 +3865,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         root.appendChild(sectionEmpty('Keine Daten für „' + label + '“ vorhanden', State.snapshot
           ? 'Die Arbeitsmappe „' + State.snapshot.fileName + '“ enthält kein erkennbares Blatt für ' + what + '. Der Bereich wird automatisch befüllt, sobald ein passendes Blatt (z. B. „' + label + '“) vorhanden ist.'
           : 'Dieser Bereich wird aus einem passenden Blatt der Excel-Arbeitsmappe befüllt. Derzeit ist keine Excel-Datei geladen.',
-          [h('button', { type: 'button', class: 'btn', text: 'Excel aktualisieren', onclick: openFilePicker })]));
+          [h('button', { type: 'button', class: 'btn', text: 'Excel einlesen', onclick: openFilePicker })]));
         return;
       }
       root.appendChild(Render.genericTables(key, tables));
@@ -3979,6 +3976,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         metric('Zieldatum nicht lesbar', items.filter(DQ_FILTERS.badDate.test).length, 'badDate'),
         metric('Widersprüchlicher Status', items.filter(DQ_FILTERS.contra.test).length, 'contra'),
         metric('Mögliche Dubletten', items.filter(DQ_FILTERS.dup.test).length, 'dup'),
+        metric('Ohne Bereich', items.filter(DQ_FILTERS.noArea.test).length, 'noArea'),
+        metric('Erledigt, Wirksamkeit offen', items.filter(DQ_FILTERS.wirkOffen.test).length, 'wirkOffen'),
         hasAreaColumn(s) ? metric('Unbekannter Bereich (Excel)', items.filter(DQ_FILTERS.unknownArea.test).length, 'unknownArea') : null
       ]);
       grid.querySelectorAll('button.kpi').forEach((b) => b.removeAttribute('aria-pressed'));
@@ -4003,9 +4002,10 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           h('dt', { text: 'Leere Zeilen ignoriert' }), h('dd', { text: Util.num(s.stats.emptyIgnored) }),
           legendNotes(s).length ? h('dt', { text: 'Legendenzeilen übersprungen' }) : null, legendNotes(s).length ? h('dd', { text: legendNotes(s).join('; ') }) : null,
           h('dt', { text: 'Arbeitsblätter geprüft' }), h('dd', { text: Util.num(s.stats.sheetsChecked) }),
-          h('dt', { text: 'Datumssystem' }), h('dd', { text: s.stats.date1904 ? '1904 (Mac)' : '1900 (Standard)' })
+          h('dt', { text: 'Datumssystem' }), h('dd', { text: s.stats.date1904 ? '1904 (Mac)' : '1900 (Standard)' }),
+          h('dt', { text: 'Browserspeicher' }), h('dd', { text: State.persisted === true ? 'dauerhaft (vor automatischem Löschen durch den Browser geschützt)' : (State.persisted === false ? 'nicht dauerhaft – der Browser kann die Daten bei Speicherknappheit löschen; bitte regelmäßig speichern' : 'unbekannt') })
         ])));
-      } else imp.appendChild(h('p', { class: 'empty-note', text: 'Es wurde noch keine Excel-Datei importiert. Manuell erfasste Maßnahmen werden dennoch geprüft.' }));
+      } else imp.appendChild(h('p', { class: 'empty-note', text: 'Es wurde noch keine Excel-Datei eingelesen. Im Dashboard erfasste Maßnahmen werden dennoch geprüft.' }));
       grid2.appendChild(imp);
 
       // Spaltenzuordnung
@@ -4045,7 +4045,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (!contra.length) cc.appendChild(h('p', { class: 'empty-note', text: 'Keine Widersprüche gefunden.' }));
       else {
         const ul = h('ul', { class: 'urgent-list', style: 'padding:0 12px' });
-        contra.slice(0, 30).forEach((it) => ul.appendChild(h('li', null, h('button', { type: 'button', class: 'urgent-item', onclick: () => Detail.open(it) }, [catBadgeMini(it), h('span', { class: 'ui-main' }, [h('span', { class: 'ui-title', text: it.rec.aktion || '(ohne Aktion)' }), h('span', { class: 'ui-meta', text: it.contradictions.join(' · ') })]), h('span', { class: 'ui-right', text: it.rec.src === 'excel' ? 'Zeile ' + it.rec.row : 'manuell' })]))));
+        contra.slice(0, 30).forEach((it) => ul.appendChild(h('li', null, h('button', { type: 'button', class: 'urgent-item', onclick: () => Detail.open(it) }, [catBadgeMini(it), h('span', { class: 'ui-main' }, [h('span', { class: 'ui-title', text: it.rec.aktion || '(ohne Aktion)' }), h('span', { class: 'ui-meta', text: it.contradictions.join(' · ') })]), h('span', { class: 'ui-right', text: it.rec.origin === 'excel' ? 'Excel-Zeile ' + (it.rec.excelRow || '–') : 'Dashboard' })]))));
         cc.appendChild(ul);
       }
       grid2.appendChild(cc);
@@ -4059,7 +4059,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         let n = 0;
         dups.forEach((grp) => {
           if (n++ >= 20) return;
-          body.appendChild(h('div', { class: 'week-group' }, [h('h4', { text: grp[0].rec.aktion.slice(0, 140) }), h('p', { class: 'card-note', text: grp.length + '× · ' + grp.map((g) => g.rec.src === 'excel' ? 'Zeile ' + g.rec.row : 'manuell').join(', ') + ' · ' + (grp[0].rec.zust || 'ohne Zuständigkeit') + ' · ' + (DateUtil.display(grp[0].rec.ziel) || 'ohne Datum') })]));
+          body.appendChild(h('div', { class: 'week-group' }, [h('h4', { text: grp[0].rec.aktion.slice(0, 140) }), h('p', { class: 'card-note', text: grp.length + '× · ' + grp.map((g) => g.rec.origin === 'excel' ? 'Excel-Zeile ' + (g.rec.excelRow || '–') : 'Dashboard').join(', ') + ' · ' + (grp[0].rec.zust || 'ohne Zuständigkeit') + ' · ' + (DateUtil.display(grp[0].rec.ziel) || 'ohne Datum') })]));
         });
         dc.appendChild(body);
       }
@@ -4093,46 +4093,14 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
    * ===================================================================== */
   const Detail = {
     current: null,
-    /** Auswahl „Bereich“ für eine Excel-Maßnahme */
-    assignBox(it) {
-      const r = it.rec;
-      const key = Assign.key(r);
-      const own = Assign.state.byKey[key] || '';
-      const same = State.allItems.filter((x) => x.rec.src === 'excel' && Assign.key(x.rec) === key).length;
-      const saveOwn = Assign.state.byKey[key];
-      Assign.state.byKey[key] = undefined; delete Assign.state.byKey[key];
-      const auto = Assign.resolve(r, new Map(Areas.deps().map((a) => [a.name.trim().toLocaleLowerCase('de'), a.id])));
-      if (saveOwn !== undefined) Assign.state.byKey[key] = saveOwn;
-      const autoText = auto.id ? Areas.name(auto.id) + (auto.via === 'zust' ? ' (über Zuständigkeit)' : ' (über Excel-Spalte „Bereich“)') : 'ohne Bereich';
-      const sel = h('select', { class: 'select', id: 'dBereich' });
-      sel.appendChild(h('option', { value: '' }, 'Automatisch: ' + autoText));
-      Areas.deps().forEach((a) => sel.appendChild(h('option', { value: a.id }, a.name)));
-      sel.appendChild(h('option', { value: '-' }, 'Keinem Bereich zuordnen'));
-      sel.value = Areas.isDep(own) || own === '-' ? own : '';
-      sel.addEventListener('change', async () => {
-        const prev = JSON.parse(JSON.stringify(Assign.state));
-        if (sel.value) Assign.state.byKey[key] = sel.value; else delete Assign.state.byKey[key];
-        await Assign.save();
-        refresh();
-        const fresh = State.allItems.find((x) => x.rec === r);
-        if (fresh) Detail.open(fresh);
-        try { $('dBereich').focus(); } catch (e) { /* ignorieren */ }
-        showMessage('ok', 'Bereich: ' + (Areas.name(r.bereichId) || 'ohne Bereich') + '.', 8000, { label: 'Rückgängig', run: async () => { Assign.state = prev; await Assign.save(); refresh(); showMessage('info', 'Zuordnung wurde rückgängig gemacht.', 5000); } });
-      });
-      return h('div', { class: 'detail-sec no-print' }, [
-        h('h3', { text: 'Bereich zuordnen' }),
-        h('div', { class: 'field' }, [h('label', { for: 'dBereich', text: 'Bereich dieser Excel-Maßnahme' }), sel]),
-        h('p', { class: 'field-hint', text: 'Die Zuordnung wird im Dashboard gespeichert und bleibt bei „Excel aktualisieren“ erhalten, solange Aktion, Herkunft, Thema, Zuständigkeit und „vom“ in Excel gleich bleiben.' + (same > 1 ? ' Gilt für alle ' + same + ' gleichlautenden Einträge.' : '') })
-      ]);
-    },
     open(it) {
       Detail.current = it;
       const r = it.rec;
       $('detailTitle').textContent = r.aktion ? (r.aktion.length > 160 ? r.aktion.slice(0, 157) + '…' : r.aktion) : 'Maßnahme ohne Aktion';
-      $('detailKicker').textContent = (r.thema || 'Maßnahme') + (r.src === 'excel' ? ' · Excel-Zeile ' + r.row : ' · manuell erfasst');
+      $('detailKicker').textContent = (r.thema || 'Maßnahme') + (r.origin === 'excel' ? ' · aus Excel übernommen' + (r.excelRow ? ' (Zeile ' + r.excelRow + ')' : '') : ' · im Dashboard erfasst');
       const body = $('detailBody');
       clear(body);
-      body.appendChild(h('div', { class: 'detail-badges' }, [catBadge(it.cat, it.days), it.inProgress ? progressBadge() : null, r.src === 'manual' ? h('span', { class: 'badge b-purple', text: 'manuell erfasst' }) : h('span', { class: 'badge b-grey', text: 'Excel · Zeile ' + r.row }), it.dup ? h('span', { class: 'badge b-orange', text: 'mögliche Dublette' }) : null]));
+      body.appendChild(h('div', { class: 'detail-badges' }, [catBadge(it.cat, it.days), it.inProgress ? progressBadge() : null, r.origin !== 'excel' ? h('span', { class: 'badge b-purple', text: 'im Dashboard erfasst' }) : h('span', { class: 'badge b-grey', text: 'aus Excel' + (r.excelRow ? ' · Zeile ' + r.excelRow : '') }), it.done && !r.wirkErgebnis ? h('span', { class: 'badge b-orange', text: 'Wirksamkeit prüfen' }) : null, it.dup ? h('span', { class: 'badge b-orange', text: 'mögliche Dublette' }) : null]));
       body.appendChild(h('div', { class: 'detail-hero' }, [
         h('div', null, [h('span', { text: 'Zieldatum' }), h('b', { text: DateUtil.display(r.ziel) || '–' })]),
         h('div', null, [h('span', { text: 'Frist' }), h('b', null, relNode(it))]),
@@ -4144,14 +4112,22 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       row('Thema / Bereich', r.thema);
       row('Herkunft', r.herkunft);
       row('Zuständigkeit', r.zust);
-      row('Bereich', Areas.name(r.bereichId) || (r.src === 'excel' && r.bereichName ? 'ohne Bereich – in Excel steht „' + r.bereichName + '“, diesen Bereich gibt es im Dashboard nicht' : 'ohne Bereich'));
+      row('Bereich', Areas.name(r.bereichId) || (r.origin === 'excel' && r.bereichName ? 'ohne Bereich – in Excel steht „' + r.bereichName + '“, diesen Bereich gibt es im Dashboard nicht' : 'ohne Bereich'));
       row('vom', DateUtil.display(r.vom));
       row('Zieldatum', r.ziel && r.ziel.s === 'invalid' ? '⚠ nicht lesbar: ' + r.ziel.raw : DateUtil.display(r.ziel));
       row('Tage bis Frist', it.days === null ? '' : (it.days > 0 ? '+' : '') + it.days + (it.done ? '' : ' (' + relText(it.days) + ')'));
       row('umgesetzt am', DateUtil.display(r.umgesetzt));
       row('Bestehender Status', r.status);
+      row('Priorität', r.prio);
+      row('Art (STOP)', r.art ? ART_LABELS[r.art] : '');
       row('Kommentar', r.kommentar);
       body.appendChild(dl);
+      const dlW = h('dl', { class: 'detail-grid' });
+      const rowW = (k, v) => { dlW.appendChild(h('dt', { text: k })); dlW.appendChild(h('dd', null, v ? v : h('span', { class: 'muted', text: '–' }))); };
+      rowW('Geprüft am', DateUtil.display(r.wirkDatum));
+      rowW('Ergebnis', r.wirkErgebnis);
+      rowW('Geprüft durch', r.wirkDurch);
+      body.appendChild(h('div', { class: 'detail-sec' }, [h('h3', { text: 'Wirksamkeitskontrolle (§ 3 Abs. 1 ArbSchG)' }), it.done && !r.wirkErgebnis ? h('p', { class: 'card-note', text: 'Die Maßnahme ist erledigt, ihre Wirksamkeit ist aber noch nicht geprüft. Über „Bearbeiten“ das Ergebnis eintragen.' }) : null, dlW]));
       if (it.contradictions.length || it.zielBad || it.zielBeforeVom) {
         const notes = it.contradictions.slice();
         if (it.zielBad) notes.push('Zieldatum ist nicht lesbar und wird nicht als Frist berücksichtigt.');
@@ -4163,13 +4139,11 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         r.extra.forEach((e) => { dl2.appendChild(h('dt', { text: e[0] })); dl2.appendChild(h('dd', { text: e[1] })); });
         body.appendChild(h('div', { class: 'detail-sec' }, [h('h3', { text: 'Weitere Spalten aus Excel' }), dl2]));
       }
-      if (r.src === 'excel' && State.mode === 'edit') body.appendChild(Detail.assignBox(it));
-      if (r.src === 'manual' && r.created) body.appendChild(h('p', { class: 'card-note', style: 'margin-top:14px', text: 'Erfasst: ' + Util.formatDateTime(r.created) + (r.updated ? ' · Zuletzt geändert: ' + Util.formatDateTime(r.updated) : '') }));
+      if (r.created) body.appendChild(h('p', { class: 'card-note', style: 'margin-top:14px', text: (r.origin === 'excel' ? 'Übernommen aus „' + (r.excelFile || 'Excel') + '“: ' : 'Erfasst: ') + Util.formatDateTime(r.created) + (r.updated ? ' · Zuletzt geändert: ' + Util.formatDateTime(r.updated) : '') }));
       if (State.mode === 'view') body.appendChild(h('p', { class: 'card-note', style: 'margin-top:14px', text: 'Ansichtsmodus: Diese Maßnahme stammt aus dem veröffentlichten Stand. Änderungen nimmt die pflegende Person vor.' }));
-      else if (r.src === 'excel') body.appendChild(h('p', { class: 'card-note', style: 'margin-top:14px', text: 'Diese Maßnahme stammt aus der Excel-Datei. Änderungen bitte in der Arbeitsmappe vornehmen und anschließend „Excel aktualisieren“ wählen.' }));
       const foot = $('detailFoot');
       clear(foot);
-      if (r.src === 'manual' && State.mode === 'edit') {
+      if (State.mode === 'edit') {
         foot.appendChild(h('button', { type: 'button', class: 'btn btn-danger', text: 'Löschen', onclick: () => { Dialogs.close($('detailDialog')); Editor.remove(r); } }));
         foot.appendChild(h('span', { class: 'spacer' }));
         if (!it.done) foot.appendChild(h('button', { type: 'button', class: 'btn', text: 'Als erledigt markieren', onclick: () => { Dialogs.close($('detailDialog')); Editor.markDone(r); } }));
@@ -4198,9 +4172,11 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (State.mode === 'view') { showMessage('info', 'Im Ansichtsmodus lassen sich keine Maßnahmen erfassen oder ändern.', 5000); return; }
       Editor.editing = rec;
       $('editTitle').textContent = rec ? 'Maßnahme bearbeiten' : 'Neue Maßnahme';
+      $('editIntro').textContent = rec ? (rec.origin === 'excel' ? 'Aus Excel übernommen' + (rec.excelRow ? ' (Zeile ' + rec.excelRow + ')' : '') + ' – Änderungen gelten im Dashboard; die Excel-Datei bleibt unverändert.' : 'Im Dashboard erfasst.') + ' Pflichtfeld ist mit * markiert.' : 'Pflichtfelder sind mit * markiert: Aktion, Bereich, Zuständigkeit und Zieldatum – damit das Dashboard die Frist überwachen kann.';
+      ['eBereichReq', 'eZustReq', 'eZielReq'].forEach((id) => { $(id).hidden = !!rec; });
       const selA = $('eBereich');
       clear(selA);
-      selA.appendChild(h('option', { value: '' }, 'Bitte Bereich wählen …'));
+      selA.appendChild(h('option', { value: '' }, rec ? 'ohne Bereich' : 'Bitte Bereich wählen …'));
       Areas.deps().forEach((a) => selA.appendChild(h('option', { value: a.id }, a.name)));
       const pre = rec ? rec.bereichId : (State.area !== 'gesamt' ? State.area : '');
       selA.value = Areas.isDep(pre) ? pre : '';
@@ -4213,6 +4189,13 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       $('eZiel').value = rec ? DateUtil.toInput(rec.ziel) : '';
       $('eUmgesetzt').value = rec ? DateUtil.toInput(rec.umgesetzt) : '';
       $('eKommentar').value = rec ? rec.kommentar : '';
+      $('ePrio').value = rec && rec.prio ? rec.prio : '';
+      if (rec && rec.prio && $('ePrio').value !== rec.prio) { $('ePrio').appendChild(h('option', { value: rec.prio }, rec.prio)); $('ePrio').value = rec.prio; }
+      $('eArt').value = rec && rec.art ? rec.art : '';
+      $('eWirkDatum').value = rec ? DateUtil.toInput(rec.wirkDatum) : '';
+      $('eWirkErgebnis').value = rec && WIRK_OPTIONS.indexOf(rec.wirkErgebnis) >= 0 ? rec.wirkErgebnis : '';
+      if (rec && rec.wirkErgebnis && WIRK_OPTIONS.indexOf(rec.wirkErgebnis) < 0) { $('eWirkErgebnis').appendChild(h('option', { value: rec.wirkErgebnis }, rec.wirkErgebnis)); $('eWirkErgebnis').value = rec.wirkErgebnis; }
+      $('eWirkDurch').value = rec ? (rec.wirkDurch || '') : '';
       $('btnEditDelete').hidden = !rec;
       Editor.clearErrors();
       Editor.updateHint();
@@ -4235,12 +4218,19 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       const vom = DateUtil.fromInput($('eVom').value);
       const ziel = DateUtil.fromInput($('eZiel').value);
       const umg = DateUtil.fromInput($('eUmgesetzt').value);
+      const isNew = !Editor.editing;
       if (includeRequired && !Util.clean($('eAktion').value)) err('eAktion', 'eAktionErr', 'Bitte eine Aktion bzw. Maßnahmenbeschreibung eingeben.');
-      if (includeRequired && !Areas.isDep($('eBereich').value)) err('eBereich', 'eBereichErr', 'Bitte den Bereich wählen, zu dem die Maßnahme gehört.');
+      if (includeRequired && isNew && !Areas.isDep($('eBereich').value)) err('eBereich', 'eBereichErr', 'Bitte den Bereich wählen, zu dem die Maßnahme gehört.');
+      if (includeRequired && isNew && !Util.clean($('eZust').value)) err('eZust', 'eZustErr', 'Bitte eintragen, wer für die Maßnahme zuständig ist.');
+      if (includeRequired && isNew && !$('eZiel').value && !bad('eZiel')) err('eZiel', 'eZielErr', 'Bitte ein Zieldatum festlegen – ohne Frist kann das Dashboard nicht warnen. Die Schnellwahl hilft (z. B. +30 Tage).');
       if (bad('eZiel') || ($('eZiel').value && ziel.s !== 'ok')) err('eZiel', 'eZielErr', 'Bitte ein vollständiges Datum zwischen 1990 und 2100 eingeben (TT.MM.JJJJ).');
       else if (ziel.s === 'ok' && vom.s === 'ok' && DateUtil.num(ziel) < DateUtil.num(vom)) err('eZiel', 'eZielErr', 'Das Zieldatum liegt vor dem Erfassungsdatum („vom“). Bitte ein späteres Datum wählen.');
       if (bad('eUmgesetzt') || ($('eUmgesetzt').value && umg.s !== 'ok')) err('eUmgesetzt', 'eUmgErr', 'Bitte ein vollständiges Datum eingeben (TT.MM.JJJJ).');
       else if (umg.s === 'ok' && DateUtil.num(umg) > State.today) err('eUmgesetzt', 'eUmgErr', '„umgesetzt am“ darf nicht in der Zukunft liegen. Bitte heute oder ein früheres Datum wählen.');
+      const wd = DateUtil.fromInput($('eWirkDatum').value);
+      if (bad('eWirkDatum') || ($('eWirkDatum').value && wd.s !== 'ok')) err('eWirkDatum', 'eWirkErr', 'Bitte ein vollständiges Datum eingeben (TT.MM.JJJJ).');
+      else if (wd.s === 'ok' && DateUtil.num(wd) > State.today) err('eWirkDatum', 'eWirkErr', 'Die Prüfung kann nicht in der Zukunft liegen.');
+      else if (includeRequired && $('eWirkErgebnis').value && wd.s !== 'ok') err('eWirkDatum', 'eWirkErr', 'Bitte zum Ergebnis auch das Prüfdatum eintragen.');
       return firstErr;
     },
     setQuickDate(days) {
@@ -4251,8 +4241,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       $('eZiel').focus();
     },
     clearErrors() {
-      ['eAktion', 'eBereich', 'eZiel', 'eUmgesetzt'].forEach((id) => $(id).removeAttribute('aria-invalid'));
-      ['eAktionErr', 'eBereichErr', 'eZielErr', 'eUmgErr'].forEach((id) => { $(id).hidden = true; });
+      ['eAktion', 'eBereich', 'eZust', 'eZiel', 'eUmgesetzt', 'eWirkDatum'].forEach((id) => $(id).removeAttribute('aria-invalid'));
+      ['eAktionErr', 'eBereichErr', 'eZustErr', 'eZielErr', 'eUmgErr', 'eWirkErr'].forEach((id) => { $(id).hidden = true; });
     },
     async save(ev) {
       ev.preventDefault();
@@ -4265,18 +4255,20 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       let status = Util.clean($('eStatus').value);
       if (umg.s === 'ok' && Status.isStatusOpen(status)) status = 'Erledigt';
       const nowIso = new Date().toISOString();
+      const wd = DateUtil.fromInput($('eWirkDatum').value);
       const base = {
-        src: 'manual', row: null, bereichId: $('eBereich').value,
+        src: 'manual', bereichId: $('eBereich').value,
         herkunft: Util.clean($('eHerkunft').value), thema: Util.clean($('eThema').value), aktion: aktion,
         zust: Util.clean($('eZust').value), kommentar: Util.clean($('eKommentar').value), status: status,
-        vom: vom.s === 'ok' ? vom : { s: 'empty' }, ziel: ziel.s === 'ok' ? ziel : { s: 'empty' }, umgesetzt: umg.s === 'ok' ? umg : { s: 'empty' }, extra: []
+        vom: vom.s === 'ok' ? vom : { s: 'empty' }, ziel: ziel.s === 'ok' ? ziel : { s: 'empty' }, umgesetzt: umg.s === 'ok' ? umg : { s: 'empty' },
+        prio: Util.clean($('ePrio').value), art: $('eArt').value, wirkDatum: wd.s === 'ok' ? wd : { s: 'empty' }, wirkErgebnis: Util.clean($('eWirkErgebnis').value), wirkDurch: Util.clean($('eWirkDurch').value)
       };
       const prevManual = State.manual.slice();
       if (Editor.editing) {
         const idx = State.manual.findIndex((m) => m.id === Editor.editing.id);
         if (idx >= 0) State.manual[idx] = Object.assign({}, State.manual[idx], base, { updated: nowIso });
       } else {
-        State.manual.push(Object.assign({ id: Util.uid(), created: nowIso }, base));
+        State.manual.push(Object.assign({ id: Util.uid(), created: nowIso, origin: 'tool', row: null, extra: [] }, base));
         Unsaved.note('added');
       }
       const ok = await persistManual();
@@ -4330,10 +4322,10 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       return s;
     },
     rows(list) {
-      const header = ['Friststatus', 'Tage bis Frist', 'In Bearbeitung', 'Herkunft', 'Thema', 'Aktion', 'Zuständigkeit', 'vom', 'Zieldatum', 'umgesetzt am', 'Status', 'Kommentar', 'Erfassung', 'Excel-Zeile', 'Mögliche Dublette', 'Hinweise'];
+      const header = ['Friststatus', 'Tage bis Frist', 'In Bearbeitung', 'Bereich', 'Herkunft', 'Thema', 'Aktion', 'Zuständigkeit', 'vom', 'Zieldatum', 'umgesetzt am', 'Status', 'Kommentar', 'Priorität', 'Art (STOP)', 'Wirksamkeit geprüft am', 'Wirksamkeit', 'geprüft durch', 'Erfassung', 'Excel-Zeile', 'Mögliche Dublette', 'Hinweise'];
       const data = list.map((it) => {
         const r = it.rec;
-        return [CATS[it.cat].label, it.days === null ? '' : it.days, it.inProgress ? 'ja' : '', r.herkunft, r.thema, r.aktion, r.zust, DateUtil.display(r.vom), DateUtil.display(r.ziel), DateUtil.display(r.umgesetzt), r.status, r.kommentar, r.src === 'manual' ? 'manuell' : 'Excel', r.row || '', it.dup ? 'ja' : '', it.contradictions.join('; ')];
+        return [CATS[it.cat].label, it.days === null ? '' : it.days, it.inProgress ? 'ja' : '', Areas.name(r.bereichId), r.herkunft, r.thema, r.aktion, r.zust, DateUtil.display(r.vom), DateUtil.display(r.ziel), DateUtil.display(r.umgesetzt), r.status, r.kommentar, r.prio || '', r.art || '', DateUtil.display(r.wirkDatum), r.wirkErgebnis || '', r.wirkDurch || '', r.origin === 'excel' ? 'Excel' : 'Dashboard', r.excelRow || '', it.dup ? 'ja' : '', it.contradictions.join('; ')];
       });
       return { header: header, data: data };
     },
@@ -4348,18 +4340,18 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (!State.allItems.length) { showMessage('warn', 'Es gibt keine Maßnahmen für den Export.', 5000); return; }
       try {
         const list = State.allItems.slice().sort(urgencyCompare);
-        const header = ['Herkunft', 'Thema', 'Aktion', 'Zuständigkeit', 'vom', 'Zieldatum', 'umgesetzt am', 'Status', 'Kommentar', 'Erfassung', 'Friststatus (berechnet)', 'Tage bis Frist (berechnet)'];
+        const header = ['Herkunft', 'Thema', 'Aktion', 'Zuständigkeit', 'vom', 'Zieldatum', 'umgesetzt am', 'Status', 'Kommentar', 'Erfassung', 'Friststatus (berechnet)', 'Tage bis Frist (berechnet)', 'Bereich', 'Priorität', 'Art (STOP)', 'Wirksamkeit geprüft am', 'Wirksamkeit', 'geprüft durch'];
         const excelEpoch = DateUtil.dayNumber(1899, 12, 30);
         const toDate = (dt) => dt && dt.s === 'ok' ? DateUtil.num(dt) - excelEpoch : (dt && dt.s === 'invalid' ? dt.raw : '');
-        const aoa = [header].concat(list.map((it) => { const r = it.rec; return [r.herkunft, r.thema, r.aktion, r.zust, toDate(r.vom), toDate(r.ziel), toDate(r.umgesetzt), r.status, r.kommentar, r.src === 'manual' ? 'manuell' : 'Excel', CATS[it.cat].label, it.days === null ? '' : it.days]; }));
+        const aoa = [header].concat(list.map((it) => { const r = it.rec; return [r.herkunft, r.thema, r.aktion, r.zust, toDate(r.vom), toDate(r.ziel), toDate(r.umgesetzt), r.status, r.kommentar, r.origin === 'excel' ? 'Excel' : 'Dashboard', CATS[it.cat].label, it.days === null ? '' : it.days, Areas.name(r.bereichId), r.prio || '', r.art || '', toDate(r.wirkDatum), r.wirkErgebnis || '', r.wirkDurch || '']; }));
         const ws = XLSX.utils.aoa_to_sheet(aoa);
         for (let r = 1; r < aoa.length; r++) {
-          [4, 5, 6].forEach((c) => {
+          [4, 5, 6, 15].forEach((c) => {
             const cell = ws[XLSX.utils.encode_cell({ r: r, c: c })];
             if (cell && cell.t === 'n') cell.z = 'dd.mm.yyyy';
           });
         }
-        ws['!cols'] = [14, 18, 60, 22, 11, 11, 12, 16, 50, 10, 18, 10].map((w) => ({ wch: w }));
+        ws['!cols'] = [14, 18, 60, 22, 11, 11, 12, 16, 50, 10, 18, 10, 18, 10, 18, 12, 18, 18].map((w) => ({ wch: w }));
         ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: aoa.length - 1, c: header.length - 1 } }) };
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Maßnahmen');
@@ -4426,7 +4418,35 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         throw new ImportError('Keine Stand-Datei', '„' + file.name + '“ ist kein veröffentlichter Stand. Im Ansichtsmodus lassen sich nur veröffentlichte Stände laden (in der Regel „' + STAND_FILE + '“ aus dem gemeinsamen SharePoint-Ordner).', ['Die aktuelle Datei „' + STAND_FILE + '“ auswählen.', 'Wer selbst Maßnahmen pflegt: zuerst „Ansichtsmodus beenden“, dann die Excel-Datei einlesen.']);
       }
       const snap = Importer.analyze(wb, { fileName: file.name, fileSize: file.size });
-      // Erst nach erfolgreicher Prüfung übernehmen
+      // Erst nach erfolgreicher Prüfung übernehmen. Das Dashboard ist führend: bereits übernommene Maßnahmen bleiben unverändert.
+      let mode = 'all';
+      if (Model.excelCount() > 0) {
+        setLoading(false);
+        mode = await chooseAction('Excel erneut einlesen', 'Im Dashboard gibt es bereits ' + Util.num(Model.excelCount()) + ' aus Excel übernommene Maßnahmen. Das Dashboard ist führend – Ihre Änderungen daran sollen nicht verloren gehen. Wie soll „' + file.name + '“ übernommen werden?', [
+          { key: 'new', label: 'Nur neue Zeilen übernehmen (empfohlen)', hint: 'Ergänzt Zeilen, die es im Dashboard noch nicht gibt (Vergleich über Aktion, Herkunft, Thema, Zuständigkeit und „vom“). Alles Bestehende bleibt unverändert.' },
+          { key: 'replace', label: 'Excel-Maßnahmen vollständig ersetzen', hint: 'Ersetzt alle aus Excel übernommenen Maßnahmen durch den Inhalt der Datei. Änderungen, die Sie im Dashboard daran vorgenommen haben, gehen verloren. Im Dashboard erfasste Maßnahmen bleiben.' }
+        ]);
+        if (!mode) return;
+        if (mode === 'replace') {
+          const ok = await confirmAction('Excel-Maßnahmen ersetzen?', Util.num(Model.excelCount()) + ' aus Excel übernommene Maßnahmen werden durch ' + Util.num(snap.actions.length) + ' Zeilen aus „' + file.name + '“ ersetzt. Bereiche, Termine und Wirksamkeitsangaben, die Sie im Dashboard eingetragen haben, gehen dabei für diese Maßnahmen verloren.', 'Ersetzen');
+          if (!ok) return;
+        }
+        setLoading(true, 'Maßnahmen werden übernommen …');
+      }
+      const byName = Model.byName();
+      const known = new Set(State.manual.map((m) => Assign.key(m)));
+      let added = 0;
+      let skipped = 0;
+      const incoming = [];
+      snap.actions.forEach((r) => {
+        if (mode === 'new' && known.has(Assign.key(r))) { skipped++; return; }
+        incoming.push(Model.fromExcel(r, snap, Model.areaFor(r, byName)));
+        added++;
+      });
+      State.manual = (mode === 'replace' ? State.manual.filter((m) => m.origin !== 'excel') : State.manual).concat(incoming);
+      snap.merge = { mode: mode, added: added, skipped: skipped, assigned: incoming.filter((m) => Areas.isDep(m.bereichId)).length };
+      snap.actionsCount = snap.actions.length;
+      snap.actions = [];
       State.snapshot = snap;
       State.source = 'import';
       State.today = DateUtil.todayNumber();
@@ -4434,6 +4454,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       State.generic = {};
       let saved = true;
       try { await Store.put('snapshot', snap); State.storageOk = true; } catch (e) { saved = false; State.storageOk = false; }
+      if (!(await persistManual())) saved = false;
       refresh();
       showImportSummary(snap, saved, Math.round(performance.now() - started));
     } catch (e) {
@@ -4462,21 +4483,21 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     body.appendChild(h('div', { class: 'banner banner-ok', style: 'margin:0 0 12px' }, h('div', { class: 'banner-body' }, [h('strong', { text: s.fileName }), ' wurde erfolgreich eingelesen.'])));
     body.appendChild(h('ul', { class: 'summary-list' }, [
       h('li', { text: Util.num(s.stats.dataRows) + ' Datenzeilen erkannt' }),
-      h('li', { text: Util.num(s.stats.imported) + ' Maßnahmen übernommen' }),
+      h('li', { text: Util.num(s.merge ? s.merge.added : s.stats.imported) + ' Maßnahmen übernommen' + (s.merge && s.merge.mode === 'new' ? ' (neue Zeilen); ' + Util.num(s.merge.skipped) + ' bereits vorhanden und unverändert' : (s.merge && s.merge.mode === 'replace' ? ' (Excel-Maßnahmen ersetzt)' : '')) }),
+      s.merge && s.merge.assigned ? h('li', { text: Util.num(s.merge.assigned) + ' davon automatisch einem Bereich zugeordnet (Spalte „Bereich“ bzw. Regel je Zuständigkeit)' }) : null,
       h('li', { text: Util.num(s.stats.emptyIgnored) + ' leere Zeilen ignoriert' }),
       h('li', { text: Util.num(s.stats.sheetsChecked) + ' Arbeitsblätter geprüft' }),
       h('li', { text: 'Maßnahmenblatt: ' + s.actionSheet.name }),
       h('li', { text: 'Kopfzeile: Zeile ' + s.actionSheet.headerRow }),
       h('li', { text: 'Zugeordnete Spalten: ' + s.actionSheet.mapping.filter((m) => m.col).map((m) => m.label + ' → ' + m.col).join(', ') }),
-      State.manual.length ? h('li', { text: Util.num(State.manual.length) + ' manuell erfasste Maßnahmen bleiben unverändert erhalten' }) : null,
+      h('li', { text: 'Im Dashboard jetzt insgesamt ' + Util.num(State.manual.length) + ' Maßnahmen – sie werden ab sofort hier gepflegt (Termine, Status, Bereich, Wirksamkeit).' }),
       h('li', { text: 'Stand heute: ' + c.ueberfaellig + ' überfällig, ' + c.f7 + ' in 7 Tagen fällig, ' + c.erledigt + ' erledigt' })
     ]));
     const legends = legendNotes(s);
     if (legends.length) body.appendChild(h('div', { class: 'banner banner-info', style: 'margin:12px 0 0' }, h('div', { class: 'banner-body', text: 'Als Legende erkannt und nicht übernommen: ' + legends.join('; ') + '.' })));
     if (hasAreaColumn(s)) {
-      const withName = s.actions.filter((a) => a.bereichName);
       const unknown = State.allItems.filter(DQ_FILTERS.unknownArea.test).length;
-      body.appendChild(h('div', { class: 'banner ' + (unknown ? 'banner-warn' : 'banner-info'), style: 'margin:12px 0 0' }, h('div', { class: 'banner-body', text: 'Spalte „Bereich“: ' + Util.num(withName.length - unknown) + ' ' + Util.plural(withName.length - unknown, 'Maßnahme', 'Maßnahmen') + ' einem Bereich zugeordnet' + (unknown ? ', ' + Util.num(unknown) + ' mit einem Bereichsnamen, den es im Dashboard nicht gibt (siehe Datenqualität)' : '') + '. Maßgeblich ist der Name wie in der Bereichsleiste.' })));
+      if (unknown) body.appendChild(h('div', { class: 'banner banner-warn', style: 'margin:12px 0 0' }, h('div', { class: 'banner-body', text: 'Spalte „Bereich“: ' + Util.num(unknown) + ' ' + Util.plural(unknown, 'Maßnahme nennt', 'Maßnahmen nennen') + ' einen Bereich, den es im Dashboard nicht gibt (siehe Datenqualität). Maßgeblich ist der Name wie in der Bereichsleiste.' })));
     }
     const missing = s.actionSheet.mapping.filter((m) => !m.col && m.field !== 'aktion' && !(FIELD_BY_KEY[m.field] || {}).optional).map((m) => m.label);
     if (missing.length) body.appendChild(h('div', { class: 'banner banner-warn', style: 'margin:12px 0 0' }, h('div', { class: 'banner-body', text: 'Nicht gefundene Spalten: ' + missing.join(', ') + '. Die zugehörigen Auswertungen bleiben leer.' })));
@@ -4485,7 +4506,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     if (!saved) body.appendChild(h('div', { class: 'banner banner-warn', style: 'margin:12px 0 0' }, h('div', { class: 'banner-body', text: 'Die Daten konnten nicht lokal gespeichert werden (IndexedDB nicht verfügbar). Sie stehen nur bis zum Schließen der Seite zur Verfügung.' })));
     body.appendChild(h('details', { class: 'tech' }, [h('summary', { text: 'Technische Details' }), h('pre', { text: 'Verarbeitungszeit: ' + ms + ' ms\nDatei: ' + s.fileName + ' (' + Util.formatBytes(s.fileSize) + ')\nBlätter: ' + s.sheets.map((x) => x.name + ' [' + x.role + ']').join(', ') + '\nNicht zugeordnete Spalten: ' + (s.actionSheet.unmapped.map((u) => u.col + '=' + u.label).join(', ') || 'keine') })]));
     Dialogs.open($('importDialog'));
-    showMessage('ok', 'Import erfolgreich: ' + s.stats.imported + ' Maßnahmen aus „' + s.fileName + '“ übernommen.', 8000);
+    showMessage('ok', 'Import erfolgreich: ' + (s.merge ? s.merge.added : s.stats.imported) + ' Maßnahmen aus „' + s.fileName + '“ übernommen.', 8000);
   }
 
   function showImportError(e, file) {
@@ -4506,9 +4527,9 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
   /* =====================================================================
    * Navigation und Filter-Interaktion
    * ===================================================================== */
-  const VIEW_LABELS = { dashboard: 'Dashboard', massnahmen: 'Maßnahmen', kanban: 'Kanban', themen: 'Themen', termine: 'Termine', ideen: 'Ideenspeicher', reflexion: 'Jahresreflexion', meetings: 'Meetingübersicht', qualitaet: 'Datenqualität' };
+  const VIEW_LABELS = { dashboard: 'Dashboard', massnahmen: 'Maßnahmen', themen: 'Themen', termine: 'Termine', qualitaet: 'Datenqualität' };
   function showView(view, focus) {
-    if (!VIEW_LABELS[view]) view = 'dashboard';
+    if (!VIEW_LABELS[view] || (view === 'qualitaet' && State.mode === 'view')) view = 'dashboard';
     State.view = view;
     Object.keys(VIEW_LABELS).forEach((v) => { $('view-' + v).hidden = v !== view; });
     document.querySelectorAll('.nav-btn').forEach((b) => { if (b.dataset.view === view) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
@@ -4552,7 +4573,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     onFiltersChanged();
     $('fSearch').focus();
   }
-  function savePrefs() { const old = Prefs.load(); Prefs.save({ view: State.view, filters: State.filters, hiddenCols: Array.from(State.hiddenCols), dense: State.dense, area: State.area, mode: State.mode, publisher: old.publisher || '', sonarHidden: State.sonarHidden, startScreen: State.startScreen }); }
+  function savePrefs() { const old = Prefs.load(); Prefs.save({ view: State.view, filters: State.filters, hiddenCols: Array.from(State.hiddenCols), dense: State.dense, area: State.area, mode: State.mode, publisher: old.publisher || '', sonarHidden: State.sonarHidden, sonarUser: State.sonarUser, startScreen: State.startScreen, myArea: State.myArea, publisherAsked: !!old.publisherAsked }); }
 
   /** Bereich wechseln */
   function selectArea(id, focusTab) {
@@ -4571,17 +4592,46 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     Dialogs.open($('themesDialog'));
   }
 
-  async function assignUnassigned(sel) {
-    const target = sel.value;
-    const err = $('unassignedErr');
-    if (!Areas.isDep(target)) { err.textContent = '⚠ Bitte zuerst einen Bereich wählen.'; err.hidden = false; sel.setAttribute('aria-invalid', 'true'); sel.focus(); return; }
-    const prev = State.manual.slice();
-    let n = 0;
-    State.manual = State.manual.map((m) => { if (Areas.isDep(m.bereichId)) return m; n++; return Object.assign({}, m, { bereichId: target, updated: new Date().toISOString() }); });
-    await persistManual();
-    refresh();
-    showMessage('ok', Util.num(n) + ' ' + Util.plural(n, 'Maßnahme wurde', 'Maßnahmen wurden') + ' „' + Areas.name(target) + '“ zugeordnet.', 12000, { label: 'Rückgängig', run: () => Editor.restore(prev, 'Zuordnung wurde rückgängig gemacht.') });
-  }
+  /** Dialog „Fristen nachpflegen“: offene Maßnahmen ohne Zieldatum nacheinander mit einer Frist versehen */
+  const FristEdit = {
+    open() {
+      if (State.mode !== 'edit') return;
+      const list = State.items.filter((it) => !it.done && !isPaused(it) && it.days === null)
+        .sort((a, b) => (Areas.name(a.rec.bereichId) || '~').localeCompare(Areas.name(b.rec.bereichId) || '~', 'de') || (a.rec.zust || '').localeCompare(b.rec.zust || '', 'de'));
+      const body = $('fristBody');
+      clear(body);
+      list.forEach((it, i) => {
+        const r = it.rec;
+        const inp = h('input', { class: 'input', type: 'date', id: 'fr-' + i, min: '1990-01-01', max: '2100-12-31', 'aria-label': 'Zieldatum für: ' + (r.aktion || 'Maßnahme').slice(0, 80) });
+        const state = h('span', { class: 'frist-state', 'aria-live': 'polite' });
+        const set = async (val) => {
+          const z = DateUtil.fromInput(val);
+          if (z.s !== 'ok') { state.textContent = val ? '⚠ ungültiges Datum' : ''; return; }
+          State.manual = State.manual.map((m) => (m.id === r.id ? Object.assign({}, m, { ziel: z, updated: new Date().toISOString() }) : m));
+          await persistManual();
+          state.textContent = '✓ ' + DateUtil.display(z);
+          FristEdit.count();
+        };
+        inp.addEventListener('change', () => set(inp.value));
+        const quick = (d, label) => h('button', { type: 'button', class: 'btn btn-xs', text: label, onclick: () => { const p = DateUtil.fromDayNumber(State.today + d); inp.value = DateUtil.iso(p.y, p.m, p.d); set(inp.value); } });
+        body.appendChild(h('tr', { dataset: { id: r.id } }, [
+          h('td', { 'data-label': 'Maßnahme' }, [h('div', { class: 'clamp', text: r.aktion || '(ohne Aktion)' }), r.thema ? h('div', { class: 'muted', style: 'font-size:12px', text: r.thema }) : null]),
+          h('td', { 'data-label': 'Zuständigkeit', text: r.zust || '–' }),
+          h('td', { 'data-label': 'Bereich', text: Areas.name(r.bereichId) || 'ohne Bereich' }),
+          h('td', { 'data-label': 'Zieldatum' }, h('div', { class: 'frist-input' }, [inp, quick(14, '+14 T'), quick(30, '+30 T'), quick(90, '+3 M'), state]))
+        ]));
+      });
+      FristEdit.total = list.length;
+      FristEdit.count();
+      Dialogs.open($('fristDialog'));
+      const first = body.querySelector('input');
+      if (first) first.focus();
+    },
+    count() {
+      const done = $('fristBody').querySelectorAll('.frist-state').length - Array.from($('fristBody').querySelectorAll('.frist-state')).filter((x) => !/^✓/.test(x.textContent)).length;
+      $('fristHint').textContent = Util.num(done) + ' von ' + Util.num(FristEdit.total) + ' Maßnahmen mit neuer Frist. Jede Eingabe wird sofort gespeichert.';
+    }
+  };
 
   /** Auswahl „Bereich“ direkt in der Maßnahmentabelle (nur Pflege) */
   function areaSelect(it) {
@@ -4596,15 +4646,9 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
   }
   /** Bereich einer Maßnahme setzen: Excel über die Einzelzuordnung, manuell direkt am Eintrag */
   async function setArea(r, target, fromTable) {
-    const prevAssign = JSON.parse(JSON.stringify(Assign.state));
     const prevManual = State.manual.slice();
-    if (r.src === 'excel') {
-      Assign.state.byKey[Assign.key(r)] = target || '-';
-      await Assign.save();
-    } else {
-      State.manual = State.manual.map((m) => (m.id === r.id ? Object.assign({}, m, { bereichId: target, updated: new Date().toISOString() }) : m));
-      await persistManual();
-    }
+    State.manual = State.manual.map((m) => (m.id === r.id ? Object.assign({}, m, { bereichId: target, updated: new Date().toISOString() }) : m));
+    await persistManual();
     refresh();
     if (fromTable) {
       const again = document.querySelector('#actionsBody select.area-pick[data-id="' + r.id + '"]');
@@ -4612,7 +4656,6 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     }
     const name = Areas.name(target) || 'ohne Bereich';
     showMessage('ok', '„' + (r.aktion || 'Maßnahme').slice(0, 60) + '“ → ' + name + '.', 8000, { label: 'Rückgängig', run: async () => {
-      Assign.state = prevAssign; await Assign.save();
       State.manual = prevManual; await persistManual();
       refresh(); showMessage('info', 'Zuordnung wurde rückgängig gemacht.', 5000);
     } });
@@ -4624,12 +4667,12 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (State.mode === 'view') return;
       const groups = new Map();
       State.allItems.forEach((it) => {
-        if (it.rec.src !== 'excel') return;
         const k = Assign.zustKey(it.rec.zust);
-        if (!groups.has(k)) groups.set(k, { label: it.rec.zust, n: 0, open: 0 });
+        if (!groups.has(k)) groups.set(k, { label: it.rec.zust, n: 0, open: 0, none: 0 });
         const g = groups.get(k);
         g.n++;
         if (!it.done && !isPaused(it)) g.open++;
+        if (!Areas.isDep(it.rec.bereichId)) g.none++;
       });
       const body = $('zustBody');
       clear(body);
@@ -4645,27 +4688,35 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         else { const sg = Assign.suggest(g.label); if (sg) { sel.value = sg; suggested++; mark = h('span', { class: 'tag zust-tag', text: 'Vorschlag' }); } }
         body.appendChild(h('tr', null, [
           h('th', { scope: 'row', 'data-label': 'Zuständigkeit' }, h('label', { for: 'zs-' + i, text: g.label })),
-          h('td', { 'data-label': 'Maßnahmen', text: Util.num(g.n) + ' (' + Util.num(g.open) + ' offen)' }),
+          h('td', { 'data-label': 'Maßnahmen', text: Util.num(g.n) + ' (' + Util.num(g.none) + ' ohne Bereich)' }),
           h('td', { 'data-label': 'Bereich' }, [sel, mark])
         ]));
       });
       const none = groups.get('');
-      $('zustHint').textContent = (rows.length ? '' : 'Es gibt keine Excel-Maßnahmen mit Zuständigkeit. ') + (suggested ? Util.num(suggested) + ' ' + Util.plural(suggested, 'Vorschlag', 'Vorschläge') + ' aus den Bereichsnamen vorausgewählt – bitte prüfen. ' : '') + (none ? Util.num(none.n) + ' Excel-Maßnahmen ohne Zuständigkeit lassen sich nur einzeln (in den Details) zuordnen.' : '');
+      $('zustHint').textContent = (rows.length ? '' : 'Es gibt keine Maßnahmen mit Zuständigkeit. ') + (suggested ? Util.num(suggested) + ' ' + Util.plural(suggested, 'Vorschlag', 'Vorschläge') + ' aus den Bereichsnamen vorausgewählt – bitte prüfen. ' : '') + 'Zugeordnet werden nur Maßnahmen, die noch keinen Bereich haben; die Regel gilt auch für künftig eingelesene Excel-Zeilen.' + (none ? ' ' + Util.num(none.n) + ' Maßnahmen ohne Zuständigkeit bitte einzeln in der Maßnahmenliste zuordnen.' : '');
       Dialogs.open($('zustDialog'));
       const first = body.querySelector('select');
       if (first) first.focus();
     },
     async save() {
       const prev = JSON.parse(JSON.stringify(Assign.state));
-      const before = State.allItems.filter((it) => it.rec.src === 'excel' && Areas.isDep(it.rec.bereichId)).length;
+      const prevManual = State.manual.slice();
       const byZust = {};
       $('zustBody').querySelectorAll('select').forEach((sel) => { if (Areas.isDep(sel.value)) byZust[sel.dataset.key] = sel.value; });
       Assign.state.byZust = byZust;
       await Assign.save();
+      let n = 0;
+      const nowIso = new Date().toISOString();
+      State.manual = State.manual.map((m) => {
+        const t = m.zust ? byZust[Assign.zustKey(m.zust)] : '';
+        if (Areas.isDep(m.bereichId) || !t) return m;
+        n++;
+        return Object.assign({}, m, { bereichId: t, updated: nowIso });
+      });
+      await persistManual();
       Dialogs.close($('zustDialog'));
       refresh();
-      const after = State.allItems.filter((it) => it.rec.src === 'excel' && Areas.isDep(it.rec.bereichId)).length;
-      showMessage('ok', 'Zuordnung gespeichert: ' + Util.num(after) + ' Excel-Maßnahmen haben einen Bereich (vorher ' + Util.num(before) + ').', 12000, { label: 'Rückgängig', run: async () => { Assign.state = prev; await Assign.save(); refresh(); showMessage('info', 'Zuordnung wurde rückgängig gemacht.', 5000); } });
+      showMessage('ok', Util.num(n) + ' ' + Util.plural(n, 'Maßnahme wurde', 'Maßnahmen wurden') + ' einem Bereich zugeordnet.', 12000, { label: 'Rückgängig', run: async () => { Assign.state = prev; await Assign.save(); State.manual = prevManual; await persistManual(); refresh(); showMessage('info', 'Zuordnung wurde rückgängig gemacht.', 5000); } });
     }
   };
 
@@ -4828,6 +4879,19 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           return { ok: a1 === 'b1' && a2 === 'b3' && a3 === 'b2' && a4 === '' && sg === 'b1,b2,b1,', detail: [a1, a2, a3, a4, sg].join('/') };
         } finally { Areas.state = keepA; Assign.state = keepS; }
       });
+      t('Umstellung Version 1 → 2: Excel-Maßnahmen mit Bereich in die bearbeitbare Liste', () => {
+        const keepA = Areas.state;
+        try {
+          Areas.state = { v: 1, next: 3, areas: [{ id: 'gesamt', name: 'Gesamtübersicht' }, { id: 'b1', name: 'Maik Hohmann' }, { id: 'b2', name: 'Lager' }] };
+          const mk = (aktion, zust, bereichName) => ({ id: 'x-1', src: 'excel', row: 5, herkunft: 'ASA', thema: 'PSA', aktion: aktion, zust: zust, kommentar: '', status: 'offen', vom: { s: 'empty' }, ziel: { s: 'empty' }, umgesetzt: { s: 'empty' }, bereichName: bereichName || '', extra: [['Lfd. Nr.', '1']] });
+          const a1 = mk('A', 'Maik'), a2 = mk('B', 'Ingo', 'lager'), a3 = mk('C', 'Ingo');
+          const asg = { v: 1, byKey: {}, byZust: { maik: 'b1' } };
+          const keepS = Assign.state; Assign.state = asg; asg.byKey[Assign.key(a3)] = 'b1'; Assign.state = keepS;
+          const mg = Model.migrate({ schema: 2, fileName: 'alt.xlsx', importedAt: '2026-10-01T08:00:00.000Z', actions: [a1, a2, a3] }, [{ id: 'm-1', src: 'manual', bereichId: 'b2' }], asg);
+          const ids = mg.manual.map((m) => m.bereichId).join();
+          return { ok: mg.moved === 3 && mg.snapshot.actions.length === 0 && ids === 'b1,b2,b1,b2' && mg.manual[0].origin === 'excel' && mg.manual[0].excelRow === 5 && mg.manual[0].extra.length === 1 && mg.manual[0].src === 'manual', detail: ids };
+        } finally { Areas.state = keepA; }
+      });
       t('Stand veröffentlichen und wieder laden (Excel-Datei)', () => {
         const d = { format: 'ASI-Stand', version: 1, appVersion: APP_VERSION, publishedAt: '2026-10-29T10:00:00.000Z', publishedBy: 'Test', snapshot: null,
           manual: Array.from({ length: 12 }, (_, i) => ({ id: 'm-' + i, src: 'manual', row: null, bereichId: 'b1', herkunft: '', thema: 'Brandschutz', aktion: 'Löscher <prüfen> & „ok“ ' + 'x'.repeat(3900), zust: 'A', kommentar: '', status: 'offen', vom: { s: 'empty' }, ziel: DateUtil.make(2026, 11, 3, 0, 0, ''), umgesetzt: { s: 'empty' }, extra: [] })),
@@ -4898,24 +4962,19 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     $('btnExportXlsx').addEventListener('click', Exporter.xlsx);
     $('btnResetLocal').addEventListener('click', async () => {
       if (State.mode === 'view') { $('btnViewExit').click(); return; }
-      const cb = h('input', { type: 'checkbox', id: 'cbDelManual' });
-      const extra = h('div', { style: 'margin-top:12px' }, [
-        h('label', { class: 'check' }, [cb, 'Auch die ' + State.manual.length + ' manuell erfassten Maßnahmen löschen']),
-        h('p', { class: 'field-hint', style: 'margin-top:6px', text: 'Tipp: Vorher über „Excel-Export“ sichern. Die Original-Excel-Datei bleibt in jedem Fall unverändert.' })
-      ]);
-      if (!State.manual.length) cb.disabled = true;
-      const ok = await confirmAction('Lokale Daten zurücksetzen?', 'Der lokal gespeicherte Excel-Datenstand' + (State.snapshot ? ' („' + State.snapshot.fileName + '“, ' + State.snapshot.actions.length + ' Maßnahmen)' : '') + ' sowie gespeicherte Filter- und Ansichtseinstellungen werden aus diesem Browser gelöscht. Dies kann nicht rückgängig gemacht werden.', 'Lokale Daten löschen', extra);
+      const n = State.manual.length;
+      const ok = await confirmAction('Lokale Daten zurücksetzen?', 'Alle ' + Util.num(n) + ' Maßnahmen, der eingelesene Excel-Stand sowie Filter- und Ansichtseinstellungen werden aus diesem Browser gelöscht. Bereichsnamen bleiben erhalten. Tipp: Vorher über „Daten › Speichern“ sichern – dann lässt sich alles wiederherstellen.', 'Lokale Daten löschen');
       if (!ok) return;
-      const delManual = cb.checked;
-      try { await Store.del('snapshot'); if (delManual) await Store.del('manual'); } catch (e) { /* Speicher nicht verfügbar */ }
+      try { await Store.del('snapshot'); await Store.del('manual'); } catch (e) { /* Speicher nicht verfügbar */ }
       Prefs.clear();
       State.snapshot = null;
       State.source = 'none';
-      if (delManual) State.manual = [];
+      State.manual = [];
       State.filters = Object.assign({}, DEFAULT_FILTERS);
       State.generic = {};
+      await Unsaved.reset();
       refresh();
-      showMessage('ok', 'Lokale Daten wurden zurückgesetzt.' + (delManual ? '' : ' Manuell erfasste Maßnahmen wurden beibehalten.'), 6000);
+      showMessage('ok', 'Lokale Daten wurden zurückgesetzt.', 6000);
     });
     document.querySelectorAll('.nav-btn').forEach((b) => b.addEventListener('click', () => showView(b.dataset.view, true)));
 
@@ -4954,21 +5013,15 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     $('areaList').addEventListener('input', AreaManage.onInput);
     $('btnAreaAdd').addEventListener('click', AreaManage.addFromDialog);
     $('btnNewActionMenu').addEventListener('click', () => Editor.open(null));
-    $('btnPublish').addEventListener('click', () => {
-      if (!State.allItems.length) { showMessage('warn', 'Es gibt noch keine Maßnahmen zum Veröffentlichen.', 6000); return; }
-      $('pubName').value = Prefs.load().publisher || '';
-      Dialogs.open($('publishDialog'));
-      $('pubName').focus();
-    });
     $('btnPublishSave').addEventListener('click', () => {
       const name = Util.clean($('pubName').value).slice(0, 80);
-      const pr = Prefs.load(); pr.publisher = name; Prefs.save(pr);
+      const pr = Prefs.load(); pr.publisher = name; pr.publisherAsked = true; Prefs.save(pr);
       Dialogs.close($('publishDialog'));
-      Stand.publish(name);
+      Backup.save($('publishDialog').dataset.newPlace === '1');
     });
     $('btnViewReload').addEventListener('click', openFilePicker);
     $('btnZustSave').addEventListener('click', () => ZustAssign.save());
-    $('btnBackupWarn').addEventListener('click', () => Backup.save(false));
+    $('btnBackupWarn').addEventListener('click', () => saveFlow(false));
     // Beim Schließen/Neuladen nachfragen, solange Änderungen nicht gesichert sind (Text legt der Browser fest)
     window.addEventListener('beforeunload', (ev) => {
       if (window.__ASI_TEST_OHNE_RUECKFRAGE || State.mode !== 'edit' || !Unsaved.state.changed) return;
@@ -4979,8 +5032,10 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     $('btnStartSkip').addEventListener('click', () => StartScreen.hide());
     $('startShow').addEventListener('change', () => { State.startScreen = $('startShow').checked; savePrefs(); });
     $('btnShowStart').addEventListener('click', () => StartScreen.show());
-    $('btnBackupSave').addEventListener('click', () => Backup.save(false));
-    $('btnBackupWhere').addEventListener('click', () => Backup.save(true));
+    $('btnBackupSave').addEventListener('click', () => saveFlow(false));
+    $('btnBackupWhere').addEventListener('click', () => saveFlow(true));
+    $('fristDialog').addEventListener('close', () => refresh());
+    $('startMyArea').addEventListener('change', () => { State.myArea = $('startMyArea').value; savePrefs(); selectArea(State.myArea); });
     $('btnBackupRestore').addEventListener('click', () => Backup.restore());
     $('btnZustOpen').addEventListener('click', () => { Dialogs.close($('areaDialog')); ZustAssign.open(); });
     $('btnViewExit').addEventListener('click', async () => {
@@ -4995,6 +5050,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     });
     $('fDense').addEventListener('change', () => { State.dense = $('fDense').checked; applyTableSettings(); savePrefs(); });
     Popover.bind($('btnExportMenu'), $('exportMenu'), true);
+    Popover.bind($('btnDataMenu'), $('dataMenu'), true);
     Popover.bind($('btnColumns'), $('columnsMenu'), false);
     document.addEventListener('click', (ev) => {
       const o = Popover.current;
@@ -5020,8 +5076,6 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       else if ((ev.key === 'n' || ev.key === 'N') && State.mode === 'edit') { ev.preventDefault(); Editor.open(null); }
     });
     $('btnMoreActions').addEventListener('click', () => { State.pageLimit += CONFIG.pageSize; Render.actions(); });
-    $('kbSearch').addEventListener('input', Util.debounce(() => { State.kb.q = $('kbSearch').value; Render.kanban(); }, 200));
-    $('kbZust').addEventListener('change', () => { State.kb.zust = $('kbZust').value; Render.kanban(); });
 
     // Drag & Drop – nutzt dieselbe Importfunktion
     let dragDepth = 0;
@@ -5074,7 +5128,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     if (prefs && VIEW_LABELS[prefs.view]) State.view = prefs.view;
     if (prefs && Array.isArray(prefs.hiddenCols)) prefs.hiddenCols.forEach((k) => { if (TABLE_COLS.some((c) => c.key === k)) State.hiddenCols.add(k); });
     if (prefs && typeof prefs.dense === 'boolean') State.dense = prefs.dense;
-    if (prefs && typeof prefs.sonarHidden === 'boolean') State.sonarHidden = prefs.sonarHidden;
+    if (prefs && prefs.sonarUser === true && typeof prefs.sonarHidden === 'boolean') { State.sonarHidden = prefs.sonarHidden; State.sonarUser = true; }
+    if (prefs && typeof prefs.myArea === 'string') State.myArea = prefs.myArea;
     if (prefs && typeof prefs.startScreen === 'boolean') State.startScreen = prefs.startScreen;
     if (prefs && typeof prefs.area === 'string') State.area = prefs.area;
     buildColumnsMenu();
@@ -5090,9 +5145,16 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     }
     document.querySelectorAll('img[data-logo-copy]').forEach((img) => { const src = document.querySelector('.logo-tile img'); if (src) img.src = src.src; });
     if (!viewLoaded) { State.mode = 'edit'; await loadOwnData(); }
+    if (Areas.find(State.myArea) && State.myArea !== 'gesamt') State.area = State.myArea;
+    // Dauerhaften Browserspeicher anfordern – nicht blockierend, da manche Umgebungen nie antworten
+    if (State.mode === 'edit' && navigator.storage && typeof navigator.storage.persist === 'function') {
+      Promise.resolve().then(() => navigator.storage.persisted()).then((p) => (p ? true : navigator.storage.persist()))
+        .then((p) => { State.persisted = !!p; if (State.view === 'qualitaet') Render.quality(); }).catch(() => { State.persisted = null; });
+    }
     await Backup.load();
     await FileMemo.load();
     refresh();
+    if (State.migrated) showMessage('info', 'Umstellung auf Version 2: ' + Util.num(State.migrated) + ' Excel-Maßnahmen sind jetzt direkt im Dashboard bearbeitbar (Termine, Status, Bereich, Wirksamkeit). Bitte einmal „Daten › Speichern“.', 15000);
     if (State.startScreen && !window.__ASI_OHNE_STARTBILDSCHIRM) StartScreen.show(); // Schalter nur für automatisierte Tests
     window.ASIDashboard = Object.freeze({ version: APP_VERSION, selfTest: State.selfTest });
   }

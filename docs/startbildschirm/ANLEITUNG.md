@@ -1,3 +1,5 @@
+> **Hinweis:** Gilt für Version 1.x. Für Version 2.0 siehe `docs/version2/ANLEITUNG.md`.
+
 # Startbildschirm (ab Fassung 1.7.0)
 
 Beim Öffnen des Dashboards erscheint ein Startbildschirm. Er zeigt Logo und Titel sowie welche Daten in diesem Browser gespeichert sind, und hat die Schaltfläche **„Start“**. Das eckige, weiße Feld strahlt von seinem Rand mit einem weichen blauen Schein in den dunkelblauen Hintergrund aus; unten steht der Hinweis „Erstellt von Jan Dewender. Bei Fragen oder Problemen mit dem Tool bitte melden.“
