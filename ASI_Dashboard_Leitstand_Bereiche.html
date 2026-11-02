@@ -877,7 +877,7 @@ table.data.dense .area-pick{min-height:32px}
       <p><strong>Erstellt von Jan Dewender.</strong> Bei Fragen oder Problemen mit dem Tool bitte melden.</p>
       <details class="start-news"><summary><span id="startVersion">Version</span> · Was ist neu?</summary>
         <ul>
-          <li>Feste Bereiche: Karsten, Maik, Frank, Jörn, Ingo, Gesund nach Hause (Oliver) und ASI (Jan, Marek). Beim Einlesen ordnet das Dashboard jede Maßnahme über die Zuständigkeit automatisch zu.</li>
+          <li>Feste Bereiche: Karsten, Maik, Frank, Jörn, Ingo, Jens-Michael, Gesund nach Hause (Oliver) und ASI (Jan, Marek); dazu bis zu zwei eigene Bereiche („+“ in der Bereichsleiste). Beim Einlesen ordnet das Dashboard jede Maßnahme über die Zuständigkeit automatisch zu.</li>
           <li>Das Dashboard ist führend: Alle Maßnahmen – auch die aus Excel übernommenen – lassen sich hier bearbeiten (Termine, Status, Bereich).</li>
           <li>„Daten › Speichern“ erzeugt ASI_Stand.xlsx: zugleich Sicherung und Stand für alle, die ansehen.</li>
           <li>Neue Maßnahmen brauchen Bereich, Zuständigkeit und Zieldatum; „Fristen nachpflegen“ hilft bei Maßnahmen ohne Termin.</li>
@@ -1140,8 +1140,8 @@ table.data.dense .area-pick{min-height:32px}
 </dialog>
 
 <dialog class="sx-dialog" id="areaDialog" aria-labelledby="areaDialogTitle">
-  <h3 id="areaDialogTitle">Bereiche umbenennen</h3>
-  <p>Benennen Sie jeden Bereich um oder legen Sie einen neuen an. Die Maßnahmen bleiben beim Umbenennen im Bereich.</p>
+  <h3 id="areaDialogTitle">Eigene Bereiche</h3>
+  <p>Legen Sie zusätzliche Bereiche an und benennen Sie sie. Die Maßnahmen bleiben beim Umbenennen im Bereich.</p>
   <ul class="sx-rename-list" id="areaList"></ul>
   <div class="sx-dialog__foot">
     <button class="sx-btn sx-btn--ghost" type="button" id="btnAreaAdd"><svg class="sx-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Bereich hinzufügen</button>
@@ -1249,7 +1249,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 (function () {
   'use strict';
 
-  const APP_VERSION = '2.1.0';
+  const APP_VERSION = '2.2.0';
 
   /* =====================================================================
    * Konfiguration
@@ -2171,44 +2171,69 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
    * Bereiche (Gesamtübersicht + Abteilungen). Maßnahmen tragen nur die feste Kennung bereichId.
    * Die Bereichsliste liegt in derselben IndexedDB wie die Maßnahmen (Schlüssel „areas“).
    * ===================================================================== */
-  const AREA_MAX = 8;
+  const AREA_MAX = 10; // Bereiche ohne Gesamtübersicht: 8 feste + bis zu 2 eigene
   const AREA_NAME_MAX = 40;
   /** Fest hinterlegte Bereiche (nicht umbenennbar) */
   const FIXED_AREAS = [
     { id: 'gesamt', name: 'Gesamtübersicht' }, { id: 'k-karsten', name: 'Karsten' }, { id: 'k-maik', name: 'Maik' }, { id: 'k-frank', name: 'Frank' },
-    { id: 'k-joern', name: 'Jörn' }, { id: 'k-ingo', name: 'Ingo' }, { id: 'k-gnh', name: 'Gesund nach Hause' }, { id: 'k-asi', name: 'ASI' }
+    { id: 'k-joern', name: 'Jörn' }, { id: 'k-ingo', name: 'Ingo' }, { id: 'k-jens', name: 'Jens-Michael' }, { id: 'k-gnh', name: 'Gesund nach Hause' }, { id: 'k-asi', name: 'ASI' }
   ];
+  const FIXED_IDS = new Set(FIXED_AREAS.map((a) => a.id));
   /** Zuständigkeit → Bereich: Vor- und Nachnamen (Groß/Klein und Umlaute egal). Bei mehreren Namen zählt der zuerst genannte. */
   const PERSON_AREAS = {
     karsten: 'k-karsten', zota: 'k-karsten', maik: 'k-maik', hohmann: 'k-maik', frank: 'k-frank', dannenberg: 'k-frank',
-    joern: 'k-joern', jorn: 'k-joern', duee: 'k-joern', ingo: 'k-ingo', reiss: 'k-ingo', oliver: 'k-gnh', jan: 'k-asi', marek: 'k-asi', asi: 'k-asi'
+    joern: 'k-joern', jorn: 'k-joern', duee: 'k-joern', ingo: 'k-ingo', reiss: 'k-ingo', jens: 'k-jens', hilmer: 'k-jens',
+    oliver: 'k-gnh', jan: 'k-asi', marek: 'k-asi', asi: 'k-asi'
   };
   const Areas = {
     state: null,
     defaults() {
-      return { v: 2, fixed: 1, next: 0, areas: FIXED_AREAS.map((a) => ({ id: a.id, name: a.name })) };
+      return { v: 2, fixed: 1, next: 1, areas: FIXED_AREAS.map((a) => ({ id: a.id, name: a.name })) };
     },
+    /** Aktuelle feste Bereiche vorne, danach höchstens eigene Bereiche */
     isFixed(st) {
-      return !!st && st.fixed === 1 && Array.isArray(st.areas) && st.areas.length === FIXED_AREAS.length && st.areas.every((a, i) => a.id === FIXED_AREAS[i].id && a.name === FIXED_AREAS[i].name);
+      return !!st && st.fixed === 1 && Array.isArray(st.areas) && st.areas.length >= FIXED_AREAS.length &&
+        FIXED_AREAS.every((f, i) => st.areas[i].id === f.id && st.areas[i].name === f.name) && st.areas.slice(FIXED_AREAS.length).every((a) => !FIXED_IDS.has(a.id));
     },
+    isCustom(id) { return Areas.isDep(id) && !FIXED_IDS.has(id); },
     /** Bereich zu einem Text mit Personennamen (z. B. Zuständigkeit „Maik/Jörn“ → Maik); '' wenn keine bekannte Person */
-    personArea(text) {
+    personArea(text, fixedOnly) {
       const raw = String(text === null || text === undefined ? '' : text);
-      if (Util.norm(raw).indexOf('gesundnachhause') === 0) return 'k-gnh';
+      const all = Util.norm(raw);
+      if (all.indexOf('gesundnachhause') === 0) return 'k-gnh';
       const tokens = raw.split(/[^A-Za-zÄÖÜäöüß]+/).map((t) => Util.norm(t)).filter(Boolean);
       for (let i = 0; i < tokens.length; i++) if (PERSON_AREAS[tokens[i]]) return PERSON_AREAS[tokens[i]];
-      return '';
+      if (fixedOnly || !all || !Areas.state) return '';
+      // eigene Bereiche: Zuständigkeit enthält den Bereichsnamen (z. B. Bereich „Thorsten“ ← „Thorsten Müller“)
+      const own = Areas.state.areas.filter((a) => Areas.isCustom(a.id)).find((a) => { const n = Util.norm(a.name); return n.length >= 3 && all.indexOf(n) >= 0; });
+      return own ? own.id : '';
     },
     /** Ältere, frei benannte Bereiche auf die festen Bereiche umstellen (über den Namen, sonst über die Zuständigkeit) */
     toFixed(st, records, byZust) {
       if (Areas.isFixed(st)) return { changed: false, areas: st, records: records, byZust: byZust || {} };
+      if (st && st.fixed === 1 && Array.isArray(st.areas)) {
+        // Feste Bereiche aus einer früheren Fassung: fehlende festen Bereiche ergänzen, eigene behalten
+        const missing = FIXED_AREAS.filter((f) => !st.areas.some((a) => a.id === f.id));
+        const own = st.areas.filter((a) => !FIXED_IDS.has(a.id));
+        const areas = { v: 2, fixed: 1, next: Math.max(1, st.next || 1), areas: FIXED_AREAS.map((a) => ({ id: a.id, name: a.name })).concat(own) };
+        const newIds = new Set(missing.map((m) => m.id));
+        let auto = 0;
+        const recs = records.map((r) => {
+          if (r.bereichId && areas.areas.some((a) => a.id === r.bereichId)) return r;
+          const id = Areas.personArea(r.zust, true);
+          if (!newIds.has(id)) return r;
+          auto++;
+          return Object.assign({}, r, { bereichId: id });
+        });
+        return { changed: true, areas: areas, records: recs, byZust: byZust || {}, added: missing.map((m) => m.name), auto: auto };
+      }
       const map = {};
-      if (st && Array.isArray(st.areas)) st.areas.forEach((a) => { if (a.id !== 'gesamt') map[a.id] = Areas.personArea(a.name); });
+      if (st && Array.isArray(st.areas)) st.areas.forEach((a) => { if (a.id !== 'gesamt') map[a.id] = Areas.personArea(a.name, true); });
       let kept = 0, auto = 0, none = 0;
       const recs = records.map((r) => {
         let id = map[r.bereichId] || '';
         if (id) kept++;
-        else { id = Areas.personArea(r.zust); if (id) auto++; else none++; }
+        else { id = Areas.personArea(r.zust, true); if (id) auto++; else none++; }
         return id === r.bereichId ? r : Object.assign({}, r, { bereichId: id });
       });
       const z = {};
@@ -2242,7 +2267,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       let n = Areas.deps().length + 1;
       let name = 'Bereich ' + n;
       while (Areas.validateName(null, name)) { n++; name = 'Bereich ' + n; }
-      const id = 'b' + Areas.state.next; // Kennungen werden nie wiederverwendet
+      const id = 'c' + Areas.state.next; // Kennungen werden nie wiederverwendet
       Areas.state.next += 1;
       Areas.state.areas.push({ id: id, name: name });
       Areas.save();
@@ -3376,6 +3401,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       const name = Areas.name(State.area);
       const actions = State.mode === 'edit' ? h('div', { class: 'sx-hero__actions' }, [
         h('button', { type: 'button', class: 'sx-btn sx-btn--strong', onclick: () => Editor.open(null) }, [shapeIcon([['path', { d: 'M12 5v14M5 12h14' }]], 'sx-i'), 'Neue Maßnahme erfassen']),
+        Areas.isCustom(State.area) ? h('button', { type: 'button', class: 'sx-btn sx-btn--ghost', text: 'Bereich umbenennen', onclick: () => AreaManage.open(State.area) }) : null
       ]) : null;
       const stack = State.items.length
         ? h('div', { class: 'sx-hero__stack' }, [h('h3', { id: 'heroTitle', text: 'Maßnahmen in ' + name }), h('section', { class: 'sx-block' }, [h('h4', { text: 'Maßnahmen nach Status' }), Render.statusOverview(c)]), actions])
@@ -3555,7 +3581,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           const n = i === 0 ? totalOpen : (ob.m[a.id] || 0);
           el.setAttribute('aria-selected', sel ? 'true' : 'false');
           el.setAttribute('tabindex', sel ? '0' : '-1');
-          el.setAttribute('title', a.name);
+          el.setAttribute('title', Areas.isCustom(a.id) ? a.name + ' – Doppelklick oder F2 zum Umbenennen' : a.name);
           el.querySelector('.sx-tab__name').textContent = a.name;
           const cnt = el.querySelector('.sx-nav__count');
           cnt.textContent = Util.num(n);
@@ -3564,7 +3590,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         const addBtn = document.getElementById('btnAreaAddTab');
         if (addBtn) {
           addBtn.disabled = full;
-          addBtn.title = full ? 'Es sind höchstens ' + AREA_MAX + ' Bereiche möglich.' : 'Bereich hinzufügen';
+          addBtn.title = full ? 'Es sind höchstens ' + AREA_MAX + ' Bereiche möglich.' : 'Eigenen Bereich hinzufügen';
         }
         return;
       }
@@ -3580,6 +3606,10 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         ]));
       });
       root.appendChild(list);
+      if (State.mode === 'edit') root.appendChild(h('div', { class: 'sx-areas__tools' }, [
+        h('button', { type: 'button', class: 'sx-btn sx-btn--ghost sx-btn--icon', id: 'btnAreaAddTab', title: full ? 'Es sind höchstens ' + AREA_MAX + ' Bereiche möglich.' : 'Eigenen Bereich hinzufügen', 'aria-label': full ? 'Bereich hinzufügen – höchstens ' + AREA_MAX + ' Bereiche möglich' : 'Eigenen Bereich hinzufügen', disabled: full ? true : null }, shapeIcon([['path', { d: 'M12 5v14M5 12h14' }]], 'sx-i')),
+        h('button', { type: 'button', class: 'sx-btn sx-btn--ghost sx-btn--icon', id: 'btnAreaManage', title: 'Eigene Bereiche umbenennen', 'aria-label': 'Eigene Bereiche umbenennen' }, shapeIcon([['path', { d: 'M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z' }], ['path', { d: 'm14 8 3 3' }]], 'sx-i'))
+      ]));
     },
 
     /** Schwerpunktthemen als Kacheln (Leerzustand) */
@@ -4795,8 +4825,14 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 
   /** Dialog „Bereiche umbenennen“ */
   const AreaManage = {
+    /** Doppelklick/F2 auf einen Reiter: nur eigene Bereiche lassen sich umbenennen */
+    renameTab(id) {
+      if (State.mode === 'view') return;
+      if (!Areas.isCustom(id)) { showMessage('info', '„' + Areas.name(id) + '“ ist fest hinterlegt und lässt sich nicht umbenennen. Eigene Bereiche legen Sie mit „+“ an.', 6000); return; }
+      AreaManage.open(id);
+    },
     open(focusId) {
-      if (State.mode === 'view' || Areas.isFixed(Areas.state)) return; // feste Bereiche werden nicht umbenannt
+      if (State.mode === 'view') return;
       AreaManage.renderList();
       Dialogs.open($('areaDialog'));
       const inp = document.getElementById('nm-' + (focusId || State.area));
@@ -4805,17 +4841,18 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     renderList() {
       const ul = $('areaList');
       clear(ul);
-      Areas.state.areas.forEach((a, i) => {
+      const own = Areas.state.areas.filter((a) => Areas.isCustom(a.id));
+      own.forEach((a, i) => {
         ul.appendChild(h('li', { class: 'sx-rename', style: '--tab-color:' + Areas.tabColor(a.id) }, [
           h('span', { class: 'sx-tab__dot', 'aria-hidden': 'true' }),
-          h('label', { class: 'sx-rename__label', for: 'nm-' + a.id, text: i === 0 ? 'Hauptbereich' : 'Bereich ' + i }),
+          h('label', { class: 'sx-rename__label', for: 'nm-' + a.id, text: 'Eigener Bereich ' + (i + 1) }),
           h('input', { class: 'sx-input', id: 'nm-' + a.id, dataset: { id: a.id }, maxlength: String(AREA_NAME_MAX), value: a.name, autocomplete: 'off', 'aria-describedby': 'er-' + a.id, 'aria-invalid': 'false' }),
           h('small', { class: 'sx-rename__err', id: 'er-' + a.id, 'aria-live': 'polite' })
         ]));
       });
       const full = Areas.deps().length >= AREA_MAX;
       $('btnAreaAdd').disabled = full;
-      $('areaHint').textContent = full ? 'Es sind höchstens ' + AREA_MAX + ' Bereiche möglich.' : 'Sie können bis zu ' + AREA_MAX + ' Bereiche anlegen. Bereiche lassen sich nicht löschen.';
+      $('areaHint').textContent = (own.length ? '' : 'Noch kein eigener Bereich angelegt. ') + 'Fest hinterlegt (nicht umbenennbar): ' + FIXED_AREAS.slice(1).map((a) => a.name).join(', ') + '. ' + (full ? 'Es sind höchstens ' + AREA_MAX + ' Bereiche möglich.' : 'Insgesamt sind bis zu ' + AREA_MAX + ' Bereiche möglich. Eigene Bereiche erhalten beim Excel-Einlesen alle Maßnahmen, deren Zuständigkeit den Bereichsnamen enthält. Bereiche lassen sich nicht löschen.');
     },
     onInput(ev) {
       const t = ev.target;
@@ -4918,10 +4955,10 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         const e = (off, st) => Object.assign({ isOpen: true }, Status.evaluate(mk(off, st ? { status: st } : {}), today));
         return isDue14(e(0)) && isDue14(e(14)) && !isDue14(e(15)) && !isDue14(e(-1)) && !isDue14(e(3, 'Zurückgestellt'));
       });
-      t('Feste Bereiche: Karsten, Maik, Frank, Jörn, Ingo, Gesund nach Hause, ASI', () => {
+      t('Feste Bereiche: Karsten, Maik, Frank, Jörn, Ingo, Jens-Michael, Gesund nach Hause, ASI', () => {
         const d = Areas.defaults();
         const names = d.areas.map((a) => a.name).join('|');
-        return { ok: Areas.isFixed(d) && names === 'Gesamtübersicht|Karsten|Maik|Frank|Jörn|Ingo|Gesund nach Hause|ASI', detail: names };
+        return { ok: Areas.isFixed(d) && names === 'Gesamtübersicht|Karsten|Maik|Frank|Jörn|Ingo|Jens-Michael|Gesund nach Hause|ASI', detail: names };
       });
       t('Excel: Farblegende, Abkürzungen und Spalte „Bereich“', () => {
         const ws = XLSX.utils.aoa_to_sheet([['Herkunft', 'Thema', 'Aktion', 'Zuständigkeit', 'Zieldatum', 'Status', 'Bereich'], ['ASA', 'Brandschutz', 'Löscher prüfen', 'A', '', 'offen', 'bereich 2'], ['', 'grün ', 'erledigt'], ['', 'weiß', 'in Bearbeitung'], ['', 'grün', 'erledigt', 'B']]);
@@ -4964,12 +5001,25 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         } finally { Areas.state = keepA; }
       });
       t('Feste Bereiche: Zuordnung über Vor- und Nachnamen der Zuständigkeit', () => {
-        const cases = [['Maik', 'k-maik'], ['Maik Hohmann', 'k-maik'], ['Jörn Duee', 'k-joern'], ['Joern', 'k-joern'], ['Reiß', 'k-ingo'], ['Karsten Zota', 'k-karsten'], ['Frank', 'k-frank'], ['Oliver', 'k-gnh'], ['Jan', 'k-asi'], ['Marek', 'k-asi'], ['Jan / Marek', 'k-asi'], ['Maik/Jörn', 'k-maik'], ['Gesund nach Hause', 'k-gnh'], ['Alle Betriebsleiter', ''], ['Thorsten', ''], ['Janine', ''], ['', '']];
+        const cases = [['Maik', 'k-maik'], ['Maik Hohmann', 'k-maik'], ['Jörn Duee', 'k-joern'], ['Joern', 'k-joern'], ['Reiß', 'k-ingo'], ['Karsten Zota', 'k-karsten'], ['Frank', 'k-frank'], ['Oliver', 'k-gnh'], ['Jan', 'k-asi'], ['Marek', 'k-asi'], ['Jan / Marek', 'k-asi'], ['Maik/Jörn', 'k-maik'], ['Gesund nach Hause', 'k-gnh'], ['Jens-Michael', 'k-jens'], ['Hilmer', 'k-jens'], ['Alle Betriebsleiter', ''], ['Thorsten', ''], ['Janine', ''], ['Michael', ''], ['', '']];
         const bad = cases.filter((c) => Areas.personArea(c[0]) !== c[1]);
         const old = { v: 1, next: 4, areas: [{ id: 'gesamt', name: 'Gesamtübersicht' }, { id: 'b1', name: 'Maik Hohmann' }, { id: 'b2', name: 'Bereich 2' }, { id: 'b3', name: 'Jens-Michael Hilmer' }] };
-        const fx = Areas.toFixed(old, [{ bereichId: 'b1', zust: 'Ingo' }, { bereichId: 'b2', zust: 'Oliver' }, { bereichId: 'b3', zust: 'Jens' }, { bereichId: '', zust: 'Marek' }], { ingo: 'b1' });
+        const fx = Areas.toFixed(old, [{ bereichId: 'b1', zust: 'Ingo' }, { bereichId: 'b2', zust: 'Oliver' }, { bereichId: 'b3', zust: 'Thorsten' }, { bereichId: '', zust: 'Marek' }], { ingo: 'b1' });
         const ids = fx.records.map((r) => r.bereichId).join();
-        return { ok: !bad.length && ids === 'k-maik,k-gnh,,k-asi' && fx.byZust.ingo === 'k-maik' && Areas.isFixed(fx.areas) && fx.kept === 1 && fx.auto === 2 && fx.none === 1, detail: bad.map((c) => c[0]).join('|') + ' ' + ids };
+        // Fassung 2.1 (feste Bereiche ohne Jens-Michael, ein eigener Bereich) → Jens-Michael ergänzen, eigenen Bereich behalten
+        const v21 = { v: 2, fixed: 1, next: 2, areas: FIXED_AREAS.filter((a) => a.id !== 'k-jens').concat([{ id: 'c1', name: 'Thorsten' }]) };
+        const fy = Areas.toFixed(v21, [{ bereichId: '', zust: 'Jens-Michael Hilmer' }, { bereichId: 'k-maik', zust: 'Jens' }, { bereichId: '', zust: 'Thorsten' }], {});
+        const ids2 = fy.records.map((r) => r.bereichId).join() + '/' + fy.areas.areas.map((a) => a.id).join();
+        return { ok: !bad.length && ids === 'k-maik,k-gnh,k-jens,k-asi' && fx.byZust.ingo === 'k-maik' && Areas.isFixed(fx.areas) && fx.kept === 2 && fx.auto === 2 && fx.none === 0 &&
+          ids2 === 'k-jens,k-maik,/gesamt,k-karsten,k-maik,k-frank,k-joern,k-ingo,k-jens,k-gnh,k-asi,c1' && fy.auto === 1 && Areas.isFixed(fy.areas), detail: bad.map((c) => c[0]).join('|') + ' ' + ids + ' ' + ids2 };
+      });
+      t('Eigene Bereiche: Zuordnung über den Bereichsnamen, feste Personen zuerst', () => {
+        const keep = Areas.state;
+        try {
+          Areas.state = Areas.defaults(); Areas.state.areas.push({ id: 'c1', name: 'Thorsten' }); Areas.state.next = 2;
+          const r = [Areas.personArea('Thorsten Müller'), Areas.personArea('thorsten'), Areas.personArea('Maik/Thorsten'), Areas.personArea('Alle Betriebsleiter'), Areas.personArea('Thorsten', true), String(Areas.isFixed(Areas.state)), String(Areas.isCustom('c1')), String(Areas.isCustom('k-maik'))].join();
+          return { ok: r === 'c1,c1,k-maik,,,true,true,false', detail: r };
+        } finally { Areas.state = keep; }
       });
       t('Stand veröffentlichen und wieder laden (Excel-Datei)', () => {
         const d = { format: 'ASI-Stand', version: 1, appVersion: APP_VERSION, publishedAt: '2026-10-29T10:00:00.000Z', publishedBy: 'Test', snapshot: null,
@@ -5069,7 +5119,12 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (!t) return;
       const tab = t.closest('.sx-tab');
       if (tab) { selectArea(tab.dataset.id, true); return; }
-
+      if (t.closest('#btnAreaAddTab')) { const id = Areas.add(); if (id) { selectArea(id); AreaManage.open(id); } return; }
+      if (t.closest('#btnAreaManage')) AreaManage.open(State.area);
+    });
+    areasEl.addEventListener('dblclick', (ev) => {
+      const tab = ev.target instanceof Element ? ev.target.closest('.sx-tab') : null;
+      if (tab) AreaManage.renameTab(tab.dataset.id);
     });
     areasEl.addEventListener('keydown', (ev) => {
       const tab = ev.target instanceof Element ? ev.target.closest('.sx-tab') : null;
@@ -5081,6 +5136,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       else if (ev.key === 'ArrowLeft') next = tabs[(i - 1 + tabs.length) % tabs.length];
       else if (ev.key === 'Home') next = tabs[0];
       else if (ev.key === 'End') next = tabs[tabs.length - 1];
+      else if (ev.key === 'F2') { ev.preventDefault(); AreaManage.renameTab(tab.dataset.id); return; }
       if (next) { ev.preventDefault(); selectArea(next.dataset.id, true); }
     });
     $('areaList').addEventListener('input', AreaManage.onInput);
@@ -5228,7 +5284,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     await Backup.load();
     await FileMemo.load();
     refresh();
-    if (State.fixedInfo) showMessage('info', 'Feste Bereiche eingerichtet (Karsten, Maik, Frank, Jörn, Ingo, Gesund nach Hause, ASI): ' + Util.num(State.fixedInfo.kept) + ' Maßnahmen über den bisherigen Bereichsnamen, ' + Util.num(State.fixedInfo.auto) + ' über die Zuständigkeit zugeordnet' + (State.fixedInfo.none ? ', ' + Util.num(State.fixedInfo.none) + ' ohne passende Person (siehe „Maßnahmen ohne Bereich“)' : '') + '. Bitte einmal „Daten › Speichern“.', 15000);
+    if (State.fixedInfo && State.fixedInfo.added) showMessage('info', 'Neuer fester Bereich: ' + State.fixedInfo.added.join(', ') + '. ' + Util.num(State.fixedInfo.auto) + ' bisher nicht zugeordnete ' + Util.plural(State.fixedInfo.auto, 'Maßnahme wurde', 'Maßnahmen wurden') + ' über die Zuständigkeit zugeordnet. Bitte einmal „Daten › Speichern“.', 15000);
+    else if (State.fixedInfo) showMessage('info', 'Feste Bereiche eingerichtet (Karsten, Maik, Frank, Jörn, Ingo, Jens-Michael, Gesund nach Hause, ASI): ' + Util.num(State.fixedInfo.kept) + ' Maßnahmen über den bisherigen Bereichsnamen, ' + Util.num(State.fixedInfo.auto) + ' über die Zuständigkeit zugeordnet' + (State.fixedInfo.none ? ', ' + Util.num(State.fixedInfo.none) + ' ohne passende Person (siehe „Maßnahmen ohne Bereich“)' : '') + '. Bitte einmal „Daten › Speichern“.', 15000);
     if (State.migrated) showMessage('info', 'Umstellung auf Version 2: ' + Util.num(State.migrated) + ' Excel-Maßnahmen sind jetzt direkt im Dashboard bearbeitbar (Termine, Status, Bereich, Wirksamkeit). Bitte einmal „Daten › Speichern“.', 15000);
     if (State.startScreen && !window.__ASI_OHNE_STARTBILDSCHIRM) StartScreen.show(); // Schalter nur für automatisierte Tests
     window.ASIDashboard = Object.freeze({ version: APP_VERSION, selfTest: State.selfTest });

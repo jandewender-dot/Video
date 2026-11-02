@@ -1,4 +1,4 @@
-# ASI-Dashboard – Anleitung (ab Version 2.1)
+# ASI-Dashboard – Anleitung (ab Version 2.2)
 
 Diese Anleitung ersetzt die früheren Einzelanleitungen (Stand veröffentlichen, Sicherung, Bereiche zuordnen).
 
@@ -8,9 +8,9 @@ Diese Anleitung ersetzt die früheren Einzelanleitungen (Stand veröffentlichen,
 - **Eine Person pflegt, alle anderen sehen den Stand.**
 - **„Daten › Speichern“** erzeugt `ASI_Stand.xlsx`. Diese Datei ist zugleich Ihre Sicherung und der Stand, den alle anderen sehen.
 
-## Feste Bereiche und automatische Zuordnung (ab 2.1)
+## Feste und eigene Bereiche, automatische Zuordnung (ab 2.2)
 
-Die Bereiche sind fest hinterlegt und lassen sich nicht umbenennen. Beim Einlesen der Excel-Datei ordnet das Dashboard jede Maßnahme über die Spalte „Zuständigkeit“ automatisch zu:
+Acht Bereiche sind fest hinterlegt und lassen sich nicht umbenennen. Beim Einlesen der Excel-Datei ordnet das Dashboard jede Maßnahme über die Spalte „Zuständigkeit“ automatisch zu:
 
 | Bereich | Zuständigkeit enthält … |
 |---|---|
@@ -19,6 +19,7 @@ Die Bereiche sind fest hinterlegt und lassen sich nicht umbenennen. Beim Einlese
 | Frank | Frank oder Dannenberg |
 | Jörn | Jörn/Joern oder Duee |
 | Ingo | Ingo oder Reiß/Reiss |
+| Jens-Michael | Jens, Jens-Michael oder Hilmer |
 | Gesund nach Hause | Oliver |
 | ASI | Jan, Marek oder „ASI“ |
 
@@ -27,13 +28,22 @@ So funktioniert die Erkennung:
 - Stehen mehrere Namen da (z. B. „Maik/Jörn“), zählt der zuerst genannte.
 - Eine Excel-Spalte „Bereich“ hat Vorrang vor der Zuständigkeit. Eigene Regeln aus „Nach Zuständigkeit zuordnen“ ergänzen die feste Liste, z. B. für „Thorsten“ oder „Alle Betriebsleiter“.
 
+**Eigene Bereiche:**
+- Mit **„+“** rechts in der Bereichsleiste legen Sie zusätzliche Bereiche an. Insgesamt sind bis zu 10 Bereiche möglich, also 8 feste und 2 eigene.
+- Eigene Bereiche lassen sich umbenennen: Doppelklick, F2 oder Stift-Symbol. Die festen Bereiche nicht.
+- Beim Einlesen erhält ein eigener Bereich alle Maßnahmen, deren Zuständigkeit den Bereichsnamen enthält. Beispiel: Bereich „Thorsten“ ← „Thorsten Müller“. Die festen Personen haben dabei Vorrang.
+- Bereiche lassen sich nicht löschen.
+- Ab dem 9. Bereich wiederholen sich die Farben im Sonar.
+
 Was ohne passende Person bleibt:
 - Maßnahmen ohne passende Person bleiben „ohne Bereich“. Die Importmeldung nennt die Zuständigkeiten. Zuordnen lassen sie sich über „Nach Zuständigkeit zuordnen …“ oder einzeln in der Spalte „Bereich“.
 - Die **Gesamtübersicht** zeigt immer alle Maßnahmen. Die Bereiche zeigen jeweils ihren Teil.
 
 Daten aus früheren Versionen:
 - Frei benannte Bereiche werden beim ersten Öffnen einmalig umgestellt. Das geschieht über den alten Namen (z. B. „Maik Hohmann“ → Maik, „Gesund nach Hause“ → Gesund nach Hause), sonst über die Zuständigkeit.
-- Bereiche ohne Gegenstück (z. B. „Jens-Michael Hilmer“) entfallen. Ihre Maßnahmen landen unter „ohne Bereich“.
+- „Jens-Michael Hilmer“ wird zu Jens-Michael.
+- Andere frei benannte Bereiche ohne Gegenstück entfallen. Ihre Maßnahmen landen unter „ohne Bereich“, sofern die Zuständigkeit keinen bekannten Namen enthält.
+- Wer schon Version 2.1 nutzt: Beim ersten Öffnen kommt Jens-Michael hinzu. Bisher nicht zugeordnete Maßnahmen mit „Jens“ oder „Hilmer“ in der Zuständigkeit werden ihm zugeordnet. Bereits zugeordnete Maßnahmen bleiben unverändert.
 
 ## Erster Start (pflegende Person)
 
@@ -92,9 +102,9 @@ Beim ersten Öffnen werden vorhandene Daten automatisch umgestellt: Die Excel-Ma
 |---|---|
 | Version 2 (Umstellung inkl. feste Bereiche, Bearbeiten, Fristen, Wirksamkeit, Einlesen) | 24 von 24 |
 | Bestehende Funktionen | 60 von 60 |
-| Bereiche (fest, automatische Zuordnung) | 39 von 39 |
+| Bereiche (fest und eigene, automatische Zuordnung) | 47 von 47 |
 | Speichern und Ansichtsmodus | 32 von 32 |
 | Zuordnung | 27 von 27 |
 | Speichern, Übernahme und Warnfeld | 28 von 28 |
 | Startbildschirm | 28 von 28 |
-| Selbstprüfung | 30 von 30 |
+| Selbstprüfung | 31 von 31 |
