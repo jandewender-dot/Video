@@ -1,4 +1,4 @@
-# ASI-Dashboard – Anleitung (ab Version 2.2)
+# ASI-Dashboard – Anleitung (ab Version 2.3)
 
 Diese Anleitung ersetzt die früheren Einzelanleitungen (Stand veröffentlichen, Sicherung, Bereiche zuordnen).
 
@@ -10,7 +10,7 @@ Diese Anleitung ersetzt die früheren Einzelanleitungen (Stand veröffentlichen,
 
 ## Feste und eigene Bereiche, automatische Zuordnung (ab 2.2)
 
-Acht Bereiche sind fest hinterlegt und lassen sich nicht umbenennen. Beim Einlesen der Excel-Datei ordnet das Dashboard jede Maßnahme über die Spalte „Zuständigkeit“ automatisch zu:
+Acht Bereiche sind fest hinterlegt und lassen sich weder umbenennen noch löschen. Beim Einlesen der Excel-Datei ordnet das Dashboard jede Maßnahme über die Spalte „Zuständigkeit“ automatisch zu:
 
 | Bereich | Zuständigkeit enthält … |
 |---|---|
@@ -32,7 +32,13 @@ So funktioniert die Erkennung:
 - Mit **„+“** rechts in der Bereichsleiste legen Sie zusätzliche Bereiche an. Insgesamt sind bis zu 10 Bereiche möglich, also 8 feste und 2 eigene.
 - Eigene Bereiche lassen sich umbenennen: Doppelklick, F2 oder Stift-Symbol. Die festen Bereiche nicht.
 - Beim Einlesen erhält ein eigener Bereich alle Maßnahmen, deren Zuständigkeit den Bereichsnamen enthält. Beispiel: Bereich „Thorsten“ ← „Thorsten Müller“. Die festen Personen haben dabei Vorrang.
-- Bereiche lassen sich nicht löschen.
+- **Eigene Bereiche löschen (ab 2.3):** Stift-Symbol rechts in der Bereichsleiste (oder im Bereich „Bereich umbenennen oder löschen“), dann das Papierkorb-Symbol neben dem Namen.
+  - Vorher fragt das Dashboard nach und nennt die Zahl der betroffenen Maßnahmen.
+  - Die Maßnahmen bleiben erhalten und stehen danach auf **„ohne Bereich“**. Von dort lassen sie sich neu zuordnen.
+  - Eine Regel aus „Nach Zuständigkeit zuordnen“, die auf den gelöschten Bereich zeigt, wird mit entfernt.
+  - Direkt danach können Sie das Löschen mit **„Rückgängig“** zurücknehmen.
+  - Ein neu angelegter Bereich bekommt eine neue Kennung; er übernimmt keine Maßnahmen des gelöschten Bereichs.
+  - Wie jede Änderung gilt das Löschen für alle anderen erst nach „Daten › Speichern“.
 - Ab dem 9. Bereich wiederholen sich die Farben im Sonar.
 
 Was ohne passende Person bleibt:
@@ -102,7 +108,7 @@ Beim ersten Öffnen werden vorhandene Daten automatisch umgestellt: Die Excel-Ma
 |---|---|
 | Version 2 (Umstellung inkl. feste Bereiche, Bearbeiten, Fristen, Wirksamkeit, Einlesen) | 24 von 24 |
 | Bestehende Funktionen | 60 von 60 |
-| Bereiche (fest und eigene, automatische Zuordnung) | 47 von 47 |
+| Bereiche (fest und eigene, automatische Zuordnung, Löschen eigener Bereiche) | 57 von 57 |
 | Speichern und Ansichtsmodus | 32 von 32 |
 | Zuordnung | 27 von 27 |
 | Speichern, Übernahme und Warnfeld | 28 von 28 |

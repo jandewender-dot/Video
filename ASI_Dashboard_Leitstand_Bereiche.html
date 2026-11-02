@@ -859,6 +859,10 @@ table.data.dense .area-pick{min-height:32px}
   a{color:#000}
 }
 .menu-sep{border-top:1px solid var(--border-subtle);margin-top:4px;padding-top:4px}
+/* Eigene Bereiche: Zeile mit Löschknopf (ergänzt die Komponente .sx-rename) */
+.sx-rename{grid-template-columns:auto 104px minmax(0,1fr) auto}
+.sx-rename__err{grid-column:2 / 4}
+.sx-rename__del{color:var(--status-overdue-ink)}
 
 </style>
 </head>
@@ -1141,7 +1145,7 @@ table.data.dense .area-pick{min-height:32px}
 
 <dialog class="sx-dialog" id="areaDialog" aria-labelledby="areaDialogTitle">
   <h3 id="areaDialogTitle">Eigene Bereiche</h3>
-  <p>Legen Sie zusätzliche Bereiche an und benennen Sie sie. Die Maßnahmen bleiben beim Umbenennen im Bereich.</p>
+  <p>Legen Sie zusätzliche Bereiche an, benennen Sie sie um oder löschen Sie sie. Beim Umbenennen bleiben die Maßnahmen im Bereich; beim Löschen bleiben sie erhalten und stehen danach auf „ohne Bereich“.</p>
   <ul class="sx-rename-list" id="areaList"></ul>
   <div class="sx-dialog__foot">
     <button class="sx-btn sx-btn--ghost" type="button" id="btnAreaAdd"><svg class="sx-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Bereich hinzufügen</button>
@@ -1249,7 +1253,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 (function () {
   'use strict';
 
-  const APP_VERSION = '2.2.0';
+  const APP_VERSION = '2.3.0';
 
   /* =====================================================================
    * Konfiguration
@@ -3401,7 +3405,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       const name = Areas.name(State.area);
       const actions = State.mode === 'edit' ? h('div', { class: 'sx-hero__actions' }, [
         h('button', { type: 'button', class: 'sx-btn sx-btn--strong', onclick: () => Editor.open(null) }, [shapeIcon([['path', { d: 'M12 5v14M5 12h14' }]], 'sx-i'), 'Neue Maßnahme erfassen']),
-        Areas.isCustom(State.area) ? h('button', { type: 'button', class: 'sx-btn sx-btn--ghost', text: 'Bereich umbenennen', onclick: () => AreaManage.open(State.area) }) : null
+        Areas.isCustom(State.area) ? h('button', { type: 'button', class: 'sx-btn sx-btn--ghost', text: 'Bereich umbenennen oder löschen', onclick: () => AreaManage.open(State.area) }) : null
       ]) : null;
       const stack = State.items.length
         ? h('div', { class: 'sx-hero__stack' }, [h('h3', { id: 'heroTitle', text: 'Maßnahmen in ' + name }), h('section', { class: 'sx-block' }, [h('h4', { text: 'Maßnahmen nach Status' }), Render.statusOverview(c)]), actions])
@@ -3608,7 +3612,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       root.appendChild(list);
       if (State.mode === 'edit') root.appendChild(h('div', { class: 'sx-areas__tools' }, [
         h('button', { type: 'button', class: 'sx-btn sx-btn--ghost sx-btn--icon', id: 'btnAreaAddTab', title: full ? 'Es sind höchstens ' + AREA_MAX + ' Bereiche möglich.' : 'Eigenen Bereich hinzufügen', 'aria-label': full ? 'Bereich hinzufügen – höchstens ' + AREA_MAX + ' Bereiche möglich' : 'Eigenen Bereich hinzufügen', disabled: full ? true : null }, shapeIcon([['path', { d: 'M12 5v14M5 12h14' }]], 'sx-i')),
-        h('button', { type: 'button', class: 'sx-btn sx-btn--ghost sx-btn--icon', id: 'btnAreaManage', title: 'Eigene Bereiche umbenennen', 'aria-label': 'Eigene Bereiche umbenennen' }, shapeIcon([['path', { d: 'M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z' }], ['path', { d: 'm14 8 3 3' }]], 'sx-i'))
+        h('button', { type: 'button', class: 'sx-btn sx-btn--ghost sx-btn--icon', id: 'btnAreaManage', title: 'Eigene Bereiche umbenennen oder löschen', 'aria-label': 'Eigene Bereiche umbenennen oder löschen' }, shapeIcon([['path', { d: 'M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z' }], ['path', { d: 'm14 8 3 3' }]], 'sx-i'))
       ]));
     },
 
@@ -4828,7 +4832,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     /** Doppelklick/F2 auf einen Reiter: nur eigene Bereiche lassen sich umbenennen */
     renameTab(id) {
       if (State.mode === 'view') return;
-      if (!Areas.isCustom(id)) { showMessage('info', '„' + Areas.name(id) + '“ ist fest hinterlegt und lässt sich nicht umbenennen. Eigene Bereiche legen Sie mit „+“ an.', 6000); return; }
+      if (!Areas.isCustom(id)) { showMessage('info', '„' + Areas.name(id) + '“ ist fest hinterlegt und lässt sich weder umbenennen noch löschen. Eigene Bereiche legen Sie mit „+“ an.', 6000); return; }
       AreaManage.open(id);
     },
     open(focusId) {
@@ -4847,12 +4851,13 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           h('span', { class: 'sx-tab__dot', 'aria-hidden': 'true' }),
           h('label', { class: 'sx-rename__label', for: 'nm-' + a.id, text: 'Eigener Bereich ' + (i + 1) }),
           h('input', { class: 'sx-input', id: 'nm-' + a.id, dataset: { id: a.id }, maxlength: String(AREA_NAME_MAX), value: a.name, autocomplete: 'off', 'aria-describedby': 'er-' + a.id, 'aria-invalid': 'false' }),
+          h('button', { type: 'button', class: 'sx-btn sx-btn--ghost sx-btn--icon sx-rename__del', id: 'del-' + a.id, title: 'Bereich löschen', 'aria-label': 'Bereich „' + a.name + '“ löschen', onclick: () => AreaManage.remove(a.id) }, shapeIcon([['path', { d: 'M4 7h16M10 11v6M14 11v6' }], ['path', { d: 'M6 7l1 13h10l1-13M9 7V4h6v3' }]], 'sx-i')),
           h('small', { class: 'sx-rename__err', id: 'er-' + a.id, 'aria-live': 'polite' })
         ]));
       });
       const full = Areas.deps().length >= AREA_MAX;
       $('btnAreaAdd').disabled = full;
-      $('areaHint').textContent = (own.length ? '' : 'Noch kein eigener Bereich angelegt. ') + 'Fest hinterlegt (nicht umbenennbar): ' + FIXED_AREAS.slice(1).map((a) => a.name).join(', ') + '. ' + (full ? 'Es sind höchstens ' + AREA_MAX + ' Bereiche möglich.' : 'Insgesamt sind bis zu ' + AREA_MAX + ' Bereiche möglich. Eigene Bereiche erhalten beim Excel-Einlesen alle Maßnahmen, deren Zuständigkeit den Bereichsnamen enthält. Bereiche lassen sich nicht löschen.');
+      $('areaHint').textContent = (own.length ? '' : 'Noch kein eigener Bereich angelegt. ') + 'Fest hinterlegt (nicht umbenennbar, nicht löschbar): ' + FIXED_AREAS.slice(1).map((a) => a.name).join(', ') + '. ' + (full ? 'Es sind höchstens ' + AREA_MAX + ' Bereiche möglich.' : 'Insgesamt sind bis zu ' + AREA_MAX + ' Bereiche möglich. Eigene Bereiche erhalten beim Excel-Einlesen alle Maßnahmen, deren Zuständigkeit den Bereichsnamen enthält.') + (own.length ? ' Beim Löschen eines eigenen Bereichs bleiben seine Maßnahmen erhalten und stehen danach auf „ohne Bereich“.' : '');
     },
     onInput(ev) {
       const t = ev.target;
@@ -4865,10 +4870,40 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       const area = Areas.find(id);
       if (area && area.name !== t.value.trim()) {
         area.name = t.value.trim();
+        const del = document.getElementById('del-' + id);
+        if (del) del.setAttribute('aria-label', 'Bereich „' + area.name + '“ löschen');
         Areas.save();
         Unsaved.note('changed');
         refresh();
       }
+    },
+    /** Eigenen Bereich löschen: Maßnahmen bleiben erhalten und stehen danach auf „ohne Bereich“ */
+    async remove(id) {
+      if (State.mode === 'view' || !Areas.isCustom(id)) return;
+      const name = Areas.name(id);
+      const n = State.manual.filter((m) => m.bereichId === id).length;
+      const rules = Object.keys(Assign.state.byZust).filter((k) => Assign.state.byZust[k] === id).length;
+      const ok = await confirmAction('Bereich „' + name + '“ löschen?', (n ? 'Die ' + Util.num(n) + ' ' + Util.plural(n, 'Maßnahme dieses Bereichs bleibt erhalten und steht', 'Maßnahmen dieses Bereichs bleiben erhalten und stehen') + ' danach auf „ohne Bereich“.' : 'Der Bereich enthält keine Maßnahmen.') + (rules ? ' Die Zuordnung nach Zuständigkeit auf diesen Bereich (' + Util.num(rules) + ' ' + Util.plural(rules, 'Zuständigkeit', 'Zuständigkeiten') + ') wird ebenfalls entfernt.' : '') + ' Direkt danach können Sie das Löschen rückgängig machen.', 'Bereich löschen');
+      if (!ok) return;
+      const prev = { areas: JSON.parse(JSON.stringify(Areas.state)), manual: State.manual.slice(), assign: JSON.parse(JSON.stringify(Assign.state)), area: State.area, myArea: State.myArea };
+      const nowIso = new Date().toISOString();
+      Areas.state.areas = Areas.state.areas.filter((a) => a.id !== id); // Kennung wird nicht wiederverwendet (Zähler „next“ bleibt)
+      State.manual = State.manual.map((m) => (m.bereichId === id ? Object.assign({}, m, { bereichId: '', updated: nowIso }) : m));
+      ['byZust', 'byKey'].forEach((m) => Object.keys(Assign.state[m]).forEach((k) => { if (Assign.state[m][k] === id) delete Assign.state[m][k]; }));
+      if (State.area === id) State.area = 'gesamt';
+      if (State.myArea === id) State.myArea = '';
+      await Areas.save();
+      await Assign.save();
+      await persistManual();
+      savePrefs();
+      refresh();
+      if ($('areaDialog').open) { AreaManage.renderList(); $('btnAreaAdd').focus(); }
+      showMessage('ok', 'Bereich „' + name + '“ gelöscht' + (n ? '; ' + Util.num(n) + ' ' + Util.plural(n, 'Maßnahme steht', 'Maßnahmen stehen') + ' jetzt auf „ohne Bereich“' : '') + '.', 12000, { label: 'Rückgängig', run: async () => {
+        Areas.state = prev.areas; State.manual = prev.manual; Assign.state = prev.assign; State.area = prev.area; State.myArea = prev.myArea;
+        await Areas.save(); await Assign.save(); await persistManual(); savePrefs(); refresh();
+        if ($('areaDialog').open) AreaManage.renderList();
+        showMessage('info', 'Löschen wurde rückgängig gemacht.', 5000);
+      } });
     },
     addFromDialog() {
       const id = Areas.add();
