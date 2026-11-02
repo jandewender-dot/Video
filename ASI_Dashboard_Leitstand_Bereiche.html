@@ -877,6 +877,7 @@ table.data.dense .area-pick{min-height:32px}
       <p><strong>Erstellt von Jan Dewender.</strong> Bei Fragen oder Problemen mit dem Tool bitte melden.</p>
       <details class="start-news"><summary><span id="startVersion">Version</span> · Was ist neu?</summary>
         <ul>
+          <li>Feste Bereiche: Karsten, Maik, Frank, Jörn, Ingo, Gesund nach Hause (Oliver) und ASI (Jan, Marek). Beim Einlesen ordnet das Dashboard jede Maßnahme über die Zuständigkeit automatisch zu.</li>
           <li>Das Dashboard ist führend: Alle Maßnahmen – auch die aus Excel übernommenen – lassen sich hier bearbeiten (Termine, Status, Bereich).</li>
           <li>„Daten › Speichern“ erzeugt ASI_Stand.xlsx: zugleich Sicherung und Stand für alle, die ansehen.</li>
           <li>Neue Maßnahmen brauchen Bereich, Zuständigkeit und Zieldatum; „Fristen nachpflegen“ hilft bei Maßnahmen ohne Termin.</li>
@@ -1248,7 +1249,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 (function () {
   'use strict';
 
-  const APP_VERSION = '2.0.0';
+  const APP_VERSION = '2.1.0';
 
   /* =====================================================================
    * Konfiguration
@@ -2172,10 +2173,47 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
    * ===================================================================== */
   const AREA_MAX = 8;
   const AREA_NAME_MAX = 40;
+  /** Fest hinterlegte Bereiche (nicht umbenennbar) */
+  const FIXED_AREAS = [
+    { id: 'gesamt', name: 'Gesamtübersicht' }, { id: 'k-karsten', name: 'Karsten' }, { id: 'k-maik', name: 'Maik' }, { id: 'k-frank', name: 'Frank' },
+    { id: 'k-joern', name: 'Jörn' }, { id: 'k-ingo', name: 'Ingo' }, { id: 'k-gnh', name: 'Gesund nach Hause' }, { id: 'k-asi', name: 'ASI' }
+  ];
+  /** Zuständigkeit → Bereich: Vor- und Nachnamen (Groß/Klein und Umlaute egal). Bei mehreren Namen zählt der zuerst genannte. */
+  const PERSON_AREAS = {
+    karsten: 'k-karsten', zota: 'k-karsten', maik: 'k-maik', hohmann: 'k-maik', frank: 'k-frank', dannenberg: 'k-frank',
+    joern: 'k-joern', jorn: 'k-joern', duee: 'k-joern', ingo: 'k-ingo', reiss: 'k-ingo', oliver: 'k-gnh', jan: 'k-asi', marek: 'k-asi', asi: 'k-asi'
+  };
   const Areas = {
     state: null,
     defaults() {
-      return { v: 1, next: 6, areas: [{ id: 'gesamt', name: 'Gesamtübersicht' }, { id: 'b1', name: 'Bereich 1' }, { id: 'b2', name: 'Bereich 2' }, { id: 'b3', name: 'Bereich 3' }, { id: 'b4', name: 'Bereich 4' }, { id: 'b5', name: 'Bereich 5' }] };
+      return { v: 2, fixed: 1, next: 0, areas: FIXED_AREAS.map((a) => ({ id: a.id, name: a.name })) };
+    },
+    isFixed(st) {
+      return !!st && st.fixed === 1 && Array.isArray(st.areas) && st.areas.length === FIXED_AREAS.length && st.areas.every((a, i) => a.id === FIXED_AREAS[i].id && a.name === FIXED_AREAS[i].name);
+    },
+    /** Bereich zu einem Text mit Personennamen (z. B. Zuständigkeit „Maik/Jörn“ → Maik); '' wenn keine bekannte Person */
+    personArea(text) {
+      const raw = String(text === null || text === undefined ? '' : text);
+      if (Util.norm(raw).indexOf('gesundnachhause') === 0) return 'k-gnh';
+      const tokens = raw.split(/[^A-Za-zÄÖÜäöüß]+/).map((t) => Util.norm(t)).filter(Boolean);
+      for (let i = 0; i < tokens.length; i++) if (PERSON_AREAS[tokens[i]]) return PERSON_AREAS[tokens[i]];
+      return '';
+    },
+    /** Ältere, frei benannte Bereiche auf die festen Bereiche umstellen (über den Namen, sonst über die Zuständigkeit) */
+    toFixed(st, records, byZust) {
+      if (Areas.isFixed(st)) return { changed: false, areas: st, records: records, byZust: byZust || {} };
+      const map = {};
+      if (st && Array.isArray(st.areas)) st.areas.forEach((a) => { if (a.id !== 'gesamt') map[a.id] = Areas.personArea(a.name); });
+      let kept = 0, auto = 0, none = 0;
+      const recs = records.map((r) => {
+        let id = map[r.bereichId] || '';
+        if (id) kept++;
+        else { id = Areas.personArea(r.zust); if (id) auto++; else none++; }
+        return id === r.bereichId ? r : Object.assign({}, r, { bereichId: id });
+      });
+      const z = {};
+      Object.keys(byZust || {}).forEach((k) => { if (map[byZust[k]]) z[k] = map[byZust[k]]; });
+      return { changed: true, areas: Areas.defaults(), records: recs, byZust: z, kept: kept, auto: auto, none: none };
     },
     isValid(st) {
       return !!st && Array.isArray(st.areas) && st.areas.length >= 1 && st.areas[0] && st.areas[0].id === 'gesamt' && Number.isInteger(st.next) &&
@@ -2273,6 +2311,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     suggest(zust) {
       const n = Util.norm(zust);
       if (!n) return '';
+      const p = Areas.personArea(zust);
+      if (p && Areas.isDep(p)) return p;
       const exact = Areas.deps().filter((a) => Util.norm(a.name) === n);
       if (exact.length === 1) return exact[0].id;
       const first = Areas.deps().filter((a) => Util.norm(a.name.trim().split(/\s+/)[0]) === n);
@@ -2295,8 +2335,12 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     areaFor(r, byName) {
       const nm = r.bereichName ? r.bereichName.trim().toLocaleLowerCase('de') : '';
       if (nm && byName.get(nm)) return byName.get(nm);
+      const pb = r.bereichName ? Areas.personArea(r.bereichName) : '';
+      if (pb && Areas.isDep(pb)) return pb;
       const z = r.zust ? Assign.state.byZust[Assign.zustKey(r.zust)] : '';
-      return z && Areas.isDep(z) ? z : '';
+      if (z && Areas.isDep(z)) return z;
+      const pz = Areas.personArea(r.zust);
+      return pz && Areas.isDep(pz) ? pz : '';
     },
     fromExcel(r, snap, bereichId) {
       return Object.assign({ prio: '', art: '', wirkDatum: { s: 'empty' }, wirkErgebnis: '', wirkDurch: '' }, r, {
@@ -2421,9 +2465,10 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       State.stand = null;
       const mg = Model.migrate(d.snapshot, d.manual.filter((m) => m && m.src === 'manual' && m.id), d.excelAssign);
       State.snapshot = mg.snapshot;
-      State.manual = mg.manual;
-      Areas.state = d.areas;
-      Assign.state = d.excelAssign || Assign.empty();
+      const fxA = Areas.toFixed(d.areas, mg.manual, (d.excelAssign || {}).byZust);
+      State.manual = fxA.records;
+      Areas.state = fxA.areas;
+      Assign.state = { v: 1, byKey: {}, byZust: fxA.byZust };
       State.source = d.snapshot ? 'local' : 'none';
       State.today = DateUtil.todayNumber();
       State.generic = {};
@@ -2458,9 +2503,10 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       State.stand = { publishedAt: d.publishedAt, publishedBy: d.publishedBy || '', appVersion: d.appVersion || '' };
       const mg = Model.migrate(d.snapshot, d.manual.filter((m) => m && m.src === 'manual' && m.id), d.excelAssign);
       State.snapshot = mg.snapshot;
-      State.manual = mg.manual;
-      Areas.state = d.areas;
-      Assign.state = d.excelAssign || Assign.empty();
+      const fxV = Areas.toFixed(d.areas, mg.manual, (d.excelAssign || {}).byZust);
+      State.manual = fxV.records;
+      Areas.state = fxV.areas;
+      Assign.state = { v: 1, byKey: {}, byZust: fxV.byZust };
       State.source = 'stand';
       State.today = DateUtil.todayNumber();
       State.generic = {};
@@ -2509,6 +2555,16 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       Assign.state = { v: 1, byKey: {}, byZust: Assign.state.byZust || {} };
       try { await Store.put('snapshot', State.snapshot); await Store.put('manual', State.manual); await Store.put('excelAssign', Assign.state); } catch (e) { State.storageOk = false; }
       State.migrated = mg.moved;
+    }
+    // Feste Bereiche: frei benannte Bereiche einmalig umstellen
+    const fx = Areas.toFixed(Areas.state, State.manual, Assign.state.byZust);
+    if (fx.changed) {
+      Areas.state = fx.areas;
+      State.manual = fx.records;
+      Assign.state = { v: 1, byKey: {}, byZust: fx.byZust };
+      try { await Store.put('areas', Areas.state); await Store.put('manual', State.manual); await Store.put('excelAssign', Assign.state); } catch (e) { State.storageOk = false; }
+      State.fixedInfo = fx;
+      if (!Areas.find(State.area)) State.area = 'gesamt';
     }
   }
 
@@ -3320,7 +3376,6 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       const name = Areas.name(State.area);
       const actions = State.mode === 'edit' ? h('div', { class: 'sx-hero__actions' }, [
         h('button', { type: 'button', class: 'sx-btn sx-btn--strong', onclick: () => Editor.open(null) }, [shapeIcon([['path', { d: 'M12 5v14M5 12h14' }]], 'sx-i'), 'Neue Maßnahme erfassen']),
-        h('button', { type: 'button', class: 'sx-btn sx-btn--ghost', text: 'Bereich umbenennen', onclick: () => AreaManage.open(State.area) })
       ]) : null;
       const stack = State.items.length
         ? h('div', { class: 'sx-hero__stack' }, [h('h3', { id: 'heroTitle', text: 'Maßnahmen in ' + name }), h('section', { class: 'sx-block' }, [h('h4', { text: 'Maßnahmen nach Status' }), Render.statusOverview(c)]), actions])
@@ -3463,8 +3518,10 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (!n) return null;
       const body = h('div', { class: 'card-body unassigned' });
       body.appendChild(h('p', null, [h('strong', { text: Util.num(n) + ' ' + Util.plural(n, 'Maßnahme hat', 'Maßnahmen haben') + ' noch keinen Bereich' }), ' und ' + Util.plural(n, 'erscheint', 'erscheinen') + ' nur in der Gesamtübersicht. Ordnen Sie sie nach Zuständigkeit zu oder einzeln in der Spalte „Bereich“ der Maßnahmenliste.']));
+      const autoN = State.allItems.filter((it) => !Areas.isDep(it.rec.bereichId) && Model.areaFor({ zust: it.rec.zust, bereichName: '' }, Model.byName())).length;
       body.appendChild(h('div', { class: 'unassigned-row no-print' }, [
-        h('button', { type: 'button', class: 'btn btn-navy', text: 'Nach Zuständigkeit zuordnen …', onclick: () => ZustAssign.open() }),
+        autoN ? h('button', { type: 'button', class: 'btn btn-navy', id: 'btnAutoAssign', text: Util.num(autoN) + ' automatisch zuordnen', onclick: () => autoAssign() }) : null,
+        h('button', { type: 'button', class: autoN ? 'btn' : 'btn btn-navy', text: 'Nach Zuständigkeit zuordnen …', onclick: () => ZustAssign.open() }),
         h('button', { type: 'button', class: 'btn btn-link', text: 'Einzeln zuordnen', onclick: () => gotoActions({ dq: 'noArea' }) })
       ]));
       return h('section', { class: 'card unassigned-card', 'aria-label': 'Maßnahmen ohne Bereich' }, [h('div', { class: 'card-head' }, h('h3', { text: 'Maßnahmen ohne Bereich' })), body]);
@@ -3498,7 +3555,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           const n = i === 0 ? totalOpen : (ob.m[a.id] || 0);
           el.setAttribute('aria-selected', sel ? 'true' : 'false');
           el.setAttribute('tabindex', sel ? '0' : '-1');
-          el.setAttribute('title', a.name + ' – Doppelklick oder F2 zum Umbenennen');
+          el.setAttribute('title', a.name);
           el.querySelector('.sx-tab__name').textContent = a.name;
           const cnt = el.querySelector('.sx-nav__count');
           cnt.textContent = Util.num(n);
@@ -3516,17 +3573,13 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       const list = h('div', { class: 'sx-areas__list', role: 'tablist', 'aria-label': 'Bereiche' });
       Areas.state.areas.forEach((a, i) => {
         const sel = a.id === State.area;
-        list.appendChild(h('button', { type: 'button', class: 'sx-tab', role: 'tab', id: 'tab-' + a.id, dataset: { id: a.id }, 'aria-selected': sel ? 'true' : 'false', 'aria-controls': 'main', tabindex: sel ? '0' : '-1', title: a.name + ' – Doppelklick oder F2 zum Umbenennen', style: '--tab-color:' + Areas.tabColor(a.id) }, [
+        list.appendChild(h('button', { type: 'button', class: 'sx-tab', role: 'tab', id: 'tab-' + a.id, dataset: { id: a.id }, 'aria-selected': sel ? 'true' : 'false', 'aria-controls': 'main', tabindex: sel ? '0' : '-1', title: a.name, style: '--tab-color:' + Areas.tabColor(a.id) }, [
           i === 0 ? shapeIcon([['rect', { x: '3', y: '3', width: '7', height: '7', rx: '1.5' }], ['rect', { x: '14', y: '3', width: '7', height: '7', rx: '1.5' }], ['rect', { x: '14', y: '14', width: '7', height: '7', rx: '1.5' }], ['rect', { x: '3', y: '14', width: '7', height: '7', rx: '1.5' }]], 'sx-i') : h('span', { class: 'sx-tab__dot', 'aria-hidden': 'true' }),
           h('span', { class: 'sx-tab__name', text: a.name }),
           h('span', { class: 'sx-nav__count', 'aria-label': (i === 0 ? totalOpen : (ob.m[a.id] || 0)) + ' offene', text: Util.num(i === 0 ? totalOpen : (ob.m[a.id] || 0)) })
         ]));
       });
       root.appendChild(list);
-      if (State.mode === 'edit') root.appendChild(h('div', { class: 'sx-areas__tools' }, [
-        h('button', { type: 'button', class: 'sx-btn sx-btn--ghost sx-btn--icon', id: 'btnAreaAddTab', title: full ? 'Es sind höchstens ' + AREA_MAX + ' Bereiche möglich.' : 'Bereich hinzufügen', 'aria-label': full ? 'Bereich hinzufügen – höchstens ' + AREA_MAX + ' Bereiche möglich' : 'Bereich hinzufügen', disabled: full ? true : null }, shapeIcon([['path', { d: 'M12 5v14M5 12h14' }]], 'sx-i')),
-        h('button', { type: 'button', class: 'sx-btn sx-btn--ghost sx-btn--icon', id: 'btnAreaManage', title: 'Bereiche umbenennen', 'aria-label': 'Bereiche umbenennen' }, shapeIcon([['path', { d: 'M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z' }], ['path', { d: 'm14 8 3 3' }]], 'sx-i'))
-      ]));
     },
 
     /** Schwerpunktthemen als Kacheln (Leerzustand) */
@@ -4444,7 +4497,9 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         added++;
       });
       State.manual = (mode === 'replace' ? State.manual.filter((m) => m.origin !== 'excel') : State.manual).concat(incoming);
-      snap.merge = { mode: mode, added: added, skipped: skipped, assigned: incoming.filter((m) => Areas.isDep(m.bereichId)).length };
+      const unmatched = [];
+      incoming.forEach((m) => { if (!Areas.isDep(m.bereichId)) { const z = m.zust || '(ohne Angabe)'; if (unmatched.indexOf(z) < 0) unmatched.push(z); } });
+      snap.merge = { mode: mode, added: added, skipped: skipped, assigned: incoming.filter((m) => Areas.isDep(m.bereichId)).length, unmatched: unmatched };
       snap.actionsCount = snap.actions.length;
       snap.actions = [];
       State.snapshot = snap;
@@ -4484,7 +4539,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     body.appendChild(h('ul', { class: 'summary-list' }, [
       h('li', { text: Util.num(s.stats.dataRows) + ' Datenzeilen erkannt' }),
       h('li', { text: Util.num(s.merge ? s.merge.added : s.stats.imported) + ' Maßnahmen übernommen' + (s.merge && s.merge.mode === 'new' ? ' (neue Zeilen); ' + Util.num(s.merge.skipped) + ' bereits vorhanden und unverändert' : (s.merge && s.merge.mode === 'replace' ? ' (Excel-Maßnahmen ersetzt)' : '')) }),
-      s.merge && s.merge.assigned ? h('li', { text: Util.num(s.merge.assigned) + ' davon automatisch einem Bereich zugeordnet (Spalte „Bereich“ bzw. Regel je Zuständigkeit)' }) : null,
+      s.merge && s.merge.added ? h('li', { text: Util.num(s.merge.assigned) + ' davon automatisch einem Bereich zugeordnet (über die Zuständigkeit bzw. eine Spalte „Bereich“)' + (s.merge.unmatched && s.merge.unmatched.length ? '; ' + Util.num(s.merge.added - s.merge.assigned) + ' ohne passende Person, z. B. ' + s.merge.unmatched.slice(0, 5).map((x) => '„' + x + '“').join(', ') + ' – bitte über „Nach Zuständigkeit zuordnen“ oder einzeln zuordnen' : '') }) : null,
       h('li', { text: Util.num(s.stats.emptyIgnored) + ' leere Zeilen ignoriert' }),
       h('li', { text: Util.num(s.stats.sheetsChecked) + ' Arbeitsblätter geprüft' }),
       h('li', { text: 'Maßnahmenblatt: ' + s.actionSheet.name }),
@@ -4633,6 +4688,24 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     }
   };
 
+  /** Maßnahmen ohne Bereich über die Zuständigkeit zuordnen (feste Personen bzw. eigene Regeln) */
+  async function autoAssign() {
+    const prev = State.manual.slice();
+    const byName = Model.byName();
+    const nowIso = new Date().toISOString();
+    let n = 0;
+    State.manual = State.manual.map((m) => {
+      if (Areas.isDep(m.bereichId)) return m;
+      const id = Model.areaFor({ zust: m.zust, bereichName: m.bereichName || '' }, byName);
+      if (!id) return m;
+      n++;
+      return Object.assign({}, m, { bereichId: id, updated: nowIso });
+    });
+    await persistManual();
+    refresh();
+    showMessage('ok', Util.num(n) + ' ' + Util.plural(n, 'Maßnahme wurde', 'Maßnahmen wurden') + ' über die Zuständigkeit zugeordnet.', 12000, { label: 'Rückgängig', run: () => Editor.restore(prev, 'Zuordnung wurde rückgängig gemacht.') });
+  }
+
   /** Auswahl „Bereich“ direkt in der Maßnahmentabelle (nur Pflege) */
   function areaSelect(it) {
     const r = it.rec;
@@ -4723,7 +4796,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
   /** Dialog „Bereiche umbenennen“ */
   const AreaManage = {
     open(focusId) {
-      if (State.mode === 'view') return;
+      if (State.mode === 'view' || Areas.isFixed(Areas.state)) return; // feste Bereiche werden nicht umbenannt
       AreaManage.renderList();
       Dialogs.open($('areaDialog'));
       const inp = document.getElementById('nm-' + (focusId || State.area));
@@ -4845,12 +4918,10 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         const e = (off, st) => Object.assign({ isOpen: true }, Status.evaluate(mk(off, st ? { status: st } : {}), today));
         return isDue14(e(0)) && isDue14(e(14)) && !isDue14(e(15)) && !isDue14(e(-1)) && !isDue14(e(3, 'Zurückgestellt'));
       });
-      t('Bereichsnamen: Pflicht, eindeutig, höchstens 40 Zeichen', () => {
-        const saved = Areas.state;
-        Areas.state = Areas.defaults();
-        const ok = Areas.validateName('b1', '') !== '' && Areas.validateName('b1', 'bereich 2') !== '' && Areas.validateName('b1', 'x'.repeat(41)) !== '' && Areas.validateName('b1', 'Instandhaltung') === '' && Areas.validateName('b1', 'Bereich 1') === '';
-        Areas.state = saved;
-        return ok;
+      t('Feste Bereiche: Karsten, Maik, Frank, Jörn, Ingo, Gesund nach Hause, ASI', () => {
+        const d = Areas.defaults();
+        const names = d.areas.map((a) => a.name).join('|');
+        return { ok: Areas.isFixed(d) && names === 'Gesamtübersicht|Karsten|Maik|Frank|Jörn|Ingo|Gesund nach Hause|ASI', detail: names };
       });
       t('Excel: Farblegende, Abkürzungen und Spalte „Bereich“', () => {
         const ws = XLSX.utils.aoa_to_sheet([['Herkunft', 'Thema', 'Aktion', 'Zuständigkeit', 'Zieldatum', 'Status', 'Bereich'], ['ASA', 'Brandschutz', 'Löscher prüfen', 'A', '', 'offen', 'bereich 2'], ['', 'grün ', 'erledigt'], ['', 'weiß', 'in Bearbeitung'], ['', 'grün', 'erledigt', 'B']]);
@@ -4892,15 +4963,23 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           return { ok: mg.moved === 3 && mg.snapshot.actions.length === 0 && ids === 'b1,b2,b1,b2' && mg.manual[0].origin === 'excel' && mg.manual[0].excelRow === 5 && mg.manual[0].extra.length === 1 && mg.manual[0].src === 'manual', detail: ids };
         } finally { Areas.state = keepA; }
       });
+      t('Feste Bereiche: Zuordnung über Vor- und Nachnamen der Zuständigkeit', () => {
+        const cases = [['Maik', 'k-maik'], ['Maik Hohmann', 'k-maik'], ['Jörn Duee', 'k-joern'], ['Joern', 'k-joern'], ['Reiß', 'k-ingo'], ['Karsten Zota', 'k-karsten'], ['Frank', 'k-frank'], ['Oliver', 'k-gnh'], ['Jan', 'k-asi'], ['Marek', 'k-asi'], ['Jan / Marek', 'k-asi'], ['Maik/Jörn', 'k-maik'], ['Gesund nach Hause', 'k-gnh'], ['Alle Betriebsleiter', ''], ['Thorsten', ''], ['Janine', ''], ['', '']];
+        const bad = cases.filter((c) => Areas.personArea(c[0]) !== c[1]);
+        const old = { v: 1, next: 4, areas: [{ id: 'gesamt', name: 'Gesamtübersicht' }, { id: 'b1', name: 'Maik Hohmann' }, { id: 'b2', name: 'Bereich 2' }, { id: 'b3', name: 'Jens-Michael Hilmer' }] };
+        const fx = Areas.toFixed(old, [{ bereichId: 'b1', zust: 'Ingo' }, { bereichId: 'b2', zust: 'Oliver' }, { bereichId: 'b3', zust: 'Jens' }, { bereichId: '', zust: 'Marek' }], { ingo: 'b1' });
+        const ids = fx.records.map((r) => r.bereichId).join();
+        return { ok: !bad.length && ids === 'k-maik,k-gnh,,k-asi' && fx.byZust.ingo === 'k-maik' && Areas.isFixed(fx.areas) && fx.kept === 1 && fx.auto === 2 && fx.none === 1, detail: bad.map((c) => c[0]).join('|') + ' ' + ids };
+      });
       t('Stand veröffentlichen und wieder laden (Excel-Datei)', () => {
         const d = { format: 'ASI-Stand', version: 1, appVersion: APP_VERSION, publishedAt: '2026-10-29T10:00:00.000Z', publishedBy: 'Test', snapshot: null,
-          manual: Array.from({ length: 12 }, (_, i) => ({ id: 'm-' + i, src: 'manual', row: null, bereichId: 'b1', herkunft: '', thema: 'Brandschutz', aktion: 'Löscher <prüfen> & „ok“ ' + 'x'.repeat(3900), zust: 'A', kommentar: '', status: 'offen', vom: { s: 'empty' }, ziel: DateUtil.make(2026, 11, 3, 0, 0, ''), umgesetzt: { s: 'empty' }, extra: [] })),
+          manual: Array.from({ length: 12 }, (_, i) => ({ id: 'm-' + i, src: 'manual', row: null, bereichId: 'k-karsten', herkunft: '', thema: 'Brandschutz', aktion: 'Löscher <prüfen> & „ok“ ' + 'x'.repeat(3900), zust: 'A', kommentar: '', status: 'offen', vom: { s: 'empty' }, ziel: DateUtil.make(2026, 11, 3, 0, 0, ''), umgesetzt: { s: 'empty' }, extra: [] })),
           areas: Areas.defaults() };
         const buf = XLSX.write(Stand.buildWorkbook(d), { bookType: 'xlsx', type: 'array' });
         const wb = XLSX.read(new Uint8Array(buf), { type: 'array' });
         const back = Stand.detect(wb);
         const plain = XLSX.utils.sheet_to_json(wb.Sheets['Maßnahmen'], { header: 1 });
-        return { ok: !!back && JSON.stringify(back) === JSON.stringify(d) && plain.length === 13 && plain[1][0] === 'Bereich 1' && wb.SheetNames[0] === 'Info' && wb.Sheets[STAND_SHEET].A3, detail: wb.SheetNames.join(', ') };
+        return { ok: !!back && JSON.stringify(back) === JSON.stringify(d) && plain.length === 13 && plain[1][0] === 'Karsten' && wb.SheetNames[0] === 'Info' && wb.Sheets[STAND_SHEET].A3, detail: wb.SheetNames.join(', ') };
       });
       t('In Bearbeitung: sichtbar, Frist bleibt maßgeblich', () => { const e = Status.evaluate(mk(-2, { status: 'In Bearbeitung' }), today); return e.inProgress && e.cat === 'ueberfaellig'; });
       t('HTML-Escaping', () => Util.escapeHtml('<img src=x onerror="a">&\'') === '&lt;img src=x onerror=&quot;a&quot;&gt;&amp;&#39;');
@@ -4990,12 +5069,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (!t) return;
       const tab = t.closest('.sx-tab');
       if (tab) { selectArea(tab.dataset.id, true); return; }
-      if (t.closest('#btnAreaAddTab')) { const id = Areas.add(); if (id) { selectArea(id); AreaManage.open(id); } return; }
-      if (t.closest('#btnAreaManage')) AreaManage.open(State.area);
-    });
-    areasEl.addEventListener('dblclick', (ev) => {
-      const tab = ev.target instanceof Element ? ev.target.closest('.sx-tab') : null;
-      if (tab) AreaManage.open(tab.dataset.id);
+
     });
     areasEl.addEventListener('keydown', (ev) => {
       const tab = ev.target instanceof Element ? ev.target.closest('.sx-tab') : null;
@@ -5007,7 +5081,6 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       else if (ev.key === 'ArrowLeft') next = tabs[(i - 1 + tabs.length) % tabs.length];
       else if (ev.key === 'Home') next = tabs[0];
       else if (ev.key === 'End') next = tabs[tabs.length - 1];
-      else if (ev.key === 'F2') { ev.preventDefault(); AreaManage.open(tab.dataset.id); return; }
       if (next) { ev.preventDefault(); selectArea(next.dataset.id, true); }
     });
     $('areaList').addEventListener('input', AreaManage.onInput);
@@ -5021,6 +5094,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     });
     $('btnViewReload').addEventListener('click', openFilePicker);
     $('btnZustSave').addEventListener('click', () => ZustAssign.save());
+    $('eZust').addEventListener('change', () => { if (!$('eBereich').value) { const id = Areas.personArea($('eZust').value); if (Areas.isDep(id)) $('eBereich').value = id; } });
     $('btnBackupWarn').addEventListener('click', () => saveFlow(false));
     // Beim Schließen/Neuladen nachfragen, solange Änderungen nicht gesichert sind (Text legt der Browser fest)
     window.addEventListener('beforeunload', (ev) => {
@@ -5154,6 +5228,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     await Backup.load();
     await FileMemo.load();
     refresh();
+    if (State.fixedInfo) showMessage('info', 'Feste Bereiche eingerichtet (Karsten, Maik, Frank, Jörn, Ingo, Gesund nach Hause, ASI): ' + Util.num(State.fixedInfo.kept) + ' Maßnahmen über den bisherigen Bereichsnamen, ' + Util.num(State.fixedInfo.auto) + ' über die Zuständigkeit zugeordnet' + (State.fixedInfo.none ? ', ' + Util.num(State.fixedInfo.none) + ' ohne passende Person (siehe „Maßnahmen ohne Bereich“)' : '') + '. Bitte einmal „Daten › Speichern“.', 15000);
     if (State.migrated) showMessage('info', 'Umstellung auf Version 2: ' + Util.num(State.migrated) + ' Excel-Maßnahmen sind jetzt direkt im Dashboard bearbeitbar (Termine, Status, Bereich, Wirksamkeit). Bitte einmal „Daten › Speichern“.', 15000);
     if (State.startScreen && !window.__ASI_OHNE_STARTBILDSCHIRM) StartScreen.show(); // Schalter nur für automatisierte Tests
     window.ASIDashboard = Object.freeze({ version: APP_VERSION, selfTest: State.selfTest });
