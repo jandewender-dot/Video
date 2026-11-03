@@ -1,6 +1,15 @@
-# ASI-Dashboard – Anleitung (ab Version 2.3)
+# ASI-Dashboard – Anleitung (ab Version 2.4)
 
 Diese Anleitung ersetzt die früheren Einzelanleitungen (Stand veröffentlichen, Sicherung, Bereiche zuordnen).
+
+## Gemeinsamer Ordner
+
+Die HTML-Datei und `ASI_Stand.xlsx` liegen im SharePoint-Ordner **ASI Team HOL / NÖ / BS › Dokumente › General › Gesund nach Hause › Dashboard**.
+
+- **Jede Person** holt diesen Ordner einmal über **„Synchronisieren“** in den Windows-Explorer. „Daten › SharePoint-Ordner öffnen“ (oder der Link auf dem Startbildschirm) öffnet ihn im Browser.
+- **Die HTML-Datei immer aus dem Explorer öffnen** (Doppelklick), nicht in der SharePoint-Webansicht. In der Webansicht kann das Dashboard nichts speichern; dann erscheint oben das rote Warnfeld „In dieser Ansicht wird nichts gespeichert“.
+- Einen festen Speicherpfad kann eine HTML-Datei nicht vorgeben: Edge verlangt, dass der Ort einmal im Speichern- bzw. Öffnen-Dialog gewählt wird. Danach merkt sich das Dashboard die Datei.
+- In die SharePoint-Webadresse selbst kann das Dashboard nicht schreiben, nur in den synchronisierten Ordner. OneDrive lädt die Datei von dort hoch.
 
 ## Grundprinzip
 
@@ -20,7 +29,7 @@ Acht Bereiche sind fest hinterlegt und lassen sich weder umbenennen noch lösche
 | Jörn | Jörn/Joern oder Duee |
 | Ingo | Ingo oder Reiß/Reiss |
 | Jens-Michael | Jens, Jens-Michael oder Hilmer |
-| Gesund nach Hause | Oliver |
+| Gesund nach Hause | Oliver, Johanna oder Halacz, Heiko oder Völtzke (ab 2.4) |
 | ASI | Jan, Marek oder „ASI“ |
 
 So funktioniert die Erkennung:
@@ -49,6 +58,7 @@ Daten aus früheren Versionen:
 - Frei benannte Bereiche werden beim ersten Öffnen einmalig umgestellt. Das geschieht über den alten Namen (z. B. „Maik Hohmann“ → Maik, „Gesund nach Hause“ → Gesund nach Hause), sonst über die Zuständigkeit.
 - „Jens-Michael Hilmer“ wird zu Jens-Michael.
 - Andere frei benannte Bereiche ohne Gegenstück entfallen. Ihre Maßnahmen landen unter „ohne Bereich“, sofern die Zuständigkeit keinen bekannten Namen enthält.
+- Wer schon Version 2.3 oder älter nutzt und Maßnahmen von Johanna Halacz oder Heiko Völtzke „ohne Bereich“ hat: Die Karte „Maßnahmen ohne Bereich“ bietet **„… automatisch zuordnen“**. Bereits zugeordnete Maßnahmen bleiben unverändert.
 - Wer schon Version 2.1 nutzt: Beim ersten Öffnen kommt Jens-Michael hinzu. Bisher nicht zugeordnete Maßnahmen mit „Jens“ oder „Hilmer“ in der Zuständigkeit werden ihm zugeordnet. Bereits zugeordnete Maßnahmen bleiben unverändert.
 
 ## Erster Start (pflegende Person)
@@ -59,7 +69,7 @@ Daten aus früheren Versionen:
    - Oder einzeln über die Spalte **„Bereich“** in der Maßnahmenliste.
    - Hat die Excel-Tabelle eine Spalte „Bereich“, wird sie beim Einlesen berücksichtigt.
 3. **„Fristen nachpflegen …“** (Karte „Fristen fehlen“ auf dem Dashboard): Hier bekommen offene Maßnahmen ohne Zieldatum einen Termin. Jede Eingabe wird sofort gespeichert.
-4. **„Daten › Speichern“**: Beim ersten Mal fragt das Dashboard nach „Gepflegt von“, danach öffnet Edge den Speichern-Dialog. Wählen Sie den gemeinsamen SharePoint-Ordner. Ab dann genügt „Daten › Speichern“.
+4. **„Daten › Speichern“**: Beim ersten Mal fragt das Dashboard nach „Gepflegt von“, danach öffnet Edge den Speichern-Dialog. Wählen Sie den synchronisierten Ordner „Dashboard“ (siehe „Gemeinsamer Ordner“). Ab dann genügt „Daten › Speichern“.
 
 ## Tägliche Pflege
 
@@ -67,7 +77,7 @@ Daten aus früheren Versionen:
 - **Bearbeiten:** gilt für alle Maßnahmen, auch die aus Excel übernommenen.
 - **Wirksamkeitskontrolle** (§ 3 Abs. 1 ArbSchG): Für erledigte Maßnahmen tragen Sie im Formular „Geprüft am“, das Ergebnis (wirksam / teilweise / nicht wirksam) und „Geprüft durch“ ein. Die Kennzahl **„Wirksamkeit offen“** zeigt erledigte Maßnahmen, die noch nicht geprüft sind.
 - **Priorität** und **Art der Maßnahme (STOP)** sind optional. Die Rangfolge nach § 4 ArbSchG lautet: personenbezogene Maßnahmen sind nachrangig.
-- **Rotes Warnfeld:** Es erscheint, sobald etwas geändert ist und noch nicht gespeichert wurde. **„Jetzt speichern“** behebt das. Beim Schließen des Tabs fragt Edge zusätzlich nach.
+- **Rotes Warnfeld „Speichern“:** Es erscheint, sobald etwas geändert ist und noch nicht gespeichert wurde. **„Jetzt speichern“** behebt das. Beim Schließen des Tabs fragt Edge zusätzlich nach.
 
 ## Excel erneut einlesen
 
@@ -79,7 +89,7 @@ Wenn bereits Excel-Maßnahmen im Dashboard sind, fragt das Dashboard nach, wie d
 
 ## Für die Kolleginnen und Kollegen (ansehen)
 
-- Dashboard öffnen, dann **„Start“ › „Gespeicherten Stand nur ansehen“** und `ASI_Stand.xlsx` aus dem gemeinsamen Ordner wählen. Das Dashboard merkt sich die Datei, beim nächsten Mal heißt die Wahl **„Aktuellen Stand laden“**.
+- Dashboard aus dem synchronisierten Ordner „Dashboard“ öffnen, dann **„Start“ › „Gespeicherten Stand nur ansehen“** und `ASI_Stand.xlsx` aus diesem Ordner wählen. Das Dashboard merkt sich die Datei, beim nächsten Mal heißt die Wahl **„Aktuellen Stand laden“**.
 - Auf dem Startbildschirm unter **„Beim Öffnen anzeigen (Mein Bereich)“** den eigenen Bereich wählen. Das Dashboard öffnet dann direkt dort.
 - Im Ansichtsmodus lässt sich nichts ändern. Die Datenqualität ist ausgeblendet.
 
@@ -113,4 +123,5 @@ Beim ersten Öffnen werden vorhandene Daten automatisch umgestellt: Die Excel-Ma
 | Zuordnung | 27 von 27 |
 | Speichern, Übernahme und Warnfeld | 28 von 28 |
 | Startbildschirm | 28 von 28 |
+| Version 2.4 (Halacz/Völtzke, Warnfeld ohne Speicherung, SharePoint-Ordner öffnen) | 15 von 15 |
 | Selbstprüfung | 31 von 31 |

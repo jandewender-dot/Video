@@ -863,6 +863,8 @@ table.data.dense .area-pick{min-height:32px}
 .sx-rename{grid-template-columns:auto 104px minmax(0,1fr) auto}
 .sx-rename__err{grid-column:2 / 4}
 .sx-rename__del{color:var(--status-overdue-ink)}
+.start-info .start-folder{margin-top:var(--space-1)}
+.start-folder .btn-link{padding:0;font:inherit;font-weight:700}
 
 </style>
 </head>
@@ -879,9 +881,12 @@ table.data.dense .area-pick{min-height:32px}
     <label class="check start-check"><input type="checkbox" id="startShow" checked> Startbildschirm beim Öffnen anzeigen</label>
     <div class="start-info" id="startInfo">
       <p><strong>Erstellt von Jan Dewender.</strong> Bei Fragen oder Problemen mit dem Tool bitte melden.</p>
+      <p class="start-folder">Gemeinsamer Ordner: <button type="button" class="btn btn-link" id="btnStartFolder">SharePoint-Ordner „Dashboard“ öffnen</button></p>
       <details class="start-news"><summary><span id="startVersion">Version</span> · Was ist neu?</summary>
         <ul>
-          <li>Feste Bereiche: Karsten, Maik, Frank, Jörn, Ingo, Jens-Michael, Gesund nach Hause (Oliver) und ASI (Jan, Marek); dazu bis zu zwei eigene Bereiche („+“ in der Bereichsleiste). Beim Einlesen ordnet das Dashboard jede Maßnahme über die Zuständigkeit automatisch zu.</li>
+          <li>Neu in 2.4: Johanna Halacz und Heiko Völtzke gehören fest zu „Gesund nach Hause“. „Daten › SharePoint-Ordner öffnen“ öffnet den gemeinsamen Ordner im Browser. Ein rotes Warnfeld erscheint, wenn in der Ansicht nichts gespeichert werden kann.</li>
+          <li>Neu in 2.3: Eigene Bereiche lassen sich löschen; ihre Maßnahmen stehen danach auf „ohne Bereich“.</li>
+          <li>Feste Bereiche: Karsten, Maik, Frank, Jörn, Ingo, Jens-Michael, Gesund nach Hause (Oliver, Johanna Halacz, Heiko Völtzke) und ASI (Jan, Marek); dazu bis zu zwei eigene Bereiche („+“ in der Bereichsleiste). Beim Einlesen ordnet das Dashboard jede Maßnahme über die Zuständigkeit automatisch zu.</li>
           <li>Das Dashboard ist führend: Alle Maßnahmen – auch die aus Excel übernommenen – lassen sich hier bearbeiten (Termine, Status, Bereich).</li>
           <li>„Daten › Speichern“ erzeugt ASI_Stand.xlsx: zugleich Sicherung und Stand für alle, die ansehen.</li>
           <li>Neue Maßnahmen brauchen Bereich, Zuständigkeit und Zieldatum; „Fristen nachpflegen“ hilft bei Maßnahmen ohne Termin.</li>
@@ -921,6 +926,7 @@ table.data.dense .area-pick{min-height:32px}
         <li role="none" class="edit-only" id="liBackupWhere" hidden><button type="button" role="menuitem" class="menu-item" id="btnBackupWhere"><span class="mi-title">Speichern unter …</span><span class="mi-hint">Anderen Ordner oder Dateinamen wählen</span></button></li>
         <li role="none" class="edit-only"><button type="button" role="menuitem" class="menu-item" id="btnBackupRestore"><span class="mi-title">Gespeicherten Stand laden</span><span class="mi-hint" id="btnBackupRestoreHint">Datei auswählen – ersetzt die Daten in diesem Browser</span></button></li>
         <li role="none" class="menu-sep"><button type="button" role="menuitem" class="menu-item" id="btnShowStart"><span class="mi-title">Startbildschirm</span><span class="mi-hint">Excel, gespeicherten Stand oder Mein Bereich wählen</span></button></li>
+        <li role="none"><button type="button" role="menuitem" class="menu-item" id="btnOpenFolder"><span class="mi-title">SharePoint-Ordner öffnen</span><span class="mi-hint">General › Gesund nach Hause › Dashboard – im Browser, z. B. zum Synchronisieren</span></button></li>
       </ul>
     </div>
     <div class="menu-wrap">
@@ -948,6 +954,11 @@ table.data.dense .area-pick{min-height:32px}
     <button type="button" class="btn btn-sm" id="btnViewReload">Neuen Stand laden</button>
     <button type="button" class="btn btn-sm" id="btnViewExit">Ansichtsmodus beenden</button>
   </div>
+</div>
+
+<div class="backup-warn no-print" id="storageWarn" role="alert" hidden>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17h.01"/></svg>
+  <p class="backup-warn__text"><strong>Achtung – In dieser Ansicht wird nichts gespeichert.</strong> Der Browser lässt hier keine Speicherung zu (das passiert z. B., wenn die Datei direkt in der SharePoint-Webansicht geöffnet wird). Beim Schließen gehen alle Änderungen verloren. Bitte die HTML-Datei aus dem synchronisierten Ordner im Windows-Explorer öffnen.</p>
 </div>
 
 <div class="backup-warn no-print" id="backupWarn" role="alert" hidden>
@@ -1253,7 +1264,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 (function () {
   'use strict';
 
-  const APP_VERSION = '2.3.0';
+  const APP_VERSION = '2.4.0';
 
   /* =====================================================================
    * Konfiguration
@@ -2187,8 +2198,20 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
   const PERSON_AREAS = {
     karsten: 'k-karsten', zota: 'k-karsten', maik: 'k-maik', hohmann: 'k-maik', frank: 'k-frank', dannenberg: 'k-frank',
     joern: 'k-joern', jorn: 'k-joern', duee: 'k-joern', ingo: 'k-ingo', reiss: 'k-ingo', jens: 'k-jens', hilmer: 'k-jens',
-    oliver: 'k-gnh', jan: 'k-asi', marek: 'k-asi', asi: 'k-asi'
+    oliver: 'k-gnh', johanna: 'k-gnh', halacz: 'k-gnh', heiko: 'k-gnh', voeltzke: 'k-gnh', voltzke: 'k-gnh',
+    jan: 'k-asi', marek: 'k-asi', asi: 'k-asi'
   };
+  /** Gemeinsamer SharePoint-Ordner für ASI_Stand.xlsx (Link aus dem Team; nur zum Öffnen im Browser) */
+  const SHAREPOINT_FOLDER = {
+    url: 'https://symriseag.sharepoint.com/sites/ASITeamHOLNBS/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FASITeamHOLNBS%2FShared%20Documents%2FGeneral%2FGesund%20nach%20Hause%2FDashboard',
+    label: 'ASI Team HOL / NÖ / BS › Dokumente › General › Gesund nach Hause › Dashboard'
+  };
+  function openSharePointFolder() {
+    let w = null;
+    try { w = window.open(SHAREPOINT_FOLDER.url, '_blank', 'noopener'); } catch (e) { w = null; }
+    showMessage('info', 'Der SharePoint-Ordner „' + SHAREPOINT_FOLDER.label + '“ wird im Browser geöffnet. Dort lässt er sich mit „Synchronisieren“ in den Windows-Explorer holen.', 8000);
+    return w;
+  }
   const Areas = {
     state: null,
     defaults() {
@@ -3191,6 +3214,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       const own = State.manual.filter((m) => m.origin !== 'excel').length;
       if (own) man.appendChild(h('span', { class: 'pill pill-manual' }, own + ' im Dashboard erfasst'));
       if (!State.storageOk) man.appendChild(h('span', { class: 'pill pill-none', title: 'IndexedDB ist in dieser Umgebung nicht verfügbar' }, 'Speicherung nicht verfügbar'));
+      const sw = $('storageWarn');
+      if (sw.hidden === !State.storageOk) sw.hidden = State.storageOk;
       $('srcToday').textContent = DateUtil.weekday(State.today) + ', ' + DateUtil.fmtNum(State.today);
       $('printMeta').textContent = 'Bereich: ' + Areas.name(State.area) + ' · Stichtag ' + DateUtil.fmtNum(State.today) + (s ? ' · Datei: ' + s.fileName + ' · Import: ' + Util.formatDateTime(s.importedAt) : '');
     },
@@ -5036,7 +5061,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         } finally { Areas.state = keepA; }
       });
       t('Feste Bereiche: Zuordnung über Vor- und Nachnamen der Zuständigkeit', () => {
-        const cases = [['Maik', 'k-maik'], ['Maik Hohmann', 'k-maik'], ['Jörn Duee', 'k-joern'], ['Joern', 'k-joern'], ['Reiß', 'k-ingo'], ['Karsten Zota', 'k-karsten'], ['Frank', 'k-frank'], ['Oliver', 'k-gnh'], ['Jan', 'k-asi'], ['Marek', 'k-asi'], ['Jan / Marek', 'k-asi'], ['Maik/Jörn', 'k-maik'], ['Gesund nach Hause', 'k-gnh'], ['Jens-Michael', 'k-jens'], ['Hilmer', 'k-jens'], ['Alle Betriebsleiter', ''], ['Thorsten', ''], ['Janine', ''], ['Michael', ''], ['', '']];
+        const cases = [['Maik', 'k-maik'], ['Maik Hohmann', 'k-maik'], ['Jörn Duee', 'k-joern'], ['Joern', 'k-joern'], ['Reiß', 'k-ingo'], ['Karsten Zota', 'k-karsten'], ['Frank', 'k-frank'], ['Oliver', 'k-gnh'], ['Johanna Halacz', 'k-gnh'], ['Heiko Völtzke', 'k-gnh'], ['Johanna Halacz\nHeiko Völtzke\nOliver Düker', 'k-gnh'], ['Jan', 'k-asi'], ['Marek', 'k-asi'], ['Jan / Marek', 'k-asi'], ['Maik/Jörn', 'k-maik'], ['Gesund nach Hause', 'k-gnh'], ['Jens-Michael', 'k-jens'], ['Hilmer', 'k-jens'], ['Alle Betriebsleiter', ''], ['Thorsten', ''], ['Janine', ''], ['Michael', ''], ['', '']];
         const bad = cases.filter((c) => Areas.personArea(c[0]) !== c[1]);
         const old = { v: 1, next: 4, areas: [{ id: 'gesamt', name: 'Gesamtübersicht' }, { id: 'b1', name: 'Maik Hohmann' }, { id: 'b2', name: 'Bereich 2' }, { id: 'b3', name: 'Jens-Michael Hilmer' }] };
         const fx = Areas.toFixed(old, [{ bereichId: 'b1', zust: 'Ingo' }, { bereichId: 'b2', zust: 'Oliver' }, { bereichId: 'b3', zust: 'Thorsten' }, { bereichId: '', zust: 'Marek' }], { ingo: 'b1' });
@@ -5197,6 +5222,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     $('btnStartSkip').addEventListener('click', () => StartScreen.hide());
     $('startShow').addEventListener('change', () => { State.startScreen = $('startShow').checked; savePrefs(); });
     $('btnShowStart').addEventListener('click', () => StartScreen.show());
+    $('btnOpenFolder').addEventListener('click', () => openSharePointFolder());
+    $('btnStartFolder').addEventListener('click', () => openSharePointFolder());
     $('btnBackupSave').addEventListener('click', () => saveFlow(false));
     $('btnBackupWhere').addEventListener('click', () => saveFlow(true));
     $('fristDialog').addEventListener('close', () => refresh());
