@@ -1,4 +1,4 @@
-# ASI-Dashboard – Anleitung (ab Version 2.4)
+# ASI-Dashboard – Anleitung (ab Version 2.5)
 
 Diese Anleitung ersetzt die früheren Einzelanleitungen (Stand veröffentlichen, Sicherung, Bereiche zuordnen).
 
@@ -7,7 +7,7 @@ Diese Anleitung ersetzt die früheren Einzelanleitungen (Stand veröffentlichen,
 Die HTML-Datei und `ASI_Stand.xlsx` liegen im SharePoint-Ordner **ASI Team HOL / NÖ / BS › Dokumente › General › Gesund nach Hause › Dashboard**.
 
 - **Jede Person** holt diesen Ordner einmal über **„Synchronisieren“** in den Windows-Explorer. „Daten › SharePoint-Ordner öffnen“ (oder der Link auf dem Startbildschirm) öffnet ihn im Browser.
-- **Die HTML-Datei immer aus dem Explorer öffnen** (Doppelklick), nicht in der SharePoint-Webansicht. In der Webansicht kann das Dashboard nichts speichern; dann erscheint oben das rote Warnfeld „In dieser Ansicht wird nichts gespeichert“.
+- **Die HTML-Datei immer aus dem Explorer öffnen** (Doppelklick), nicht in der SharePoint-Webansicht. In der Webansicht kann das Dashboard nichts speichern; dann zeigt das rote Warndreieck in der Bereichsleiste den Hinweis „In dieser Ansicht wird nichts gespeichert“.
 - Einen festen Speicherpfad kann eine HTML-Datei nicht vorgeben: Edge verlangt, dass der Ort einmal im Speichern- bzw. Öffnen-Dialog gewählt wird. Danach merkt sich das Dashboard die Datei.
 - In die SharePoint-Webadresse selbst kann das Dashboard nicht schreiben, nur in den synchronisierten Ordner. OneDrive lädt die Datei von dort hoch.
 
@@ -77,7 +77,9 @@ Daten aus früheren Versionen:
 - **Bearbeiten:** gilt für alle Maßnahmen, auch die aus Excel übernommenen.
 - **Wirksamkeitskontrolle** (§ 3 Abs. 1 ArbSchG): Für erledigte Maßnahmen tragen Sie im Formular „Geprüft am“, das Ergebnis (wirksam / teilweise / nicht wirksam) und „Geprüft durch“ ein. Die Kennzahl **„Wirksamkeit offen“** zeigt erledigte Maßnahmen, die noch nicht geprüft sind.
 - **Priorität** und **Art der Maßnahme (STOP)** sind optional. Die Rangfolge nach § 4 ArbSchG lautet: personenbezogene Maßnahmen sind nachrangig.
-- **Rotes Warnfeld „Speichern“:** Es erscheint, sobald etwas geändert ist und noch nicht gespeichert wurde. **„Jetzt speichern“** behebt das. Beim Schließen des Tabs fragt Edge zusätzlich nach.
+- **Rotes Warndreieck (ab 2.5):** Rechts in der Bereichsleiste, neben „+“ und Stift. Es erscheint, sobald etwas geändert und noch nicht gespeichert ist oder in der Ansicht nichts gespeichert werden kann. Die Zahl nennt die Anzahl der Hinweise; ein neuer Hinweis lässt das Dreieck kurz pulsieren.
+  - Die roten Hinweise sind **standardmäßig eingeklappt**. Ein Klick auf das Dreieck klappt sie auf, ein zweiter wieder zu. Beim nächsten Öffnen sind sie wieder eingeklappt.
+  - Im aufgeklappten Hinweis speichert **„Jetzt speichern“**. Alternativ „Daten › Speichern“. Beim Schließen des Tabs fragt Edge zusätzlich nach, solange nicht gespeichert ist.
 
 ## Excel erneut einlesen
 
@@ -121,7 +123,7 @@ Beim ersten Öffnen werden vorhandene Daten automatisch umgestellt: Die Excel-Ma
 | Bereiche (fest und eigene, automatische Zuordnung, Löschen eigener Bereiche) | 57 von 57 |
 | Speichern und Ansichtsmodus | 32 von 32 |
 | Zuordnung | 27 von 27 |
-| Speichern, Übernahme und Warnfeld | 28 von 28 |
+| Speichern, Übernahme und Warnhinweise | 30 von 30 |
 | Startbildschirm | 28 von 28 |
-| Version 2.4 (Halacz/Völtzke, Warnfeld ohne Speicherung, SharePoint-Ordner öffnen) | 15 von 15 |
+| Version 2.4/2.5 (Halacz/Völtzke, Warndreieck und Warnhinweise, SharePoint-Ordner öffnen) | 18 von 18 |
 | Selbstprüfung | 31 von 31 |

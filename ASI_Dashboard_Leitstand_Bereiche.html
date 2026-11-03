@@ -865,6 +865,17 @@ table.data.dense .area-pick{min-height:32px}
 .sx-rename__del{color:var(--status-overdue-ink)}
 .start-info .start-folder{margin-top:var(--space-1)}
 .start-folder .btn-link{padding:0;font:inherit;font-weight:700}
+/* Warndreieck in der Bereichsleiste: klappt die Warnhinweise auf und zu */
+.warn-btn{position:relative;color:#b5121b;border-color:#e7a3a7}
+.warn-btn[hidden]{display:none}
+.warn-btn:hover{background:#fdecee}
+.warn-btn[aria-expanded="true"]{background:#b5121b;color:#fff;border-color:#b5121b}
+.warn-btn__count{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#b5121b;color:#fff;font:700 11px/18px var(--font-sans);text-align:center;box-shadow:0 0 0 2px var(--surface-raised)}
+.warn-btn[aria-expanded="true"] .warn-btn__count{background:#fff;color:#b5121b}
+.warn-btn.is-new{animation:warn-ping 1.6s ease-out 3}
+@keyframes warn-ping{0%{box-shadow:0 0 0 0 rgba(181,18,27,.55)}70%{box-shadow:0 0 0 10px rgba(181,18,27,0)}100%{box-shadow:0 0 0 0 rgba(181,18,27,0)}}
+@media (prefers-reduced-motion:reduce){.warn-btn.is-new{animation:none}}
+.warn-block[hidden]{display:none}
 
 </style>
 </head>
@@ -884,6 +895,7 @@ table.data.dense .area-pick{min-height:32px}
       <p class="start-folder">Gemeinsamer Ordner: <button type="button" class="btn btn-link" id="btnStartFolder">SharePoint-Ordner „Dashboard“ öffnen</button></p>
       <details class="start-news"><summary><span id="startVersion">Version</span> · Was ist neu?</summary>
         <ul>
+          <li>Neu in 2.5: Die roten Warnhinweise sind standardmäßig eingeklappt. Das rote Warndreieck rechts in der Bereichsleiste zeigt, wie viele es gibt, und klappt sie auf und zu.</li>
           <li>Neu in 2.4: Johanna Halacz und Heiko Völtzke gehören fest zu „Gesund nach Hause“. „Daten › SharePoint-Ordner öffnen“ öffnet den gemeinsamen Ordner im Browser. Ein rotes Warnfeld erscheint, wenn in der Ansicht nichts gespeichert werden kann.</li>
           <li>Neu in 2.3: Eigene Bereiche lassen sich löschen; ihre Maßnahmen stehen danach auf „ohne Bereich“.</li>
           <li>Feste Bereiche: Karsten, Maik, Frank, Jörn, Ingo, Jens-Michael, Gesund nach Hause (Oliver, Johanna Halacz, Heiko Völtzke) und ASI (Jan, Marek); dazu bis zu zwei eigene Bereiche („+“ in der Bereichsleiste). Beim Einlesen ordnet das Dashboard jede Maßnahme über die Zuständigkeit automatisch zu.</li>
@@ -956,16 +968,19 @@ table.data.dense .area-pick{min-height:32px}
   </div>
 </div>
 
-<div class="backup-warn no-print" id="storageWarn" role="alert" hidden>
+<div class="warn-block no-print" id="warnBlock" hidden>
+<div class="backup-warn" id="storageWarn" role="alert" hidden>
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17h.01"/></svg>
   <p class="backup-warn__text"><strong>Achtung – In dieser Ansicht wird nichts gespeichert.</strong> Der Browser lässt hier keine Speicherung zu (das passiert z. B., wenn die Datei direkt in der SharePoint-Webansicht geöffnet wird). Beim Schließen gehen alle Änderungen verloren. Bitte die HTML-Datei aus dem synchronisierten Ordner im Windows-Explorer öffnen.</p>
 </div>
 
-<div class="backup-warn no-print" id="backupWarn" role="alert" hidden>
+<div class="backup-warn" id="backupWarn" role="alert" hidden>
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17h.01"/></svg>
   <p class="backup-warn__text"><strong>Achtung –</strong> <span id="backupWarnText"></span></p>
   <button type="button" class="btn btn-sm backup-warn__btn" id="btnBackupWarn">Jetzt speichern</button>
 </div>
+</div>
+<span class="visually-hidden" id="warnLive" aria-live="polite"></span>
 
 <div class="source-bar" id="sourceBar" aria-label="Datenquelle">
   <span class="source-item"><span>Datei:</span> <strong id="srcFile">–</strong></span>
@@ -1264,7 +1279,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 (function () {
   'use strict';
 
-  const APP_VERSION = '2.4.0';
+  const APP_VERSION = '2.5.0';
 
   /* =====================================================================
    * Konfiguration
@@ -2335,7 +2350,38 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           : 'Sie haben Daten geändert (z. B. Termine, Bereiche oder Wirksamkeit). Bitte vor dem Beenden des Tools speichern – das erstellt zugleich die Sicherungsdatei!';
       }
       if (el.hidden === show) el.hidden = !show;
+      WarnBlock.render();
     }
+  };
+
+  /** Warnhinweise (keine Speicherung möglich, ungespeicherte Änderungen): standardmäßig eingeklappt;
+   *  das Warndreieck in der Bereichsleiste zeigt ihre Anzahl und klappt sie auf und zu. */
+  const WarnBlock = {
+    open: false,   // gilt nur bis zum Schließen der Seite – beim Öffnen immer eingeklappt
+    count: 0,
+    fresh: false,  // neuer Hinweis, solange eingeklappt → Dreieck hebt sich hervor
+    render() {
+      const n = ['storageWarn', 'backupWarn'].filter((id) => !$(id).hidden).length;
+      const show = n > 0 && WarnBlock.open;
+      if (n > WarnBlock.count && !show) {
+        WarnBlock.fresh = true;
+        $('warnLive').textContent = Util.num(n) + ' ' + Util.plural(n, 'Warnhinweis', 'Warnhinweise') + ' – über das Warndreieck in der Bereichsleiste anzeigen.';
+      }
+      if (show || n === 0) WarnBlock.fresh = false;
+      WarnBlock.count = n;
+      const block = $('warnBlock');
+      if (block.hidden === show) block.hidden = !show;
+      const btn = document.getElementById('btnWarn');
+      if (!btn) return;
+      if (btn.hidden !== (n === 0)) btn.hidden = n === 0;
+      const label = show ? 'Warnhinweise ausblenden' : Util.num(n) + ' ' + Util.plural(n, 'Warnhinweis', 'Warnhinweise') + ' anzeigen';
+      btn.setAttribute('aria-expanded', show ? 'true' : 'false');
+      btn.setAttribute('aria-label', label);
+      btn.title = label;
+      btn.querySelector('.warn-btn__count').textContent = Util.num(n);
+      btn.classList.toggle('is-new', WarnBlock.fresh);
+    },
+    toggle() { WarnBlock.open = !WarnBlock.open; WarnBlock.render(); }
   };
 
   /* =====================================================================
@@ -3216,6 +3262,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (!State.storageOk) man.appendChild(h('span', { class: 'pill pill-none', title: 'IndexedDB ist in dieser Umgebung nicht verfügbar' }, 'Speicherung nicht verfügbar'));
       const sw = $('storageWarn');
       if (sw.hidden === !State.storageOk) sw.hidden = State.storageOk;
+      WarnBlock.render();
       $('srcToday').textContent = DateUtil.weekday(State.today) + ', ' + DateUtil.fmtNum(State.today);
       $('printMeta').textContent = 'Bereich: ' + Areas.name(State.area) + ' · Stichtag ' + DateUtil.fmtNum(State.today) + (s ? ' · Datei: ' + s.fileName + ' · Import: ' + Util.formatDateTime(s.importedAt) : '');
     },
@@ -3621,6 +3668,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           addBtn.disabled = full;
           addBtn.title = full ? 'Es sind höchstens ' + AREA_MAX + ' Bereiche möglich.' : 'Eigenen Bereich hinzufügen';
         }
+        WarnBlock.render();
         return;
       }
       clear(root);
@@ -3635,10 +3683,16 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
         ]));
       });
       root.appendChild(list);
-      if (State.mode === 'edit') root.appendChild(h('div', { class: 'sx-areas__tools' }, [
-        h('button', { type: 'button', class: 'sx-btn sx-btn--ghost sx-btn--icon', id: 'btnAreaAddTab', title: full ? 'Es sind höchstens ' + AREA_MAX + ' Bereiche möglich.' : 'Eigenen Bereich hinzufügen', 'aria-label': full ? 'Bereich hinzufügen – höchstens ' + AREA_MAX + ' Bereiche möglich' : 'Eigenen Bereich hinzufügen', disabled: full ? true : null }, shapeIcon([['path', { d: 'M12 5v14M5 12h14' }]], 'sx-i')),
-        h('button', { type: 'button', class: 'sx-btn sx-btn--ghost sx-btn--icon', id: 'btnAreaManage', title: 'Eigene Bereiche umbenennen oder löschen', 'aria-label': 'Eigene Bereiche umbenennen oder löschen' }, shapeIcon([['path', { d: 'M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z' }], ['path', { d: 'm14 8 3 3' }]], 'sx-i'))
+      const edit = State.mode === 'edit';
+      root.appendChild(h('div', { class: 'sx-areas__tools' }, [
+        h('button', { type: 'button', class: 'sx-btn sx-btn--ghost sx-btn--icon warn-btn no-print', id: 'btnWarn', hidden: true, 'aria-controls': 'warnBlock', 'aria-expanded': 'false', onclick: () => WarnBlock.toggle() }, [
+          shapeIcon([['path', { d: 'M12 3 2 20h20L12 3z' }], ['path', { d: 'M12 10v4M12 17h.01' }]], 'sx-i'),
+          h('span', { class: 'warn-btn__count', 'aria-hidden': 'true' })
+        ]),
+        !edit ? null : h('button', { type: 'button', class: 'sx-btn sx-btn--ghost sx-btn--icon', id: 'btnAreaAddTab', title: full ? 'Es sind höchstens ' + AREA_MAX + ' Bereiche möglich.' : 'Eigenen Bereich hinzufügen', 'aria-label': full ? 'Bereich hinzufügen – höchstens ' + AREA_MAX + ' Bereiche möglich' : 'Eigenen Bereich hinzufügen', disabled: full ? true : null }, shapeIcon([['path', { d: 'M12 5v14M5 12h14' }]], 'sx-i')),
+        !edit ? null : h('button', { type: 'button', class: 'sx-btn sx-btn--ghost sx-btn--icon', id: 'btnAreaManage', title: 'Eigene Bereiche umbenennen oder löschen', 'aria-label': 'Eigene Bereiche umbenennen oder löschen' }, shapeIcon([['path', { d: 'M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z' }], ['path', { d: 'm14 8 3 3' }]], 'sx-i'))
       ]));
+      WarnBlock.render();
     },
 
     /** Schwerpunktthemen als Kacheln (Leerzustand) */
