@@ -8,6 +8,8 @@ Die HTML-Datei und `ASI_Stand.xlsx` liegen im SharePoint-Ordner **ASI Team HOL /
 
 - **Jede Person** holt diesen Ordner einmal über **„Synchronisieren“** in den Windows-Explorer. „Daten › SharePoint-Ordner öffnen“ (oder der Link auf dem Startbildschirm) öffnet ihn im Browser.
 - **Die HTML-Datei immer aus dem Explorer öffnen** (Doppelklick), nicht in der SharePoint-Webansicht. In der Webansicht kann das Dashboard nichts speichern; dann zeigt das rote Warndreieck in der Bereichsleiste den Hinweis „In dieser Ansicht wird nichts gespeichert“.
+  - Woran man die Webansicht erkennt: Die Adresszeile beginnt mit `https://symriseag.sharepoint.com/…`, oben steht der Dateiname mit „Öffnen“ und „Teilen“. Aus dem Explorer geöffnet zeigt die Adresszeile stattdessen einen Pfad auf dem PC (z. B. `C:/Users/…`).
+  - In der Webansicht sperrt Edge außerdem das Absenden von Formularen und je nach Einstellung Downloads. Bis 2.5.0 reagierte deshalb „Speichern“ im Formular „Neue Maßnahme“ dort nicht; ab 2.5.1 speichert es, die Maßnahme ist aber nach dem Schließen weg. „Daten › Speichern“ weist dort darauf hin, dass der Download gesperrt sein kann.
 - Einen festen Speicherpfad kann eine HTML-Datei nicht vorgeben: Edge verlangt, dass der Ort einmal im Speichern- bzw. Öffnen-Dialog gewählt wird. Danach merkt sich das Dashboard die Datei.
 - In die SharePoint-Webadresse selbst kann das Dashboard nicht schreiben, nur in den synchronisierten Ordner. OneDrive lädt die Datei von dort hoch.
 
@@ -126,4 +128,5 @@ Beim ersten Öffnen werden vorhandene Daten automatisch umgestellt: Die Excel-Ma
 | Speichern, Übernahme und Warnhinweise | 30 von 30 |
 | Startbildschirm | 28 von 28 |
 | Version 2.4/2.5 (Halacz/Völtzke, Warndreieck und Warnhinweise, SharePoint-Ordner öffnen) | 18 von 18 |
+| Abgeschirmte Ansicht (wie SharePoint-Webansicht): Speichern im Formular, Enter, Hinweis beim Speichern | 14 von 14 |
 | Selbstprüfung | 31 von 31 |

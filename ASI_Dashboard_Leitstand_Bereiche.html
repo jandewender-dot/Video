@@ -1279,7 +1279,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 (function () {
   'use strict';
 
-  const APP_VERSION = '2.5.0';
+  const APP_VERSION = '2.5.1';
 
   /* =====================================================================
    * Konfiguration
@@ -3061,7 +3061,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           } catch (e) {
             if (e && e.name === 'AbortError') return;
             Exporter.download(blob, BACKUP_FILE);
-            showMessage('info', 'Der Speichern-Dialog war nicht verfügbar; „' + BACKUP_FILE + '“ wurde heruntergeladen.', 10000);
+            if (!State.storageOk) showMessage('warn', 'In dieser Ansicht gibt es keinen Speichern-Dialog. „' + BACKUP_FILE + '“ wurde zum Herunterladen angeboten. Kommt keine Datei im Download-Ordner an, sperrt die Ansicht auch Downloads (z. B. SharePoint-Webansicht). Bitte dann die HTML-Datei aus dem synchronisierten Ordner im Windows-Explorer öffnen.', 20000);
+            else showMessage('info', 'Der Speichern-Dialog war nicht verfügbar; „' + BACKUP_FILE + '“ wurde heruntergeladen.', 10000);
             return;
           }
         }
@@ -5196,6 +5197,9 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     $('btnNewAction').addEventListener('click', () => Editor.open(null));
     $('btnNewAction2').addEventListener('click', () => Editor.open(null));
     $('editForm').addEventListener('submit', Editor.save);
+    // Speichern auch dort, wo der Browser das Absenden von Formularen sperrt (z. B. abgeschirmte Web-Vorschau):
+    // Der Klick speichert direkt; preventDefault verhindert ein zweites Speichern über „submit“. Enter in einem Feld löst denselben Klick aus.
+    $('btnEditSave').addEventListener('click', Editor.save);
     $('btnEditDelete').addEventListener('click', () => { if (Editor.editing) Editor.remove(Editor.editing); });
     $('btnPrint').addEventListener('click', () => {
       try { window.print(); } catch (e) { showMessage('error', 'Drucken ist in dieser Umgebung nicht möglich. Bitte die Datei direkt im Browser öffnen.'); }
