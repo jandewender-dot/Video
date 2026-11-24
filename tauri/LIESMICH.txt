@@ -1,4 +1,4 @@
-ASI-Dashboard – Desktop-Fassung (Tauri) 2.5.2
+ASI-Dashboard – Desktop-Fassung (Tauri) 2.6.0
 =============================================
 
 Starten (ohne Installation)
@@ -15,7 +15,21 @@ Voraussetzungen
   Informationen" > "Trotzdem ausführen"). Firmenrichtlinien können den
   Start unsignierter Programme ganz sperren – dann bitte die IT fragen.
 
-Daten
+Speicherort selbst wählen
+- "Daten > Speichern": Beim ersten Mal öffnet sich der Windows-Dialog
+  "Speichern unter". Ordner und Dateinamen frei wählen, z. B. den
+  synchronisierten Ordner "Dashboard". Das Programm merkt sich den
+  vollständigen Pfad und speichert danach ohne Rückfrage direkt dorthin.
+- "Daten > Speichern unter …" wählt jederzeit einen anderen Ort.
+- Der aktuelle Speicherort steht im Menü "Daten" unter "Speichern"
+  (Mauszeiger darauf zeigt den ganzen Pfad).
+- "Gespeicherten Stand laden" und das Excel-Einlesen über den
+  Startbildschirm lesen direkt vom gemerkten Pfad; beim ersten Mal
+  wählt man die Datei im Windows-Dialog.
+- Ist die Datei gerade in Excel geöffnet oder der Ordner nicht
+  erreichbar, meldet das Programm das mit dem Pfad.
+
+Programmdaten
 - Das Programm speichert seine Daten getrennt vom Browser Edge unter
   %LOCALAPPDATA%\de.symsafe.asi-dashboard\
 - Daten aus der Browser-Fassung übernehmen: dort "Daten > Speichern"
@@ -24,5 +38,5 @@ Daten
 - Gemeinsamer Stand für alle bleibt ASI_Stand.xlsx im SharePoint-Ordner
   "Dashboard".
 
-Inhalt: dieselbe Oberfläche wie ASI_Dashboard_Leitstand_Bereiche.html 2.5.2.
+Inhalt: dieselbe Oberfläche wie ASI_Dashboard_Leitstand_Bereiche.html 2.6.0.
 WebView2Loader.dll stammt aus dem Microsoft-WebView2-SDK (weitergebbar).

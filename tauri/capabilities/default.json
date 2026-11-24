@@ -1,9 +1,11 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Nur Links im Standardbrowser öffnen (SharePoint-Ordner)",
+  "description": "SharePoint-Link im Standardbrowser öffnen; Windows-Dialoge zum Speichern und Öffnen",
   "windows": ["main"],
   "permissions": [
+    "dialog:allow-save",
+    "dialog:allow-open",
     {
       "identifier": "opener:allow-open-url",
       "allow": [{ "url": "https://symriseag.sharepoint.com/*" }]

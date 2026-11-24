@@ -1,6 +1,6 @@
 [package]
 name = "asi-dashboard"
-version = "2.5.2"
+version = "2.6.0"
 description = "Maßnahmen- & Fristendashboard (SYMSAFE, Arbeitsschutz · ASI)"
 edition = "2021"
 
@@ -10,6 +10,8 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2"
+percent-encoding = "2"
 
 [profile.release]
 opt-level = "s"

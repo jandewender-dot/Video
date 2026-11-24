@@ -1279,7 +1279,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 (function () {
   'use strict';
 
-  const APP_VERSION = '2.5.2';
+  const APP_VERSION = '2.6.0';
 
   /* =====================================================================
    * Konfiguration
@@ -3000,6 +3000,30 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     get(key) { return HandleStore.req('readonly', (st) => st.get(key || 'backup')); },
     put(hd, key) { return HandleStore.req('readwrite', (st) => st.put(hd, key || 'backup')); }
   };
+  /** Desktop-Fassung (Tauri): echte Windows-Dialoge zum Speichern/Öffnen; der volle Pfad wird gemerkt.
+   *  Im Browser nicht vorhanden – dort gilt weiter der Weg über Edge (Dateiverweis bzw. Download). */
+  const Desk = {
+    ok() { const t = window.__TAURI__; return !!(t && t.core && typeof t.core.invoke === 'function' && t.dialog && typeof t.dialog.save === 'function' && typeof t.dialog.open === 'function'); },
+    base(p) { return String(p || '').split(/[\\/]/).pop(); },
+    short(p) { const parts = String(p || '').split(/[\\/]/).filter(Boolean); return parts.length > 2 ? '…\\' + parts.slice(-2).join('\\') : String(p || ''); },
+    async pickSave(start) {
+      return window.__TAURI__.dialog.save({ title: 'Speicherort für „' + BACKUP_FILE + '“ wählen', defaultPath: start || BACKUP_FILE, filters: [{ name: 'Excel-Arbeitsmappe', extensions: ['xlsx'] }] });
+    },
+    async pickOpen(title, exts) {
+      const r = await window.__TAURI__.dialog.open({ title: title, multiple: false, directory: false, filters: [{ name: 'Excel-Arbeitsmappe', extensions: exts }] });
+      return Array.isArray(r) ? (r[0] || null) : (r || null);
+    },
+    async write(path, blob) {
+      const buf = new Uint8Array(await blob.arrayBuffer());
+      await window.__TAURI__.core.invoke('datei_schreiben', buf, { headers: { 'x-pfad': encodeURIComponent(path) } });
+    },
+    async read(path) {
+      const data = await window.__TAURI__.core.invoke('datei_lesen', { pfad: path });
+      return new File([data], Desk.base(path), { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    },
+    err(e) { return String(e && e.message || e || 'unbekannter Fehler'); }
+  };
+
   const Backup = {
     handle: null,
     loaded: false,
@@ -3035,13 +3059,28 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (!State.allItems.length && !State.manual.length) { showMessage('warn', 'Es gibt noch keine Daten zum Speichern.', 6000); return; }
       const data = Stand.collect(Prefs.load().publisher || '');
       const blob = new Blob([XLSX.write(Stand.buildWorkbook(data), { bookType: 'xlsx', type: 'array', compression: true })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const done = async (name, remembered) => {
+      const done = async (name, remembered, path) => {
         Backup.meta = { name: name, savedAt: data.publishedAt, remembered: remembered };
+        if (path) Backup.meta.path = path;
         try { await Store.put('backupMeta', Backup.meta); } catch (e) { /* ignorieren */ }
         Backup.updateMenu();
         await Unsaved.reset();
-        showMessage('ok', 'Gespeichert: „' + name + '“ (' + Util.formatDateTime(data.publishedAt) + '). Die Datei ist zugleich Ihre Sicherung und der Stand für alle, die ansehen.' + (remembered ? ' Das Dashboard merkt sich die Datei für das nächste Speichern.' : ''), 10000);
+        if (!path) showMessage('ok', 'Gespeichert: „' + name + '“ (' + Util.formatDateTime(data.publishedAt) + '). Die Datei ist zugleich Ihre Sicherung und der Stand für alle, die ansehen.' + (remembered ? ' Das Dashboard merkt sich die Datei für das nächste Speichern.' : ''), 10000);
       };
+      if (Desk.ok()) {
+        let path = newPlace ? null : (Backup.meta && Backup.meta.path) || null;
+        if (!path) {
+          try { path = await Desk.pickSave(Backup.meta && Backup.meta.path); } catch (e) { showMessage('error', 'Der Speichern-Dialog konnte nicht geöffnet werden: ' + Desk.err(e), 12000); return; }
+          if (!path) return; // abgebrochen
+        }
+        try { await Desk.write(path, blob); } catch (e) {
+          showMessage('error', 'Speichern nach „' + path + '“ fehlgeschlagen: ' + Desk.err(e) + '. Ist die Datei gerade in Excel geöffnet oder der Ordner nicht erreichbar? Mit „Daten › Speichern unter …“ wählen Sie einen anderen Ort.', 15000);
+          return;
+        }
+        await done(Desk.base(path), true, path);
+        showMessage('ok', 'Gespeichert unter „' + path + '“ (' + Util.formatDateTime(data.publishedAt) + '). Beim nächsten „Daten › Speichern“ schreibt das Dashboard direkt dorthin; „Speichern unter …“ wählt einen anderen Ort.', 12000);
+        return;
+      }
       if (typeof window.showSaveFilePicker !== 'function') {
         Exporter.download(blob, BACKUP_FILE);
         Backup.meta = { name: BACKUP_FILE, savedAt: data.publishedAt, download: true };
@@ -3088,6 +3127,21 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     async restore(preset) {
       if (State.mode !== 'edit') return;
       const opts = { stand: preset };
+      if (Desk.ok()) {
+        let path = Backup.meta && Backup.meta.path;
+        if (path) {
+          try { await handleFile(await Desk.read(path), opts); return; } catch (e) { showMessage('warn', '„' + path + '“ konnte nicht gelesen werden (' + Desk.err(e) + '). Bitte die Datei auswählen.', 10000); }
+        }
+        try { path = await Desk.pickOpen('Gespeicherten Stand laden (' + BACKUP_FILE + ')', ['xlsx']); } catch (e) { showMessage('error', 'Der Öffnen-Dialog konnte nicht geöffnet werden: ' + Desk.err(e), 12000); return; }
+        if (!path) return;
+        let f;
+        try { f = await Desk.read(path); } catch (e) { showMessage('error', '„' + path + '“ konnte nicht gelesen werden: ' + Desk.err(e), 12000); return; }
+        Backup.meta = Object.assign({}, Backup.meta || {}, { name: Desk.base(path), remembered: true, path: path });
+        try { await Store.put('backupMeta', Backup.meta); } catch (e) { /* ignorieren */ }
+        Backup.updateMenu();
+        await handleFile(f, opts);
+        return;
+      }
       if (await Backup.getHandle()) {
         let ok = false;
         try { ok = await Backup.permit(Backup.handle, 'read'); } catch (e) { ok = false; }
@@ -3107,11 +3161,13 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     },
     updateMenu() {
       const m = Backup.meta;
-      const rem = !!(Backup.handle || (m && m.remembered));
-      const name = Backup.handle ? Backup.handle.name : (m ? m.name : '');
+      const rem = !!(Backup.handle || (m && (m.remembered || m.path)));
+      const name = m && m.path ? Desk.short(m.path) : (Backup.handle ? Backup.handle.name : (m ? m.name : ''));
+      $('btnBackupSave').title = m && m.path ? 'Speicherort: ' + m.path : '';
       $('btnBackupSaveHint').textContent = rem ? 'In „' + name + '“' + (m && m.savedAt ? ' · zuletzt ' + Util.formatDateTime(m.savedAt) : '') : 'Beim ersten Mal den gemeinsamen Ordner wählen';
       $('liBackupWhere').hidden = !rem;
       $('btnBackupRestoreHint').textContent = rem ? 'Aus „' + name + '“ – ersetzt die Daten in diesem Browser' : 'Datei auswählen – ersetzt die Daten in diesem Browser';
+      if (Desk.ok()) $('btnBackupRestoreHint').textContent = $('btnBackupRestoreHint').textContent.replace('in diesem Browser', 'im Programm');
     }
   };
 
@@ -3154,6 +3210,21 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     },
     /** Datei öffnen: gemerkte Datei, sonst Auswahl (gemerkt), sonst Dateifeld. Gibt die Datei zurück oder null. */
     async open(kind, opts) {
+      if (Desk.ok()) {
+        const m = FileMemo.meta[kind];
+        if (m && m.path) {
+          try { return await Desk.read(m.path); } catch (e) { showMessage('warn', '„' + m.path + '“ konnte nicht gelesen werden (' + Desk.err(e) + '). Bitte die Datei neu auswählen.', 10000); }
+        }
+        let path = null;
+        try { path = await Desk.pickOpen(kind === 'excel' ? 'Maßnahmenliste (Excel) auswählen' : 'Gespeicherten Stand auswählen (' + BACKUP_FILE + ')', kind === 'excel' ? ['xlsx', 'xlsm', 'xls', 'xlsb'] : ['xlsx']); } catch (e) { showMessage('error', 'Der Öffnen-Dialog konnte nicht geöffnet werden: ' + Desk.err(e), 12000); return null; }
+        if (!path) return null;
+        try {
+          const f = await Desk.read(path);
+          FileMemo.meta[kind] = { name: Desk.base(path), at: new Date().toISOString(), remembered: true, path: path };
+          try { await Store.put('fileMeta', FileMemo.meta); } catch (e) { /* ignorieren */ }
+          return f;
+        } catch (e) { showMessage('error', '„' + path + '“ konnte nicht gelesen werden: ' + Desk.err(e), 12000); return null; }
+      }
       const hd = await FileMemo.handle(kind);
       if (hd) {
         let ok = false;

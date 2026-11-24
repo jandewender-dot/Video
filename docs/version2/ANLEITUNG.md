@@ -1,4 +1,4 @@
-# ASI-Dashboard – Anleitung (ab Version 2.5)
+# ASI-Dashboard – Anleitung (ab Version 2.6)
 
 Diese Anleitung ersetzt die früheren Einzelanleitungen (Stand veröffentlichen, Sicherung, Bereiche zuordnen).
 
@@ -12,6 +12,10 @@ Die HTML-Datei und `ASI_Stand.xlsx` liegen im SharePoint-Ordner **ASI Team HOL /
   - In der Webansicht sperrt Edge außerdem das Absenden von Formularen und je nach Einstellung Downloads. Bis 2.5.0 reagierte deshalb „Speichern“ im Formular „Neue Maßnahme“ dort nicht; ab 2.5.1 speichert es, die Maßnahme ist aber nach dem Schließen weg. „Daten › Speichern“ weist dort darauf hin, dass der Download gesperrt sein kann.
 - Einen festen Speicherpfad kann eine HTML-Datei nicht vorgeben: Edge verlangt, dass der Ort einmal im Speichern- bzw. Öffnen-Dialog gewählt wird. Danach merkt sich das Dashboard die Datei.
 - In die SharePoint-Webadresse selbst kann das Dashboard nicht schreiben, nur in den synchronisierten Ordner. OneDrive lädt die Datei von dort hoch.
+
+## Desktop-Fassung (ab 2.6)
+
+`ASI_Dashboard_Desktop_*.zip` enthält dieselbe Oberfläche als Programm ohne Installation (`ASI-Dashboard.exe`, daneben `WebView2Loader.dll`). Dort öffnet „Daten › Speichern“ beim ersten Mal den Windows-Dialog „Speichern unter“: Ordner und Dateinamen frei wählen. Das Programm merkt sich den vollständigen Pfad, speichert danach direkt dorthin und zeigt ihn im Menü „Daten“. „Speichern unter …“ wählt einen anderen Ort. Details: `LIESMICH.txt` im ZIP.
 
 ## Grundprinzip
 
@@ -129,4 +133,5 @@ Beim ersten Öffnen werden vorhandene Daten automatisch umgestellt: Die Excel-Ma
 | Startbildschirm | 28 von 28 |
 | Version 2.4/2.5 (Halacz/Völtzke, Warndreieck und Warnhinweise, SharePoint-Ordner öffnen) | 18 von 18 |
 | Abgeschirmte Ansicht (wie SharePoint-Webansicht): Speichern im Formular, Enter, Hinweis beim Speichern | 14 von 14 |
+| Desktop-Fassung (Tauri): Speicherort wählen, Pfad merken, Speichern unter, Laden, Fehlerfälle (mit nachgebildeten Windows-Dialogen) | 17 von 17 |
 | Selbstprüfung | 31 von 31 |
