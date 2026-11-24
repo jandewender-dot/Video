@@ -1279,7 +1279,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 (function () {
   'use strict';
 
-  const APP_VERSION = '2.5.1';
+  const APP_VERSION = '2.5.2';
 
   /* =====================================================================
    * Konfiguration
@@ -2223,7 +2223,9 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
   };
   function openSharePointFolder() {
     let w = null;
-    try { w = window.open(SHAREPOINT_FOLDER.url, '_blank', 'noopener'); } catch (e) { w = null; }
+    const tauri = window.__TAURI__; // Desktop-Fassung (Tauri): Link im Standardbrowser öffnen
+    if (tauri && tauri.opener && typeof tauri.opener.openUrl === 'function') tauri.opener.openUrl(SHAREPOINT_FOLDER.url).catch(() => {});
+    else { try { w = window.open(SHAREPOINT_FOLDER.url, '_blank', 'noopener'); } catch (e) { w = null; } }
     showMessage('info', 'Der SharePoint-Ordner „' + SHAREPOINT_FOLDER.label + '“ wird im Browser geöffnet. Dort lässt er sich mit „Synchronisieren“ in den Windows-Explorer holen.', 8000);
     return w;
   }

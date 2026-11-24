@@ -1,0 +1,28 @@
+ASI-Dashboard – Desktop-Fassung (Tauri) 2.5.2
+=============================================
+
+Starten (ohne Installation)
+- Den Ordner "ASI-Dashboard" an einen festen Ort entpacken (z. B. in den
+  synchronisierten Ordner "Dashboard" oder unter Dokumente).
+- "ASI-Dashboard.exe" per Doppelklick starten.
+- "WebView2Loader.dll" muss im selben Ordner liegen bleiben.
+
+Voraussetzungen
+- Windows 10/11 mit "Microsoft Edge WebView2 Runtime" (unter Windows 11
+  vorinstalliert).
+- Die Datei ist nicht digital signiert. Windows kann beim ersten Start
+  "Der Computer wurde durch Windows geschützt" melden ("Weitere
+  Informationen" > "Trotzdem ausführen"). Firmenrichtlinien können den
+  Start unsignierter Programme ganz sperren – dann bitte die IT fragen.
+
+Daten
+- Das Programm speichert seine Daten getrennt vom Browser Edge unter
+  %LOCALAPPDATA%\de.symsafe.asi-dashboard\
+- Daten aus der Browser-Fassung übernehmen: dort "Daten > Speichern"
+  (ASI_Stand.xlsx), dann im Programm "Start > Gespeicherten Stand
+  übernehmen".
+- Gemeinsamer Stand für alle bleibt ASI_Stand.xlsx im SharePoint-Ordner
+  "Dashboard".
+
+Inhalt: dieselbe Oberfläche wie ASI_Dashboard_Leitstand_Bereiche.html 2.5.2.
+WebView2Loader.dll stammt aus dem Microsoft-WebView2-SDK (weitergebbar).
