@@ -895,6 +895,7 @@ table.data.dense .area-pick{min-height:32px}
       <p class="start-folder">Gemeinsamer Ordner: <button type="button" class="btn btn-link" id="btnStartFolder">SharePoint-Ordner „Dashboard“ öffnen</button></p>
       <details class="start-news"><summary><span id="startVersion">Version</span> · Was ist neu?</summary>
         <ul>
+          <li>Neu in 2.7: Mehrere Personen bearbeiten den gemeinsamen Stand ASI_Stand.xlsx. Beim Start wird er automatisch geladen; beim Speichern werden Änderungen anderer zusammengeführt (je Maßnahme gilt die zuletzt geänderte Fassung). Der Ansichtsmodus entfällt.</li>
           <li>Neu in 2.5: Die roten Warnhinweise sind standardmäßig eingeklappt. Das rote Warndreieck rechts in der Bereichsleiste zeigt, wie viele es gibt, und klappt sie auf und zu.</li>
           <li>Neu in 2.4: Johanna Halacz und Heiko Völtzke gehören fest zu „Gesund nach Hause“. „Daten › SharePoint-Ordner öffnen“ öffnet den gemeinsamen Ordner im Browser. Ein rotes Warnfeld erscheint, wenn in der Ansicht nichts gespeichert werden kann.</li>
           <li>Neu in 2.3: Eigene Bereiche lassen sich löschen; ihre Maßnahmen stehen danach auf „ohne Bereich“.</li>
@@ -936,7 +937,7 @@ table.data.dense .area-pick{min-height:32px}
       <ul class="menu menu-right" id="dataMenu" role="menu" aria-labelledby="btnDataMenu" hidden>
         <li role="none" class="edit-only"><button type="button" role="menuitem" class="menu-item" id="btnBackupSave"><span class="mi-title">Speichern</span><span class="mi-hint" id="btnBackupSaveHint">Beim ersten Mal den gemeinsamen Ordner wählen</span></button></li>
         <li role="none" class="edit-only" id="liBackupWhere" hidden><button type="button" role="menuitem" class="menu-item" id="btnBackupWhere"><span class="mi-title">Speichern unter …</span><span class="mi-hint">Anderen Ordner oder Dateinamen wählen</span></button></li>
-        <li role="none" class="edit-only"><button type="button" role="menuitem" class="menu-item" id="btnBackupRestore"><span class="mi-title">Gespeicherten Stand laden</span><span class="mi-hint" id="btnBackupRestoreHint">Datei auswählen – ersetzt die Daten in diesem Browser</span></button></li>
+        <li role="none" class="edit-only"><button type="button" role="menuitem" class="menu-item" id="btnBackupRestore"><span class="mi-title">Gemeinsamen Stand laden</span><span class="mi-hint" id="btnBackupRestoreHint">Datei auswählen – ersetzt die Daten in diesem Browser</span></button></li>
         <li role="none" class="menu-sep"><button type="button" role="menuitem" class="menu-item" id="btnShowStart"><span class="mi-title">Startbildschirm</span><span class="mi-hint">Excel, gespeicherten Stand oder Mein Bereich wählen</span></button></li>
         <li role="none"><button type="button" role="menuitem" class="menu-item" id="btnOpenFolder"><span class="mi-title">SharePoint-Ordner öffnen</span><span class="mi-hint">General › Gesund nach Hause › Dashboard – im Browser, z. B. zum Synchronisieren</span></button></li>
       </ul>
@@ -1279,7 +1280,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 (function () {
   'use strict';
 
-  const APP_VERSION = '2.6.0';
+  const APP_VERSION = '2.7.0';
 
   /* =====================================================================
    * Konfiguration
@@ -2528,26 +2529,9 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       return d;
     },
     /** Stand- oder Sicherungsdatei geladen: in der Pflege wählen, ob übernommen oder nur angesehen wird */
-    async offer(d, fileName, preset) {
-      if (State.mode === 'view') return Stand.enterView(d);
-      if (preset === 'view') return Stand.enterView(d);
-      const n = (d.snapshot ? d.snapshot.actions.length : 0) + d.manual.length;
-      const own = State.manual.length;
-      const backup = d.purpose === 'sicherung' || own > 0; // wer schon pflegt, will meist übernehmen
-      const adopt = { key: 'adopt', label: 'Als eigene Daten übernehmen', hint: 'Ersetzt Ihre Daten in diesem Browser (' + Util.num(own) + ' Maßnahmen, Bereiche, Zuordnungen). Danach pflegen Sie mit diesem Stand weiter – z. B. nach einem PC-Wechsel.' };
-      const view = { key: 'view', label: 'Nur ansehen (Ansichtsmodus)', hint: 'Zeigt den Stand schreibgeschützt an. Ihre eigenen Daten bleiben gespeichert und sind nach „Ansichtsmodus beenden“ wieder da.' };
-      const choice = preset === 'adopt' ? 'adopt' : await chooseAction('Gespeicherten Stand öffnen',
-        '„' + fileName + '“ ist ein gespeicherter Stand vom ' + Util.formatDateTime(d.publishedAt) + (d.publishedBy ? ' (gepflegt von ' + d.publishedBy + ')' : '') + ' mit ' + Util.num(n) + ' Maßnahmen. Was möchten Sie tun?',
-        backup ? [adopt, view] : [view, adopt]);
-      if (choice === 'adopt') {
-        if (own > 0) {
-          const ok = await confirmAction('Eigene Daten ersetzen?', 'Ihre ' + Util.num(own) + ' Maßnahmen, Bereichsnamen und Zuordnungen in diesem Browser werden durch den Inhalt von „' + fileName + '“ ersetzt. Unmittelbar danach können Sie das noch rückgängig machen.', 'Daten ersetzen');
-          if (!ok) return false;
-        }
-        return Stand.adopt(d, fileName);
-      }
-      if (choice === 'view') return Stand.enterView(d);
-      return false;
+    /** Stand-Datei geladen: ab 2.7 bearbeiten alle den gemeinsamen Stand (kein Ansichtsmodus mehr) */
+    async offer(d, fileName) {
+      return Sync.pull(d, fileName, false);
     },
     /** Inhalt einer Stand-/Sicherungsdatei als eigene Pflegedaten übernehmen */
     async adopt(d, fileName) {
@@ -3000,6 +2984,184 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     get(key) { return HandleStore.req('readonly', (st) => st.get(key || 'backup')); },
     put(hd, key) { return HandleStore.req('readwrite', (st) => st.put(hd, key || 'backup')); }
   };
+  /** Gemeinsame Pflege über ASI_Stand.xlsx: Zusammenführen statt Überschreiben.
+   *  Grundlage („base“) ist der Stand, den dieser PC zuletzt geladen oder gespeichert hat: welche Maßnahmen,
+   *  Bereichsnamen und Zuordnungsregeln er enthielt. Daraus folgt, was hier bzw. bei anderen neu, geändert oder gelöscht wurde.
+   *  Je Maßnahme gilt die zuletzt geänderte Fassung (Zeitpunkt „updated“, sonst „created“). */
+  const Sync = {
+    base: null,
+    async load() { try { const b = await Store.get('syncBase'); if (b && Array.isArray(b.ids)) Sync.base = b; } catch (e) { /* ignorieren */ } },
+    snap(d) {
+      const areas = {};
+      d.areas.areas.forEach((a) => { areas[a.id] = a.name; });
+      return { publishedAt: d.publishedAt || '', ids: d.manual.map((m) => m.id), areas: areas, byZust: Object.assign({}, d.assign.byZust) };
+    },
+    async setBase(b) { Sync.base = b; try { await Store.put('syncBase', b); } catch (e) { /* ignorieren */ } },
+    current(publishedAt) { return { snapshot: State.snapshot, manual: State.manual, areas: Areas.state, assign: Assign.state, publishedAt: publishedAt || '' }; },
+    /** Stand-Daten so aufbereiten wie bei der Übernahme */
+    norm(d) {
+      const mg = Model.migrate(d.snapshot, d.manual.filter((m) => m && m.src === 'manual' && m.id), d.excelAssign);
+      const fx = Areas.toFixed(d.areas, mg.manual, (d.excelAssign || {}).byZust);
+      return { snapshot: mg.snapshot, manual: fx.records, areas: fx.areas, assign: { v: 1, byKey: {}, byZust: fx.byZust }, publishedAt: d.publishedAt, publishedBy: d.publishedBy || '' };
+    },
+    /** Lokale Daten L mit dem Stand R (von anderen gespeichert) zusammenführen; B = gemeinsame Grundlage */
+    merge(L, R, B) {
+      const b = B || { publishedAt: '', ids: [], areas: {}, byZust: {} };
+      const inBase = new Set(b.ids);
+      const bt = b.publishedAt || '';
+      const t = (m) => m.updated || m.created || '';
+      const st = { added: 0, changed: 0, removed: 0 };
+      // Bereiche: feste bleiben, eigene werden je Kennung abgeglichen
+      const nF = FIXED_AREAS.length;
+      const lc = L.areas.areas.slice(nF), rc = R.areas.areas.slice(nF);
+      const remap = {};
+      let next = Math.max(L.areas.next || 1, R.areas.next || 1);
+      const bump = (id) => { const n = /^c(\d+)$/.exec(id); if (n && +n[1] >= next) next = +n[1] + 1; };
+      lc.concat(rc).forEach((a) => bump(a.id));
+      const out = [];
+      rc.forEach((ra) => {
+        const la = lc.find((a) => a.id === ra.id);
+        const bn = b.areas[ra.id];
+        if (la) {
+          if (bn === undefined && la.name !== ra.name) { out.push({ id: ra.id, name: ra.name }); remap[la.id] = 'c' + next; next++; }
+          else out.push({ id: ra.id, name: bn !== undefined && la.name !== bn ? la.name : ra.name });
+        } else if (bn === undefined) out.push({ id: ra.id, name: ra.name }); // bei anderen neu angelegt
+        // sonst hier gelöscht → bleibt gelöscht
+      });
+      lc.forEach((la) => {
+        if (remap[la.id]) { out.push({ id: remap[la.id], name: la.name }); return; }
+        if (rc.some((a) => a.id === la.id)) return;
+        if (b.areas[la.id] !== undefined) return; // bei anderen gelöscht
+        out.push({ id: la.id, name: la.name }); // hier neu angelegt
+      });
+      const used = new Set(FIXED_AREAS.map((a) => a.name.toLocaleLowerCase('de')));
+      const areasOut = [];
+      out.forEach((a) => {
+        if (areasOut.length >= AREA_MAX - (nF - 1)) return; // höchstens AREA_MAX Bereiche
+        let name = a.name, k = 2;
+        while (used.has(name.toLocaleLowerCase('de'))) { name = a.name.slice(0, AREA_NAME_MAX - 4) + ' (' + k + ')'; k++; }
+        used.add(name.toLocaleLowerCase('de'));
+        areasOut.push({ id: a.id, name: name });
+      });
+      const areas = { v: 2, fixed: 1, next: next, areas: L.areas.areas.slice(0, nF).map((a) => ({ id: a.id, name: a.name })).concat(areasOut) };
+      const ids = new Set(areas.areas.map((a) => a.id));
+      const fixId = (id, fromLocal) => { const x = fromLocal && remap[id] ? remap[id] : id; return x && ids.has(x) && x !== 'gesamt' ? x : ''; };
+      // Maßnahmen
+      const Lm = new Map(L.manual.map((m) => [m.id, m]));
+      const Rm = new Map(R.manual.map((m) => [m.id, m]));
+      const res = [];
+      const put = (m, fromLocal) => { const id = fixId(m.bereichId, fromLocal); res.push(id === (m.bereichId || '') ? m : Object.assign({}, m, { bereichId: id })); };
+      R.manual.forEach((r) => {
+        const l = Lm.get(r.id);
+        if (l) {
+          if (t(l) > t(r)) put(l, true);
+          else { if (JSON.stringify(l) !== JSON.stringify(r)) st.changed++; put(r, false); }
+        } else if (!inBase.has(r.id)) { st.added++; put(r, false); } // bei anderen neu
+        else if (t(r) > bt) { st.changed++; put(r, false); } // hier gelöscht, dort danach geändert → Änderung bleibt
+        // sonst: hier gelöscht
+      });
+      L.manual.forEach((l) => {
+        if (Rm.has(l.id)) return;
+        if (!inBase.has(l.id) || t(l) > bt) { put(l, true); return; } // hier neu bzw. nach dem Löschen dort hier geändert
+        st.removed++; // bei anderen gelöscht
+      });
+      // Zuordnungsregeln: hier Geändertes gilt, sonst der Stand der anderen
+      const byZust = {};
+      const keys = new Set(Object.keys(L.assign.byZust || {}).concat(Object.keys(R.assign.byZust || {})));
+      keys.forEach((k) => {
+        const lv = (L.assign.byZust || {})[k], rv = (R.assign.byZust || {})[k], bv = b.byZust[k];
+        let v = lv !== bv ? lv : rv;
+        if (v && remap[v] && lv === v) v = remap[v];
+        if (v && ids.has(v)) byZust[k] = v;
+      });
+      return { snapshot: R.snapshot || L.snapshot, manual: res, areas: areas, assign: { v: 1, byKey: Object.assign({}, L.assign.byKey || {}), byZust: byZust }, stats: st };
+    },
+    async apply(x) {
+      State.snapshot = x.snapshot; State.manual = x.manual; Areas.state = x.areas; Assign.state = x.assign;
+      State.source = x.snapshot ? 'local' : 'none';
+      if (!Areas.find(State.area)) State.area = 'gesamt';
+      if (State.myArea && !Areas.find(State.myArea)) State.myArea = '';
+      try {
+        if (x.snapshot) await Store.put('snapshot', x.snapshot); else await Store.del('snapshot');
+        await Store.put('manual', x.manual); await Store.put('areas', x.areas); await Store.put('excelAssign', x.assign);
+        State.storageOk = true;
+      } catch (e) { State.storageOk = false; }
+    },
+    statsText(st) {
+      const parts = [];
+      if (st.added) parts.push(Util.num(st.added) + ' neu');
+      if (st.changed) parts.push(Util.num(st.changed) + ' geändert');
+      if (st.removed) parts.push(Util.num(st.removed) + ' gelöscht');
+      return parts.length ? parts.join(', ') : 'keine Unterschiede bei den Maßnahmen';
+    },
+    async readStand(file) {
+      const wb = XLSX.read(new Uint8Array(await file.arrayBuffer()), { type: 'array' });
+      return Stand.detect(wb);
+    },
+    /** Gemeinsamen Stand übernehmen: ohne eigene ungespeicherte Änderungen ersetzen, sonst zusammenführen */
+    async pull(d, fileName, auto) {
+      const name = fileName || BACKUP_FILE;
+      const who = ' vom ' + Util.formatDateTime(d.publishedAt) + (d.publishedBy ? ' (gespeichert von ' + d.publishedBy + ')' : '');
+      if (Sync.base && Sync.base.publishedAt === d.publishedAt && (Unsaved.state.changed || State.manual.length)) {
+        if (!auto) showMessage('info', 'Sie haben bereits den aktuellen gemeinsamen Stand' + who + '.' + (Unsaved.state.changed ? ' Ihre noch nicht gespeicherten Änderungen bleiben erhalten.' : ''), 8000);
+        return true;
+      }
+      const R = Sync.norm(d);
+      const prev = { x: Sync.current(), base: Sync.base, unsaved: Object.assign({}, Unsaved.state) };
+      const hasLocal = Unsaved.state.changed || (!Sync.base && State.manual.length > 0);
+      let msg;
+      if (!hasLocal) {
+        await Sync.apply(R);
+        await Sync.setBase(Sync.snap(R));
+        await Unsaved.reset();
+        msg = 'Gemeinsamer Stand „' + name + '“' + who + ' geladen.';
+      } else {
+        const m = Sync.merge(Sync.current(), R, Sync.base);
+        await Sync.apply(m);
+        await Sync.setBase(Sync.snap(R));
+        await Unsaved.note('changed');
+        msg = 'Gemeinsamer Stand „' + name + '“' + who + ' mit Ihren ungespeicherten Änderungen zusammengeführt (von anderen: ' + Sync.statsText(m.stats) + '). Bitte speichern, damit alle Ihre Änderungen sehen.';
+      }
+      savePrefs();
+      refresh();
+      showMessage('ok', msg, 12000, { label: 'Rückgängig', run: async () => {
+        await Sync.apply(prev.x); await Sync.setBase(prev.base);
+        Unsaved.state = prev.unsaved; Store.put('unsaved', Unsaved.state).catch(() => {}); Unsaved.render();
+        refresh(); showMessage('info', 'Laden wurde rückgängig gemacht.', 6000);
+      } });
+      return true;
+    },
+    /** Vor dem Speichern: gemeinsame Datei lesen und zusammenführen, falls jemand anderes inzwischen gespeichert hat */
+    async beforeSave(readFile) {
+      let f = null;
+      try { f = await readFile(); } catch (e) { f = null; }
+      if (!f) return null;
+      let d = null;
+      try { d = await Sync.readStand(f); } catch (e) { d = null; }
+      if (!d || (Sync.base && Sync.base.publishedAt === d.publishedAt)) return null;
+      const m = Sync.merge(Sync.current(), Sync.norm(d), Sync.base);
+      await Sync.apply(m);
+      refresh();
+      return { stats: m.stats, d: d };
+    },
+    /** Beim Start: gemerkte gemeinsame Datei automatisch laden */
+    async autoLoad() {
+      if (State.mode !== 'edit') return;
+      let f = null, label = '';
+      try {
+        if (Desk.ok()) {
+          const path = Backup.meta && Backup.meta.path;
+          if (!path) return;
+          label = path;
+          f = await Desk.read(path);
+        } else return; // Browser: Datei-Verweise erst auf Klick lesen (Edge fragt nach einem Neustart ohnehin erst nach der Erlaubnis)
+      } catch (e) { showMessage('warn', 'Der gemeinsame Stand „' + label + '“ konnte beim Start nicht geladen werden (' + Desk.err(e) + '). Sie arbeiten mit den Daten dieses PCs.', 12000); return; }
+      let d = null;
+      try { d = await Sync.readStand(f); } catch (e) { d = null; }
+      if (d) await Sync.pull(d, Desk.base(label), true);
+    }
+  };
+
   /** Desktop-Fassung (Tauri): echte Windows-Dialoge zum Speichern/Öffnen; der volle Pfad wird gemerkt.
    *  Im Browser nicht vorhanden – dort gilt weiter der Weg über Edge (Dateiverweis bzw. Download). */
   const Desk = {
@@ -3057,15 +3219,27 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     async save(newPlace) {
       if (State.mode !== 'edit') return;
       if (!State.allItems.length && !State.manual.length) { showMessage('warn', 'Es gibt noch keine Daten zum Speichern.', 6000); return; }
+      // Hat jemand anderes die gemeinsame Datei inzwischen gespeichert? Dann erst zusammenführen (nur am bisherigen Speicherort).
+      let merged = null;
+      if (!newPlace) {
+        if (Desk.ok() && Backup.meta && Backup.meta.path) merged = await Sync.beforeSave(() => Desk.read(Backup.meta.path));
+        else if (!Desk.ok()) {
+          const h0 = await Backup.getHandle();
+          if (h0) merged = await Sync.beforeSave(async () => ((await Backup.permit(h0, 'readwrite')) ? h0.getFile() : null));
+        }
+      }
       const data = Stand.collect(Prefs.load().publisher || '');
+      const mergedNote = merged ? ' Vorher zusammengeführt mit dem Stand vom ' + Util.formatDateTime(merged.d.publishedAt) + (merged.d.publishedBy ? ' (' + merged.d.publishedBy + ')' : '') + ': ' + Sync.statsText(merged.stats) + '.' : '';
+      const newBase = () => Sync.setBase(Sync.snap(Sync.current(data.publishedAt)));
       const blob = new Blob([XLSX.write(Stand.buildWorkbook(data), { bookType: 'xlsx', type: 'array', compression: true })], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const done = async (name, remembered, path) => {
         Backup.meta = { name: name, savedAt: data.publishedAt, remembered: remembered };
         if (path) Backup.meta.path = path;
+        await newBase();
         try { await Store.put('backupMeta', Backup.meta); } catch (e) { /* ignorieren */ }
         Backup.updateMenu();
         await Unsaved.reset();
-        if (!path) showMessage('ok', 'Gespeichert: „' + name + '“ (' + Util.formatDateTime(data.publishedAt) + '). Die Datei ist zugleich Ihre Sicherung und der Stand für alle, die ansehen.' + (remembered ? ' Das Dashboard merkt sich die Datei für das nächste Speichern.' : ''), 10000);
+        if (!path) showMessage('ok', (merged ? mergedNote.trim() + ' ' : '') + 'Gespeichert: „' + name + '“ (' + Util.formatDateTime(data.publishedAt) + '). Die Datei ist zugleich Ihre Sicherung und der Stand für alle, die ansehen.' + (remembered ? ' Das Dashboard merkt sich die Datei für das nächste Speichern.' : ''), 10000);
       };
       if (Desk.ok()) {
         let path = newPlace ? null : (Backup.meta && Backup.meta.path) || null;
@@ -3078,12 +3252,13 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
           return;
         }
         await done(Desk.base(path), true, path);
-        showMessage('ok', 'Gespeichert unter „' + path + '“ (' + Util.formatDateTime(data.publishedAt) + '). Beim nächsten „Daten › Speichern“ schreibt das Dashboard direkt dorthin; „Speichern unter …“ wählt einen anderen Ort.', 12000);
+        showMessage('ok', (merged ? mergedNote.trim() + ' ' : '') + 'Gespeichert unter „' + path + '“ (' + Util.formatDateTime(data.publishedAt) + '). Beim nächsten „Daten › Speichern“ schreibt das Dashboard direkt dorthin; „Speichern unter …“ wählt einen anderen Ort.', 12000);
         return;
       }
       if (typeof window.showSaveFilePicker !== 'function') {
         Exporter.download(blob, BACKUP_FILE);
         Backup.meta = { name: BACKUP_FILE, savedAt: data.publishedAt, download: true };
+        await newBase();
         await Unsaved.reset();
         try { await Store.put('backupMeta', Backup.meta); } catch (e) { /* ignorieren */ }
         Backup.updateMenu();
@@ -3166,8 +3341,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       $('btnBackupSave').title = m && m.path ? 'Speicherort: ' + m.path : '';
       $('btnBackupSaveHint').textContent = rem ? 'In „' + name + '“' + (m && m.savedAt ? ' · zuletzt ' + Util.formatDateTime(m.savedAt) : '') : 'Beim ersten Mal den gemeinsamen Ordner wählen';
       $('liBackupWhere').hidden = !rem;
-      $('btnBackupRestoreHint').textContent = rem ? 'Aus „' + name + '“ – ersetzt die Daten in diesem Browser' : 'Datei auswählen – ersetzt die Daten in diesem Browser';
-      if (Desk.ok()) $('btnBackupRestoreHint').textContent = $('btnBackupRestoreHint').textContent.replace('in diesem Browser', 'im Programm');
+      $('btnBackupRestoreHint').textContent = (rem ? 'Aus „' + name + '“' : 'ASI_Stand.xlsx auswählen') + ' – eigene ungespeicherte Änderungen werden zusammengeführt';
     }
   };
 
@@ -3278,9 +3452,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (State.mode === 'edit') {
         opts.push({ key: 'excel', label: 'Excel einlesen', hint: hint('excel', 'Die Maßnahmenliste aus Excel auswählen; das Dashboard merkt sich die Datei.') + (State.manual.some((m) => m.origin === 'excel') ? ' Bereits übernommene Maßnahmen bleiben unverändert, neue Zeilen werden ergänzt.' : ' Danach pflegen Sie alles im Dashboard.') });
         const bk = Backup.meta && Backup.meta.remembered ? Backup.meta.name : '';
-        opts.push({ key: 'backup', label: 'Gespeicherten Stand übernehmen', hint: (bk ? 'Lädt direkt „' + bk + '“ (gemerkt).' : '„ASI_Stand.xlsx“ auswählen; das Dashboard merkt sich die Datei.') + ' Ersetzt die Daten in diesem Browser – z. B. auf einem neuen PC.' });
+        opts.push({ key: 'backup', label: 'Gemeinsamen Stand laden', hint: (bk ? 'Lädt direkt „' + bk + '“ (gemerkt).' : '„ASI_Stand.xlsx“ aus dem Ordner „Dashboard“ auswählen; das Dashboard merkt sich die Datei und speichert auch dorthin.') + ' Eigene ungespeicherte Änderungen werden zusammengeführt.' });
       }
-      opts.push({ key: 'stand', label: State.mode === 'view' ? 'Aktuellen Stand laden' : 'Gespeicherten Stand nur ansehen', hint: hint('stand', '„ASI_Stand.xlsx“ aus dem gemeinsamen Ordner auswählen; das Dashboard merkt sich die Datei.') + ' Schreibgeschützt (Ansichtsmodus).' });
       if (total) opts.push({ key: 'continue', label: 'Mit den gespeicherten Daten weiterarbeiten', hint: 'Ohne Einlesen direkt zum Dashboard (' + Util.num(total) + ' Maßnahmen).' });
       if (State.mode === 'view' && total) { const c = opts.pop(); opts.unshift(c); }
       const choice = await chooseAction('Welche Daten möchten Sie laden?', 'Die gewählte Datei wird sofort eingelesen.', opts);
@@ -5459,13 +5632,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     if (['status', 'herkunft', 'quelle', 'onlyOpen', 'onlyNoDate'].some((k) => !!State.filters[k])) { $('moreFilters').hidden = false; $('btnMoreFilters').setAttribute('aria-expanded', 'true'); }
 
     // Lokale Daten laden: im Ansichtsmodus den zuletzt geladenen Stand, sonst die eigenen Daten
-    let viewLoaded = false;
-    if (prefs && prefs.mode === 'view') {
-      try {
-        const d = await Store.get('stand');
-        if (Stand.isValid(d)) { Stand.apply(d); viewLoaded = true; }
-      } catch (e) { viewLoaded = false; }
-    }
+    const viewLoaded = false; // ab 2.7 kein Ansichtsmodus mehr
     document.querySelectorAll('img[data-logo-copy]').forEach((img) => { const src = document.querySelector('.logo-tile img'); if (src) img.src = src.src; });
     if (!viewLoaded) { State.mode = 'edit'; await loadOwnData(); }
     if (Areas.find(State.myArea) && State.myArea !== 'gesamt') State.area = State.myArea;
@@ -5476,7 +5643,9 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     }
     await Backup.load();
     await FileMemo.load();
+    await Sync.load();
     refresh();
+    await Sync.autoLoad();
     if (State.fixedInfo && State.fixedInfo.added) showMessage('info', 'Neuer fester Bereich: ' + State.fixedInfo.added.join(', ') + '. ' + Util.num(State.fixedInfo.auto) + ' bisher nicht zugeordnete ' + Util.plural(State.fixedInfo.auto, 'Maßnahme wurde', 'Maßnahmen wurden') + ' über die Zuständigkeit zugeordnet. Bitte einmal „Daten › Speichern“.', 15000);
     else if (State.fixedInfo) showMessage('info', 'Feste Bereiche eingerichtet (Karsten, Maik, Frank, Jörn, Ingo, Jens-Michael, Gesund nach Hause, ASI): ' + Util.num(State.fixedInfo.kept) + ' Maßnahmen über den bisherigen Bereichsnamen, ' + Util.num(State.fixedInfo.auto) + ' über die Zuständigkeit zugeordnet' + (State.fixedInfo.none ? ', ' + Util.num(State.fixedInfo.none) + ' ohne passende Person (siehe „Maßnahmen ohne Bereich“)' : '') + '. Bitte einmal „Daten › Speichern“.', 15000);
     if (State.migrated) showMessage('info', 'Umstellung auf Version 2: ' + Util.num(State.migrated) + ' Excel-Maßnahmen sind jetzt direkt im Dashboard bearbeitbar (Termine, Status, Bereich, Wirksamkeit). Bitte einmal „Daten › Speichern“.', 15000);

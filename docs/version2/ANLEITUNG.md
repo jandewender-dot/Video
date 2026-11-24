@@ -1,4 +1,4 @@
-# ASI-Dashboard – Anleitung (ab Version 2.6)
+# ASI-Dashboard – Anleitung (ab Version 2.7)
 
 Diese Anleitung ersetzt die früheren Einzelanleitungen (Stand veröffentlichen, Sicherung, Bereiche zuordnen).
 
@@ -12,6 +12,19 @@ Die HTML-Datei und `ASI_Stand.xlsx` liegen im SharePoint-Ordner **ASI Team HOL /
   - In der Webansicht sperrt Edge außerdem das Absenden von Formularen und je nach Einstellung Downloads. Bis 2.5.0 reagierte deshalb „Speichern“ im Formular „Neue Maßnahme“ dort nicht; ab 2.5.1 speichert es, die Maßnahme ist aber nach dem Schließen weg. „Daten › Speichern“ weist dort darauf hin, dass der Download gesperrt sein kann.
 - Einen festen Speicherpfad kann eine HTML-Datei nicht vorgeben: Edge verlangt, dass der Ort einmal im Speichern- bzw. Öffnen-Dialog gewählt wird. Danach merkt sich das Dashboard die Datei.
 - In die SharePoint-Webadresse selbst kann das Dashboard nicht schreiben, nur in den synchronisierten Ordner. OneDrive lädt die Datei von dort hoch.
+
+## Gemeinsam pflegen (ab 2.7)
+
+- **Alle bearbeiten**, einen Ansichtsmodus gibt es nicht mehr. Gemeinsame Datei ist `ASI_Stand.xlsx` im Ordner „Dashboard“.
+- **Einmal pro PC:** Startbildschirm › „Gemeinsamen Stand laden“ und `ASI_Stand.xlsx` wählen (oder beim ersten „Daten › Speichern“ dorthin speichern). Das Dashboard merkt sich die Datei und speichert auch dorthin.
+- **Beim Start** lädt die Desktop-Fassung die Datei automatisch. In der Browser-Fassung geht das über „Start › Gemeinsamen Stand laden“, weil Edge nach einem Neustart erst um Erlaubnis fragt.
+- **Beim Speichern** liest das Dashboard die Datei vorher. Hat inzwischen jemand anderes gespeichert, wird zusammengeführt:
+  - neue Maßnahmen beider Seiten bleiben erhalten,
+  - Löschungen gelten (außer die Maßnahme wurde danach woanders noch geändert),
+  - haben beide dieselbe Maßnahme geändert, gilt die **zuletzt geänderte Fassung der ganzen Maßnahme** (nicht feldweise),
+  - eigene Bereiche, die zwei Personen gleichzeitig anlegen, bleiben beide erhalten.
+  Die Meldung nennt, wie viele Maßnahmen von anderen neu, geändert oder gelöscht waren.
+- **Grenzen:** Grundlage sind die Uhrzeiten der PCs. Lesen zwei Personen gleichzeitig dieselbe Excel-Liste neu ein, können Excel-Zeilen doppelt entstehen. OneDrive braucht nach dem Speichern einen Moment, bis die Datei bei den anderen ankommt.
 
 ## Desktop-Fassung (ab 2.6)
 
@@ -95,15 +108,14 @@ Wenn bereits Excel-Maßnahmen im Dashboard sind, fragt das Dashboard nach, wie d
   - Achtung: Wurde eine Zeile in Excel umformuliert, gilt sie als neu und erscheint zusätzlich.
 - **Excel-Maßnahmen vollständig ersetzen:** Im Dashboard vorgenommene Änderungen an diesen Maßnahmen gehen verloren. Im Dashboard erfasste Maßnahmen bleiben erhalten.
 
-## Für die Kolleginnen und Kollegen (ansehen)
+## Für die Kolleginnen und Kollegen
 
-- Dashboard aus dem synchronisierten Ordner „Dashboard“ öffnen, dann **„Start“ › „Gespeicherten Stand nur ansehen“** und `ASI_Stand.xlsx` aus diesem Ordner wählen. Das Dashboard merkt sich die Datei, beim nächsten Mal heißt die Wahl **„Aktuellen Stand laden“**.
+- Dashboard aus dem synchronisierten Ordner „Dashboard“ öffnen, dann **„Start“ › „Gemeinsamen Stand laden“** und `ASI_Stand.xlsx` aus diesem Ordner wählen. Danach bearbeiten und mit „Daten › Speichern“ zurückschreiben (siehe „Gemeinsam pflegen“).
 - Auf dem Startbildschirm unter **„Beim Öffnen anzeigen (Mein Bereich)“** den eigenen Bereich wählen. Das Dashboard öffnet dann direkt dort.
-- Im Ansichtsmodus lässt sich nichts ändern. Die Datenqualität ist ausgeblendet.
 
 ## Neuer PC, gelöschte Browserdaten, Vertretung
 
-**„Start“ › „Gespeicherten Stand übernehmen“** bzw. **„Daten › Gespeicherten Stand laden“**: `ASI_Stand.xlsx` wird zu den eigenen Pflegedaten. Vorher fragt das Dashboard nach, danach gibt es „Rückgängig“.
+**„Start“ › „Gemeinsamen Stand laden“** bzw. **„Daten › Gemeinsamen Stand laden“**: `ASI_Stand.xlsx` wird geladen. Liegen auf dem PC noch ungespeicherte eigene Änderungen, werden sie zusammengeführt statt verworfen. Danach gibt es „Rückgängig“.
 
 ## Umstellung von Version 1.x
 
@@ -127,11 +139,12 @@ Beim ersten Öffnen werden vorhandene Daten automatisch umgestellt: Die Excel-Ma
 | Version 2 (Umstellung inkl. feste Bereiche, Bearbeiten, Fristen, Wirksamkeit, Einlesen) | 24 von 24 |
 | Bestehende Funktionen | 60 von 60 |
 | Bereiche (fest und eigene, automatische Zuordnung, Löschen eigener Bereiche) | 57 von 57 |
-| Speichern und Ansichtsmodus | 32 von 32 |
-| Zuordnung | 27 von 27 |
-| Speichern, Übernahme und Warnhinweise | 30 von 30 |
-| Startbildschirm | 28 von 28 |
+| Speichern und Laden durch eine zweite Person | 21 von 21 |
+| Zuordnung | 25 von 25 |
+| Speichern, Übernahme und Warnhinweise | 29 von 29 |
+| Startbildschirm | 27 von 27 |
 | Version 2.4/2.5 (Halacz/Völtzke, Warndreieck und Warnhinweise, SharePoint-Ordner öffnen) | 18 von 18 |
 | Abgeschirmte Ansicht (wie SharePoint-Webansicht): Speichern im Formular, Enter, Hinweis beim Speichern | 14 von 14 |
 | Desktop-Fassung (Tauri): Speicherort wählen, Pfad merken, Speichern unter, Laden, Fehlerfälle (mit nachgebildeten Windows-Dialogen) | 17 von 17 |
+| Gemeinsam pflegen: zwei PCs, Zusammenführen beim Speichern und beim Start, gleichzeitige Bereiche | 16 von 16 |
 | Selbstprüfung | 31 von 31 |

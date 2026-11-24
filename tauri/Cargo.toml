@@ -1,6 +1,6 @@
 [package]
 name = "asi-dashboard"
-version = "2.6.0"
+version = "2.7.0"
 description = "Maßnahmen- & Fristendashboard (SYMSAFE, Arbeitsschutz · ASI)"
 edition = "2021"
 
