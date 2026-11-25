@@ -876,6 +876,13 @@ table.data.dense .area-pick{min-height:32px}
 @keyframes warn-ping{0%{box-shadow:0 0 0 0 rgba(181,18,27,.55)}70%{box-shadow:0 0 0 10px rgba(181,18,27,0)}100%{box-shadow:0 0 0 0 rgba(181,18,27,0)}}
 @media (prefers-reduced-motion:reduce){.warn-btn.is-new{animation:none}}
 .warn-block[hidden]{display:none}
+/* Formular: weitere Angaben eingeklappt */
+.more-fields{border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:0}
+.more-fields>summary{cursor:pointer;padding:10px 14px;font-weight:700;list-style-position:inside}
+.more-fields>summary:focus-visible{outline:2px solid var(--focus,#1a2f57);outline-offset:2px}
+.more-fields .more-hint{display:block;font-weight:400;font-size:12px;color:var(--ink-muted)}
+.more-fields[open]>summary{border-bottom:1px solid var(--border-subtle)}
+.more-fields>.form-grid{padding:12px 14px}
 
 </style>
 </head>
@@ -895,6 +902,7 @@ table.data.dense .area-pick{min-height:32px}
       <p class="start-folder">Gemeinsamer Ordner: <button type="button" class="btn btn-link" id="btnStartFolder">SharePoint-Ordner „Dashboard“ öffnen</button></p>
       <details class="start-news"><summary><span id="startVersion">Version</span> · Was ist neu?</summary>
         <ul>
+          <li>Neu in 2.8: Schlanker – „Speichern“ oben, „Excel einlesen“ im Menü „Daten“, ein Knopf „Start“, Formular mit „Weitere Angaben“, weniger doppelte Karten im Dashboard.</li>
           <li>Neu in 2.7: Mehrere Personen bearbeiten den gemeinsamen Stand ASI_Stand.xlsx. Beim Start wird er automatisch geladen; beim Speichern werden Änderungen anderer zusammengeführt (je Maßnahme gilt die zuletzt geänderte Fassung). Der Ansichtsmodus entfällt.</li>
           <li>Neu in 2.5: Die roten Warnhinweise sind standardmäßig eingeklappt. Das rote Warndreieck rechts in der Bereichsleiste zeigt, wie viele es gibt, und klappt sie auf und zu.</li>
           <li>Neu in 2.4: Johanna Halacz und Heiko Völtzke gehören fest zu „Gesund nach Hause“. „Daten › SharePoint-Ordner öffnen“ öffnet den gemeinsamen Ordner im Browser. Ein rotes Warnfeld erscheint, wenn in der Ansicht nichts gespeichert werden kann.</li>
@@ -921,9 +929,9 @@ table.data.dense .area-pick{min-height:32px}
     </div>
   </div>
   <div class="header-actions">
-    <button type="button" class="btn btn-primary" id="btnImport">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h10l6 6v10H4z"/><path d="M14 4v6h6"/><path d="M8 14l2.5 3L8 20M13 14l-2.5 3 2.5 3" transform="translate(0,-1)"/></svg>
-      <span id="btnImportLabel">Excel einlesen</span>
+    <button type="button" class="btn btn-primary edit-only" id="btnHeaderSave">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></svg>
+      Speichern
     </button>
     <button type="button" class="btn btn-dark edit-only" id="btnNewAction">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
@@ -938,6 +946,7 @@ table.data.dense .area-pick{min-height:32px}
         <li role="none" class="edit-only"><button type="button" role="menuitem" class="menu-item" id="btnBackupSave"><span class="mi-title">Speichern</span><span class="mi-hint" id="btnBackupSaveHint">Beim ersten Mal den gemeinsamen Ordner wählen</span></button></li>
         <li role="none" class="edit-only" id="liBackupWhere" hidden><button type="button" role="menuitem" class="menu-item" id="btnBackupWhere"><span class="mi-title">Speichern unter …</span><span class="mi-hint">Anderen Ordner oder Dateinamen wählen</span></button></li>
         <li role="none" class="edit-only"><button type="button" role="menuitem" class="menu-item" id="btnBackupRestore"><span class="mi-title">Gemeinsamen Stand laden</span><span class="mi-hint" id="btnBackupRestoreHint">Datei auswählen – ersetzt die Daten in diesem Browser</span></button></li>
+        <li role="none" class="edit-only"><button type="button" role="menuitem" class="menu-item" id="btnImport"><span class="mi-title" id="btnImportLabel">Excel einlesen</span><span class="mi-hint">Maßnahmenliste aus Excel übernehmen (neue Zeilen ergänzen)</span></button></li>
         <li role="none" class="menu-sep"><button type="button" role="menuitem" class="menu-item" id="btnShowStart"><span class="mi-title">Startbildschirm</span><span class="mi-hint">Excel, gespeicherten Stand oder Mein Bereich wählen</span></button></li>
         <li role="none"><button type="button" role="menuitem" class="menu-item" id="btnOpenFolder"><span class="mi-title">SharePoint-Ordner öffnen</span><span class="mi-hint">General › Gesund nach Hause › Dashboard – im Browser, z. B. zum Synchronisieren</span></button></li>
       </ul>
@@ -1134,17 +1143,19 @@ table.data.dense .area-pick{min-height:32px}
           <textarea class="textarea" id="eAktion" required aria-required="true" aria-describedby="eAktionErr" maxlength="4000"></textarea>
           <span class="field-err" id="eAktionErr" hidden>⚠ Bitte eine Aktion bzw. Maßnahmenbeschreibung eingeben.</span></div>
         <div class="field full"><label for="eBereich">Bereich <span class="req" id="eBereichReq" aria-hidden="true">*</span></label><select class="select" id="eBereich" required aria-required="true" aria-describedby="eBereichErr"></select><span class="field-err" id="eBereichErr" hidden></span></div>
-        <div class="field"><label for="eThema">Thema / Bereich</label><input class="input" id="eThema" list="dlThema" maxlength="300" autocomplete="off"></div>
         <div class="field"><label for="eZust">Zuständigkeit / Verantwortlich <span class="req" id="eZustReq" aria-hidden="true">*</span></label><input class="input" id="eZust" list="dlZust" maxlength="300" autocomplete="off" aria-describedby="eZustErr"><span class="field-err" id="eZustErr" hidden></span></div>
-        <div class="field"><label for="eHerkunft">Herkunft / Quelle</label><input class="input" id="eHerkunft" list="dlHerkunft" maxlength="300" autocomplete="off"></div>
         <div class="field"><label for="eStatus">Status</label><input class="input" id="eStatus" list="dlStatus" maxlength="120" autocomplete="off" aria-describedby="eStatusHint"><span class="field-hint" id="eStatusHint">z. B. Offen, In Bearbeitung, Erledigt</span></div>
-        <div class="field"><label for="eVom">vom (erfasst am)</label><input class="input" type="date" id="eVom" min="1990-01-01" max="2100-12-31"></div>
         <div class="field full"><label for="eZiel">Zieldatum / Frist <span class="req" id="eZielReq" aria-hidden="true">*</span></label>
           <div class="date-row"><input class="input" type="date" id="eZiel" min="1990-01-01" max="2100-12-31" aria-describedby="eZielHint eZielErr">
             <div class="quick-dates" role="group" aria-label="Frist schnell setzen">
               <button type="button" class="btn btn-xs" data-days="7">+1 Woche</button><button type="button" class="btn btn-xs" data-days="14">+2 Wochen</button><button type="button" class="btn btn-xs" data-days="30">+30 Tage</button><button type="button" class="btn btn-xs" data-days="90">+3 Monate</button><button type="button" class="btn btn-xs" data-days="clear">Leeren</button>
             </div></div>
           <span class="field-hint" id="eZielHint"></span><span class="field-err" id="eZielErr" hidden></span></div>
+        <details class="field full more-fields" id="eMore"><summary>Weitere Angaben <span class="more-hint">Thema, Herkunft, Kommentar, Termine, Priorität, STOP, Wirksamkeit</span></summary>
+          <div class="form-grid">
+        <div class="field"><label for="eThema">Thema / Bereich</label><input class="input" id="eThema" list="dlThema" maxlength="300" autocomplete="off"></div>
+        <div class="field"><label for="eHerkunft">Herkunft / Quelle</label><input class="input" id="eHerkunft" list="dlHerkunft" maxlength="300" autocomplete="off"></div>
+        <div class="field"><label for="eVom">vom (erfasst am)</label><input class="input" type="date" id="eVom" min="1990-01-01" max="2100-12-31"></div>
         <div class="field"><label for="eUmgesetzt">umgesetzt am</label><input class="input" type="date" id="eUmgesetzt" min="1990-01-01" max="2100-12-31" aria-describedby="eUmgErr"><span class="field-err" id="eUmgErr" hidden></span></div>
         <div class="field"><label for="ePrio">Priorität</label><select class="select" id="ePrio"><option value="">–</option><option value="hoch">hoch</option><option value="mittel">mittel</option><option value="niedrig">niedrig</option></select></div>
         <div class="field"><label for="eArt">Art der Maßnahme (STOP)</label><select class="select" id="eArt" aria-describedby="eArtHint"><option value="">–</option><option value="S">S – Substitution</option><option value="T">T – technisch</option><option value="O">O – organisatorisch</option><option value="P">P – personenbezogen</option></select><span class="field-hint" id="eArtHint">Rangfolge nach § 4 ArbSchG: personenbezogene Maßnahmen sind nachrangig.</span></div>
@@ -1157,6 +1168,8 @@ table.data.dense .area-pick{min-height:32px}
           </div>
           <p class="field-hint">Prüfen, ob die Maßnahme umgesetzt ist und die Gefährdung ausreichend verringert hat. Bei „nicht wirksam“ eine neue Maßnahme anlegen.</p>
         </fieldset>
+          </div>
+        </details>
       </div>
       <datalist id="dlThema"></datalist><datalist id="dlZust"></datalist><datalist id="dlHerkunft"></datalist>
       <datalist id="dlStatus"><option value="Offen"></option><option value="In Bearbeitung"></option><option value="Erledigt"></option><option value="Zurückgestellt"></option></datalist>
@@ -1280,7 +1293,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
 (function () {
   'use strict';
 
-  const APP_VERSION = '2.7.0';
+  const APP_VERSION = '2.8.0';
 
   /* =====================================================================
    * Konfiguration
@@ -3426,7 +3439,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       let status;
       if (State.mode === 'view' && State.stand) status = 'Ansichtsmodus: veröffentlichter Stand vom ' + Util.formatDateTime(State.stand.publishedAt) + (State.stand.publishedBy ? ' (gepflegt von ' + State.stand.publishedBy + ')' : '') + ', ' + Util.num(total) + ' Maßnahmen.';
       else if (total) status = 'In diesem Browser: ' + Util.num(total) + ' Maßnahmen' + (State.snapshot ? ' (Excel „' + State.snapshot.fileName + '“ eingelesen ' + Util.formatDateTime(State.snapshot.importedAt) + ')' : '') + '.' + (Backup.meta && Backup.meta.savedAt ? ' Zuletzt gespeichert: ' + Util.formatDateTime(Backup.meta.savedAt) + '.' : ' Noch nicht gespeichert.');
-      else status = 'In diesem Browser sind noch keine Daten gespeichert. Wählen Sie „Start“ und lesen Sie die Excel-Datei oder den gespeicherten Stand ein.';
+      else status = 'Noch keine Daten auf diesem PC. „Start“ lädt den gemeinsamen Stand (ASI_Stand.xlsx im Ordner „Dashboard“). Zum ersten Einlesen der Excel-Liste: „Daten › Excel einlesen“.';
       $('startStatus').textContent = status;
       $('startShow').checked = State.startScreen;
       const sel = $('startMyArea');
@@ -3445,25 +3458,15 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       document.body.classList.remove('has-start');
       Array.from(document.body.children).forEach((c) => { c.inert = false; });
     },
+    /** „Start“: gemeinsamen Stand laden (Desktop: beim Programmstart schon geschehen) und Dashboard öffnen */
     async start() {
-      const total = (State.snapshot ? State.snapshot.actions.length : 0) + State.manual.length;
-      const hint = (kind, fallback) => (FileMemo.label(kind) ? 'Lädt direkt „' + FileMemo.label(kind) + '“ (gemerkt).' : fallback);
-      const opts = [];
-      if (State.mode === 'edit') {
-        opts.push({ key: 'excel', label: 'Excel einlesen', hint: hint('excel', 'Die Maßnahmenliste aus Excel auswählen; das Dashboard merkt sich die Datei.') + (State.manual.some((m) => m.origin === 'excel') ? ' Bereits übernommene Maßnahmen bleiben unverändert, neue Zeilen werden ergänzt.' : ' Danach pflegen Sie alles im Dashboard.') });
-        const bk = Backup.meta && Backup.meta.remembered ? Backup.meta.name : '';
-        opts.push({ key: 'backup', label: 'Gemeinsamen Stand laden', hint: (bk ? 'Lädt direkt „' + bk + '“ (gemerkt).' : '„ASI_Stand.xlsx“ aus dem Ordner „Dashboard“ auswählen; das Dashboard merkt sich die Datei und speichert auch dorthin.') + ' Eigene ungespeicherte Änderungen werden zusammengeführt.' });
-      }
-      if (total) opts.push({ key: 'continue', label: 'Mit den gespeicherten Daten weiterarbeiten', hint: 'Ohne Einlesen direkt zum Dashboard (' + Util.num(total) + ' Maßnahmen).' });
-      if (State.mode === 'view' && total) { const c = opts.pop(); opts.unshift(c); }
-      const choice = await chooseAction('Welche Daten möchten Sie laden?', 'Die gewählte Datei wird sofort eingelesen.', opts);
-      if (!choice) { $('btnStart').focus(); return; }
       StartScreen.hide();
       if (Areas.find(State.myArea) && State.area !== State.myArea) selectArea(State.myArea);
-      if (choice === 'continue') return;
-      if (choice === 'backup') { await Backup.restore('adopt'); return; }
-      const f = await FileMemo.open(choice, choice === 'stand' ? { stand: 'view' } : null);
-      if (f) await handleFile(f, choice === 'stand' ? { stand: 'view' } : null);
+      if (State.mode !== 'edit') return;
+      if (Desk.ok() && Backup.meta && Backup.meta.path) return; // beim Programmstart automatisch geladen
+      const known = !!(Backup.meta && (Backup.meta.remembered || Backup.meta.path));
+      const total = (State.snapshot ? State.snapshot.actions.length : 0) + State.manual.length;
+      if (known || !total) await Backup.restore('adopt'); // gemerkte Datei lesen bzw. beim ersten Mal ASI_Stand.xlsx auswählen
     }
   };
 
@@ -3588,21 +3591,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       if (!State.items.length) return;
 
 
-      const grid = h('div', { class: 'grid grid-3' });
+      const grid = h('div', { class: 'grid grid-2' });
       root.appendChild(grid);
-
-      // Statusverteilung
-      const dist = h('div', { class: 'card' }, [h('div', { class: 'card-head' }, [h('h3', { text: 'Statusverteilung' }), h('span', { class: 'spacer' }), h('span', { class: 'card-note', text: Util.num(c.total) + ' gesamt' })])]);
-      const db = h('div', { class: 'card-body' });
-      const stack = h('div', { class: 'stack', 'aria-hidden': 'true' });
-      CAT_ORDER.forEach((k) => { if (c[k]) stack.appendChild(h('span', { class: 'seg-' + k, style: 'width:' + (c[k] / c.total * 100).toFixed(3) + '%' })); });
-      db.appendChild(stack);
-      const leg = h('ul', { class: 'legend-list' });
-      CAT_ORDER.forEach((k) => leg.appendChild(h('li', null, [h('span', { class: 'sw seg-' + k, 'aria-hidden': 'true' }), h('span', { text: CATS[k].label }), h('span', { class: 'num', text: Util.num(c[k]) }), h('span', { class: 'pct', text: Util.pct(c[k], c.total) })])));
-      leg.appendChild(h('li', null, [h('span', { class: 'sw', style: 'background:var(--st-blue)', 'aria-hidden': 'true' }), h('span', { text: 'davon In Bearbeitung (zusätzlich)' }), h('span', { class: 'num', text: Util.num(c.inbearbeitung) }), h('span', { class: 'pct', text: Util.pct(c.inbearbeitung, c.total) })]));
-      db.appendChild(leg);
-      dist.appendChild(db);
-      grid.appendChild(dist);
 
       // Offene nach Zuständigkeit
       grid.appendChild(Render.barCard('Offene Maßnahmen nach Zuständigkeit', 'zust', true));
@@ -3640,45 +3630,6 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       upCard.appendChild(upBody);
       grid2.appendChild(upCard);
 
-      const grid3 = h('div', { class: 'grid grid-3', style: 'margin-top:16px' });
-      root.appendChild(grid3);
-
-      // Ohne Zieldatum
-      const noDate = State.items.filter((i) => i.isOpen && i.zielNum === null);
-      const ndCard = h('div', { class: 'card' }, [h('div', { class: 'card-head' }, [h('h3', { text: 'Maßnahmen ohne Zieldatum' }), h('span', { class: 'spacer' }), h('span', { class: 'badge b-grey', text: String(noDate.length) })])]);
-      const ndBody = h('div', { class: 'card-body', style: 'padding-top:4px;padding-bottom:4px' });
-      if (!noDate.length) ndBody.appendChild(h('p', { class: 'empty-note', text: 'Alle offenen Maßnahmen haben ein Zieldatum.' }));
-      else {
-        const ul = h('ul', { class: 'urgent-list' });
-        noDate.slice(0, 6).forEach((it) => ul.appendChild(h('li', null, Render.urgentItem(it, null))));
-        ndBody.appendChild(ul);
-        ndBody.appendChild(h('div', { class: 'more-row no-print' }, h('button', { type: 'button', class: 'btn btn-link', text: 'Alle ' + noDate.length + ' ohne Zieldatum anzeigen', onclick: () => gotoActions({ onlyNoDate: true, onlyOpen: true }) })));
-      }
-      ndCard.appendChild(ndBody);
-      grid3.appendChild(ndCard);
-
-      // Datenqualität
-      const dqCard = h('div', { class: 'card' }, [h('div', { class: 'card-head' }, [h('h3', { text: 'Datenqualität' }), h('span', { class: 'spacer' }), h('button', { type: 'button', class: 'btn btn-link no-print', text: 'Details', onclick: () => showView('qualitaet', true) })])]);
-      const dq = h('ul', { class: 'dq-mini' });
-      ['noAction', 'noZust', 'noDate', 'badDate', 'contra', 'dup'].forEach((k) => {
-        const n = State.items.filter(DQ_FILTERS[k].test).length;
-        dq.appendChild(h('li', { class: n ? 'warn' : 'ok' }, [h('span', { text: DQ_FILTERS[k].label.charAt(0).toUpperCase() + DQ_FILTERS[k].label.slice(1) }), h('b', { text: Util.num(n) })]));
-      });
-      dqCard.appendChild(h('div', { class: 'card-body' }, dq));
-      grid3.appendChild(dqCard);
-
-      // Importinformationen
-      const s = State.snapshot;
-      const info = h('dl', { class: 'info-list' }, [
-        h('dt', { text: 'Maßnahmen gesamt' }), h('dd', { text: Util.num(c.total) }),
-        h('dt', { text: 'davon aus Excel übernommen' }), h('dd', { text: Util.num(State.items.filter((i) => i.rec.origin === 'excel').length) }),
-        h('dt', { text: 'davon im Dashboard erfasst' }), h('dd', { text: Util.num(State.items.filter((i) => i.rec.origin !== 'excel').length) }),
-        h('dt', { text: 'Excel-Datei' }), h('dd', { text: s ? s.fileName : '–' }),
-        h('dt', { text: 'Letzter Import' }), h('dd', { text: s ? Util.formatDateTime(s.importedAt) : '–' }),
-        h('dt', { text: 'Maßnahmenblatt' }), h('dd', { text: s ? s.actionSheet.name + ' (Kopfzeile ' + s.actionSheet.headerRow + ')' : '–' }),
-        h('dt', { text: 'Datenstand' }), h('dd', { text: s ? (State.source === 'local' ? 'lokal gespeichert (dieser Browser)' : 'soeben importiert') : (State.manual.length ? 'nur manuelle Erfassung' : '–') })
-      ]);
-      grid3.appendChild(h('div', { class: 'card' }, [h('div', { class: 'card-head' }, h('h3', { text: 'Datenquelle' })), h('div', { class: 'card-body' }, info)]));
     },
 
     /** Hero der Gesamtübersicht: links Anleitung bzw. Auswertung, rechts Sonar */
@@ -4612,6 +4563,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
       $('btnEditDelete').hidden = !rec;
       Editor.clearErrors();
       Editor.updateHint();
+      $('eMore').open = ['eThema', 'eHerkunft', 'eUmgesetzt', 'ePrio', 'eArt', 'eKommentar', 'eWirkDatum', 'eWirkErgebnis', 'eWirkDurch'].some((id) => String($(id).value || '').trim() !== '');
       Dialogs.open($('editDialog'));
       $('eAktion').focus();
     },
@@ -4660,7 +4612,7 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     async save(ev) {
       ev.preventDefault();
       const firstErr = Editor.validate(true);
-      if (firstErr) { firstErr.focus(); return; }
+      if (firstErr) { const more = firstErr.closest('details'); if (more) more.open = true; firstErr.focus(); return; }
       const aktion = Util.clean($('eAktion').value);
       const vom = DateUtil.fromInput($('eVom').value);
       const ziel = DateUtil.fromInput($('eZiel').value);
@@ -4803,6 +4755,22 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
     if (text) $('loadingText').textContent = text;
   }
   let pendingFileOpts = null; // Vorgabe für die nächste Dateiauswahl über das Dateifeld (z. B. vom Startbildschirm)
+  /** Excel einlesen (Menü „Daten“): Desktop-Fassung mit Windows-Dialog, sonst Dateiauswahl des Browsers */
+  async function importExcel() {
+    if (State.mode === 'edit' && Desk.ok()) {
+      let path = null;
+      try { path = await Desk.pickOpen('Maßnahmenliste (Excel) auswählen', ['xlsx', 'xlsm', 'xls', 'xlsb']); } catch (e) { showMessage('error', 'Der Öffnen-Dialog konnte nicht geöffnet werden: ' + Desk.err(e), 12000); return; }
+      if (!path) return;
+      let f;
+      try { f = await Desk.read(path); } catch (e) { showMessage('error', '„' + path + '“ konnte nicht gelesen werden: ' + Desk.err(e), 12000); return; }
+      FileMemo.meta.excel = { name: Desk.base(path), at: new Date().toISOString(), remembered: true, path: path };
+      try { await Store.put('fileMeta', FileMemo.meta); } catch (e) { /* ignorieren */ }
+      await handleFile(f);
+      return;
+    }
+    openFilePicker();
+  }
+
   function openFilePicker() {
     const input = $('fileInput');
     input.value = '';
@@ -5433,7 +5401,8 @@ t.sheetStubs=true}if(t.type=="array"){t.type="binary";var a=xk(e,t);t.type="arra
    * Initialisierung
    * ===================================================================== */
   function bindEvents() {
-    $('btnImport').addEventListener('click', openFilePicker);
+    $('btnImport').addEventListener('click', () => importExcel());
+    $('btnHeaderSave').addEventListener('click', () => saveFlow(false));
     $('fileInput').addEventListener('change', (ev) => {
       const input = ev.target;
       const file = input.files && input.files[0];

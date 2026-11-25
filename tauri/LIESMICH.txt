@@ -1,4 +1,4 @@
-ASI-Dashboard – Desktop-Fassung (Tauri) 2.7.0
+ASI-Dashboard – Desktop-Fassung (Tauri) 2.8.0
 =============================================
 
 Starten (ohne Installation)
@@ -50,5 +50,5 @@ Programmdaten
 - Gemeinsamer Stand für alle bleibt ASI_Stand.xlsx im SharePoint-Ordner
   "Dashboard".
 
-Inhalt: dieselbe Oberfläche wie ASI_Dashboard_Leitstand_Bereiche.html 2.7.0.
+Inhalt: dieselbe Oberfläche wie ASI_Dashboard_Leitstand_Bereiche.html 2.8.0.
 WebView2Loader.dll stammt aus dem Microsoft-WebView2-SDK (weitergebbar).

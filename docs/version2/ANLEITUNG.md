@@ -1,4 +1,4 @@
-# ASI-Dashboard – Anleitung (ab Version 2.7)
+# ASI-Dashboard – Anleitung (ab Version 2.8)
 
 Diese Anleitung ersetzt die früheren Einzelanleitungen (Stand veröffentlichen, Sicherung, Bereiche zuordnen).
 
@@ -13,11 +13,18 @@ Die HTML-Datei und `ASI_Stand.xlsx` liegen im SharePoint-Ordner **ASI Team HOL /
 - Einen festen Speicherpfad kann eine HTML-Datei nicht vorgeben: Edge verlangt, dass der Ort einmal im Speichern- bzw. Öffnen-Dialog gewählt wird. Danach merkt sich das Dashboard die Datei.
 - In die SharePoint-Webadresse selbst kann das Dashboard nicht schreiben, nur in den synchronisierten Ordner. OneDrive lädt die Datei von dort hoch.
 
+## Bedienung kurz (ab 2.8)
+
+- **Oben:** „Speichern“, „Neue Maßnahme“, „Daten“ (Excel einlesen, gemeinsamen Stand laden, Speichern unter …, Startbildschirm, SharePoint-Ordner) und „Export & Druck“.
+- **Startbildschirm:** ein Knopf „Start“. Er lädt den gemeinsamen Stand und öffnet das Dashboard; es gibt kein Auswahlfenster mehr.
+- **Neue Maßnahme:** oben nur Aktion, Bereich, Zuständigkeit, Status und Zieldatum. Thema, Herkunft, Kommentar, „vom“, „umgesetzt am“, Priorität, STOP und Wirksamkeit stehen unter **„Weitere Angaben“** (klappt beim Bearbeiten automatisch auf, wenn dort etwas eingetragen ist).
+- **Dashboard:** Lagebild, Hinweise (ohne Bereich, Fristen fehlen), Kennzahlen, zwei Diagramme, die dringendsten Maßnahmen und die kommenden Fristen. Statusverteilung, Datenqualität und Datenquelle stehen nicht mehr doppelt auf dem Dashboard (Datenqualität bleibt als eigene Seite).
+
 ## Gemeinsam pflegen (ab 2.7)
 
 - **Alle bearbeiten**, einen Ansichtsmodus gibt es nicht mehr. Gemeinsame Datei ist `ASI_Stand.xlsx` im Ordner „Dashboard“.
-- **Einmal pro PC:** Startbildschirm › „Gemeinsamen Stand laden“ und `ASI_Stand.xlsx` wählen (oder beim ersten „Daten › Speichern“ dorthin speichern). Das Dashboard merkt sich die Datei und speichert auch dorthin.
-- **Beim Start** lädt die Desktop-Fassung die Datei automatisch. In der Browser-Fassung geht das über „Start › Gemeinsamen Stand laden“, weil Edge nach einem Neustart erst um Erlaubnis fragt.
+- **Einmal pro PC:** Auf dem Startbildschirm **„Start“** klicken und `ASI_Stand.xlsx` wählen (oder beim ersten „Daten › Speichern“ dorthin speichern). Das Dashboard merkt sich die Datei und speichert auch dorthin.
+- **Beim Start** lädt die Desktop-Fassung die Datei automatisch. In der Browser-Fassung lädt „Start“ die gemerkte Datei, weil Edge nach einem Neustart erst um Erlaubnis fragt.
 - **Beim Speichern** liest das Dashboard die Datei vorher. Hat inzwischen jemand anderes gespeichert, wird zusammengeführt:
   - neue Maßnahmen beider Seiten bleiben erhalten,
   - Löschungen gelten (außer die Maßnahme wurde danach woanders noch geändert),
@@ -82,7 +89,7 @@ Daten aus früheren Versionen:
 
 ## Erster Start (pflegende Person)
 
-1. Dashboard öffnen. Auf dem Startbildschirm **„Start“ › „Excel einlesen“** wählen und die Maßnahmenliste auswählen. Das Dashboard merkt sich die Datei.
+1. Dashboard öffnen, Startbildschirm mit „Direkt zum Dashboard“ schließen, dann **„Daten › Excel einlesen“** und die Maßnahmenliste auswählen.
 2. Die Maßnahmen landen automatisch in den festen Bereichen. Für die übrigen:
    - **„Nach Zuständigkeit zuordnen …“** ordnet alle Maßnahmen einer Person auf einmal zu. Die Regel gilt auch für künftig eingelesene Zeilen.
    - Oder einzeln über die Spalte **„Bereich“** in der Maßnahmenliste.
@@ -110,12 +117,12 @@ Wenn bereits Excel-Maßnahmen im Dashboard sind, fragt das Dashboard nach, wie d
 
 ## Für die Kolleginnen und Kollegen
 
-- Dashboard aus dem synchronisierten Ordner „Dashboard“ öffnen, dann **„Start“ › „Gemeinsamen Stand laden“** und `ASI_Stand.xlsx` aus diesem Ordner wählen. Danach bearbeiten und mit „Daten › Speichern“ zurückschreiben (siehe „Gemeinsam pflegen“).
+- Dashboard aus dem synchronisierten Ordner „Dashboard“ öffnen, dann **„Start“** und beim ersten Mal `ASI_Stand.xlsx` aus diesem Ordner wählen. Danach bearbeiten und mit „Daten › Speichern“ zurückschreiben (siehe „Gemeinsam pflegen“).
 - Auf dem Startbildschirm unter **„Beim Öffnen anzeigen (Mein Bereich)“** den eigenen Bereich wählen. Das Dashboard öffnet dann direkt dort.
 
 ## Neuer PC, gelöschte Browserdaten, Vertretung
 
-**„Start“ › „Gemeinsamen Stand laden“** bzw. **„Daten › Gemeinsamen Stand laden“**: `ASI_Stand.xlsx` wird geladen. Liegen auf dem PC noch ungespeicherte eigene Änderungen, werden sie zusammengeführt statt verworfen. Danach gibt es „Rückgängig“.
+**„Start“** bzw. **„Daten › Gemeinsamen Stand laden“**: `ASI_Stand.xlsx` wird geladen. Liegen auf dem PC noch ungespeicherte eigene Änderungen, werden sie zusammengeführt statt verworfen. Danach gibt es „Rückgängig“.
 
 ## Umstellung von Version 1.x
 
@@ -137,14 +144,14 @@ Beim ersten Öffnen werden vorhandene Daten automatisch umgestellt: Die Excel-Ma
 | Testreihe | Ergebnis |
 |---|---|
 | Version 2 (Umstellung inkl. feste Bereiche, Bearbeiten, Fristen, Wirksamkeit, Einlesen) | 24 von 24 |
-| Bestehende Funktionen | 60 von 60 |
+| Bestehende Funktionen | 61 von 61 |
 | Bereiche (fest und eigene, automatische Zuordnung, Löschen eigener Bereiche) | 57 von 57 |
 | Speichern und Laden durch eine zweite Person | 21 von 21 |
 | Zuordnung | 25 von 25 |
 | Speichern, Übernahme und Warnhinweise | 29 von 29 |
-| Startbildschirm | 27 von 27 |
+| Startbildschirm | 21 von 21 |
 | Version 2.4/2.5 (Halacz/Völtzke, Warndreieck und Warnhinweise, SharePoint-Ordner öffnen) | 18 von 18 |
 | Abgeschirmte Ansicht (wie SharePoint-Webansicht): Speichern im Formular, Enter, Hinweis beim Speichern | 14 von 14 |
-| Desktop-Fassung (Tauri): Speicherort wählen, Pfad merken, Speichern unter, Laden, Fehlerfälle (mit nachgebildeten Windows-Dialogen) | 17 von 17 |
+| Desktop-Fassung (Tauri): Speicherort wählen, Pfad merken, Speichern unter, Laden, Fehlerfälle (mit nachgebildeten Windows-Dialogen) | 16 von 16 |
 | Gemeinsam pflegen: zwei PCs, Zusammenführen beim Speichern und beim Start, gleichzeitige Bereiche | 16 von 16 |
 | Selbstprüfung | 31 von 31 |
